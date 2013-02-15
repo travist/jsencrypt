@@ -28,7 +28,7 @@ cat rsa_1024_priv.pem
 ```
 
  - You can then copy and paste this in the Private Key section of within index.html.
- - Next, you can then get the public key by performaing the following command.
+ - Next, you can then get the public key by executing the following command.
 
 ```
 openssl rsa -pubout -in rsa_1024_priv.pem -out rsa_1024_pub.pem
