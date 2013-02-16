@@ -59,14 +59,16 @@ cat rsa_1024_pub.pem
         // Run a quick encryption/decryption when they click.
         $('#testme').click(function() {
 
-          // Create the encryption object.
+          // Create the encryption object and set the keys.
           var crypt = new JSEncrypt();
+          crypt.setPrivateKey($('#privkey').val());
+          crypt.setPublicKey($('#pubkey').val());
 
           // Encrypt the input with the public key.
-          var encrypted = crypt.encrypt($('#pubkey').val(), $('#input').val());
+          var encrypted = crypt.encrypt($('#input').val());
 
           // Now decrypt the crypted text with the private key.
-          var uncrypted = crypt.decrypt($('#privkey').val(), encrypted);
+          var uncrypted = crypt.decrypt(encrypted);
 
           // Now a simple check to see if the round-trip worked.
           if (uncrypted == $('#input').val()) {

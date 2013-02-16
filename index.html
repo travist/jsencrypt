@@ -9,6 +9,8 @@
 
         // Create the encryption object.
         var crypt = new JSEncrypt();
+        crypt.setPrivateKey($('#privkey').val());
+        crypt.setPublicKey($('#pubkey').val());
 
         // Execute when they click the button.
         $('#execute').click(function() {
@@ -19,11 +21,11 @@
 
           // Alternate the values.
           if (input) {
-            $('#crypted').val(crypt.encrypt($('#pubkey').val(), input));
+            $('#crypted').val(crypt.encrypt(input));
             $('#input').val('');
           }
           else if (crypted) {
-            $('#input').val(crypt.decrypt($('#privkey').val(), crypted));
+            $('#input').val(crypt.decrypt(crypted));
             $('#crypted').val('');
           }
         });

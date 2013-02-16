@@ -160,29 +160,54 @@ var JSEncrypt = function() {
 };
 
 /**
+ * Set the private key.
+ */
+JSEncrypt.prototype.setPrivateKey = function(privkey) {
+  this.privkey = new RSAPrivateKey(privkey);
+};
+
+/**
+ * Set the public key.
+ */
+JSEncrypt.prototype.setPublicKey = function(pubkey) {
+  this.pubkey = new RSAPublicKey(pubkey);
+};
+
+/**
  * Decryption method to take a private PEM string and decrypt text.
  */
-JSEncrypt.prototype.decrypt = function(privkey, string) {
+JSEncrypt.prototype.decrypt = function(string) {
 
-  // If the key has already been defined, then don't define it again.
-  if (!this.privkey) {
-    this.privkey = new RSAPrivateKey(privkey);
+  // If a private ke is available, then decrypt.
+  if (this.privkey) {
+
+    // Return the decrypted string.
+    return this.privkey.decrypt(b64tohex(string));
   }
+  else {
 
-  // Return the decrypted string.
-  return this.privkey.decrypt(b64tohex(string));
+    // Return false...
+    return false;
+  }
 }
 
 /**
  * Encrypttion method to take a public PEM string and encrypt text.
  */
-JSEncrypt.prototype.encrypt = function(pubkey, string) {
+JSEncrypt.prototype.encrypt = function(string) {
 
-  // If the pubkey has not been defined then do it here.
-  if (!this.pubkey) {
-    this.pubkey = new RSAPublicKey(pubkey);
+  // We can use either the public key or the private key for encryption.
+  var key = this.pubkey || this.privkey;
+
+  // If the key exists.
+  if (key) {
+
+    // Return the encrypted string.
+    return hex2b64(key.encrypt(string));
   }
+  else {
 
-  // Return the encrypted string.
-  return hex2b64(this.pubkey.encrypt(string));
+    // Return false.
+    return false;
+  }
 }
