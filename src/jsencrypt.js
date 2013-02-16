@@ -170,7 +170,7 @@ JSEncrypt.prototype.decrypt = function(privkey, string) {
   }
 
   // Return the decrypted string.
-  return this.privkey.decrypt(string);
+  return this.privkey.decrypt(b64tohex(string));
 }
 
 /**
@@ -184,5 +184,5 @@ JSEncrypt.prototype.encrypt = function(pubkey, string) {
   }
 
   // Return the encrypted string.
-  return this.pubkey.encrypt(string);
+  return hex2b64(this.pubkey.encrypt(string));
 }

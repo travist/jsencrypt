@@ -1795,20 +1795,37 @@ RSAPublicKey.prototype.parseKey = function(pubkey) {
 /**
  * Class to do the encryption.
  */
-var JSEncrypt = function() {};
+var JSEncrypt = function() {
+
+  // The private and public keys.
+  this.privkey = null;
+  this.pubkey = null;
+};
 
 /**
  * Decryption method to take a private PEM string and decrypt text.
  */
 JSEncrypt.prototype.decrypt = function(privkey, string) {
-  var key = new RSAPrivateKey(privkey);
-  return key.decrypt(string);
+
+  // If the key has already been defined, then don't define it again.
+  if (!this.privkey) {
+    this.privkey = new RSAPrivateKey(privkey);
+  }
+
+  // Return the decrypted string.
+  return this.privkey.decrypt(b64tohex(string));
 }
 
 /**
  * Encrypttion method to take a public PEM string and encrypt text.
  */
 JSEncrypt.prototype.encrypt = function(pubkey, string) {
-  var key = new RSAPublicKey(pubkey);
-  return key.encrypt(string);
+
+  // If the pubkey has not been defined then do it here.
+  if (!this.pubkey) {
+    this.pubkey = new RSAPublicKey(pubkey);
+  }
+
+  // Return the encrypted string.
+  return hex2b64(this.pubkey.encrypt(string));
 }
