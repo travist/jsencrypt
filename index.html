@@ -7,15 +7,15 @@
     <script type="text/javascript">
       $(function() {
 
+        // Create the encryption object.
+        var crypt = new JSEncrypt();
+
         // Execute when they click the button.
         $('#execute').click(function() {
 
           // Get the input and crypted values.
           var input = $('#input').val();
           var crypted = $('#crypted').val();
-
-          // Create the encryption object.
-          var crypt = new JSEncrypt();
 
           // Alternate the values.
           if (input) {
