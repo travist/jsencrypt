@@ -7,17 +7,17 @@
     <script type="text/javascript">
       $(function() {
 
-        // Create the encryption object.
-        var crypt = new JSEncrypt();
-
-        // Set the private.
-        crypt.setPrivateKey($('#privkey').val());
-
-        // Set the public key.
-        crypt.setPublicKey($('#pubkey').val());
-
         // Execute when they click the button.
         $('#execute').click(function() {
+
+          // Create the encryption object.
+          var crypt = new JSEncrypt();
+
+          // Set the private.
+          crypt.setPrivateKey($('#privkey').val());
+
+          // Set the public key.
+          crypt.setPublicKey($('#pubkey').val());
 
           // Get the input and crypted values.
           var input = $('#input').val();
