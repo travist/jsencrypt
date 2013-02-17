@@ -3,13 +3,17 @@
   <head>
     <title>JavaScript RSA Encryption Demo</title>
     <script src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
-    <script src="bin/jsencrypt.min.js"></script>
+    <script src="bin/jsencrypt.js"></script>
     <script type="text/javascript">
       $(function() {
 
         // Create the encryption object.
         var crypt = new JSEncrypt();
+
+        // Set the private.
         crypt.setPrivateKey($('#privkey').val());
+
+        // Set the public key.
         crypt.setPublicKey($('#pubkey').val());
 
         // Execute when they click the button.
@@ -28,6 +32,13 @@
             $('#input').val(crypt.decrypt(  crypted));
             $('#crypted').val('');
           }
+        });
+
+        // If they wish to generate new keys.
+        $('#generate').click(function() {
+          crypt = new JSEncrypt();
+          $('#privkey').val(crypt.getPrivateKey());
+          $('#pubkey').val(crypt.getPublicKey());
         });
       });
     </script>
@@ -60,6 +71,7 @@ qvXQ3qbPAmu0RjxoZVI47tvskYlFAXOf0sPrhO2nUuooJngnHV0639iTTEYG1vck
 NaW2R6U5QTdQ5Rq5u+uV3pMk7w7Vs4n3urQ6jnqt2rTXbC1DNa/PFeAZatbf7ffB
 By0IGO0zc128IshYcwIDAQAB
 -----END PUBLIC KEY-----</textarea><br/>
+    <input id="generate" type="button" value="Generate Keys" />
     <h2>Decryption / Encryption Test</h2>
     <label for="input">Text to encrypt:</label><br/>
     <textarea id="input" name="input" type="text" rows=4 cols=70>This is a test!</textarea><br/>

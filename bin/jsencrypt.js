@@ -1841,7 +1841,7 @@ RSAPrivateKey.prototype.structure = function() {
 /**
  * Create a public key class to extend the RSAKey.
  *
- * @param string pubkey - The public key in string format.
+ * @param string pubkey - The public key in string format, or RSAPrivateKey.
  */
 var RSAPublicKey = function(pubkey) {
 
@@ -1851,8 +1851,16 @@ var RSAPublicKey = function(pubkey) {
   // If a pubkey key was provided.
   if (pubkey) {
 
-    // Parse the key.
-    this.parseKey(pubkey);
+    // If this is a string...
+    if (typeof pubkey == 'string') {
+      this.parseKey(pubkey);
+    }
+    else if (pubkey.hasOwnProperty('n') && pubkey.hasOwnProperty('e')) {
+
+      // Set the values for the public key.
+      this.n = pubkey.n;
+      this.e = pubkey.e;
+    }
   }
 };
 
@@ -1949,7 +1957,10 @@ JSEncrypt.prototype.getPrivateKey = function() {
     this.privkey = new RSAPrivateKey();
 
     // Generate the key.
-    this.privkey.generate();
+    this.privkey.generate(1024, '010001');
+
+    // Make sure the public key is based off of the private key.
+    this.pubkey = new RSAPublicKey(this.privkey);
   }
 
   // Return the private representation of this key.
@@ -1968,7 +1979,7 @@ JSEncrypt.prototype.getPublicKey = function() {
     this.pubkey = new RSAPublicKey();
 
     // Generate the key.
-    this.pubkey.generate();
+    this.pubkey.generate(1024, '010001');
   }
 
   // Return the private representation of this key.
