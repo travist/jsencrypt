@@ -126,8 +126,7 @@ RSAKey.prototype.wordwrap = function(str, width) {
 // Return a new Private key.
 RSAKey.prototype.getPrivateKey = function() {
   var key = "-----BEGIN RSA PRIVATE KEY-----\n";
-  var b16 = '';
-  b16 += "3082025e02010002";  // header + spacer + verlen + version + spacer.
+  var b16 = "3082025e02010002";  // header + spacer + verlen + version + spacer.
   b16 += this.getBaseKey();
   key += this.wordwrap(hex2b64(b16)) + "\n";
   key += "-----END RSA PRIVATE KEY-----";
@@ -137,8 +136,7 @@ RSAKey.prototype.getPrivateKey = function() {
 // Return a new Public key.
 RSAKey.prototype.getPublicKey = function() {
   var key = "-----BEGIN PUBLIC KEY-----\n";
-  var b16 = '';
-  b16 += "30819f300d06092a864886f70d010101050003818d0030818902";  // header + spacer.
+  var b16 = "30819f300d06092a864886f70d010101050003818d0030818902";  // header + spacer.
   b16 += this.getBaseKey();
   key += this.wordwrap(hex2b64(b16)) + "\n";
   key += "-----END PUBLIC KEY-----";
