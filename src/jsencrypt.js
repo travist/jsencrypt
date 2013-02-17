@@ -65,7 +65,7 @@ RSAKey.prototype.prepareKey = function(keyString) {
 
   // Only remove the first and last lines if it contains the begin stmt.
   if (lines[0].substring(0,10) == '-----BEGIN') {
-    
+
     // Remove the first and last lines.
     lines = lines.slice(1, (lines.length - 1));
   }
@@ -87,27 +87,36 @@ RSAKey.prototype.getBaseKey = function() {
   for (var prop in structure) {
     info = structure[prop];
     if (info.variable) {
+
+      // Get the value in hex form.
       value = this[prop].toString(16);
       if (!!(value.length % 2)) {
         value = "0" + value;
       }
-      length = (value.length / 2);
-      if (info.hasOwnProperty('padded')) {
-        length++;
+      if (info.hasOwnProperty('padded') && info.padded) {
+        value = "00" + value;
       }
+
+      // Get the length in hex form.
+      length = (value.length / 2);
       length = length.toString(16);
       if (!!(length.length % 2)) {
         length = "0" + length;
       }
+
+      // Add the length.
       b16 += length;
+
+      // If the value has an offset, then add the length again.
       if (info.hasOwnProperty('offset')) {
         b16 += length;
       }
-      if (info.hasOwnProperty('padded')) {
-        b16 += "00";
-      }
+
+      // Add the value.
       b16 += value;
-      b16 += "02";   // spacer.
+
+      // Add the spacer.
+      b16 += "02";
     }
   }
 
