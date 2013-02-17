@@ -1706,8 +1706,12 @@ RSAKey.prototype.prepareKey = function(keyString) {
   // Split the key from the line feeds.
   var lines = keyString.split('\n');
 
-  // Remove the first and last lines.
-  lines = lines.slice(1, (lines.length - 1));
+  // Only remove the first and last lines if it contains the begin stmt.
+  if (lines[0].substring(0,10) == '-----BEGIN') {
+    
+    // Remove the first and last lines.
+    lines = lines.slice(1, (lines.length - 1));
+  }
 
   // Join these back into the key.
   keyString = lines.join('');
