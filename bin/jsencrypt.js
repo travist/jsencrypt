@@ -1703,8 +1703,11 @@ RSAKey.prototype.char64ToHex = function(str) {
  */
 RSAKey.prototype.prepareKey = function(keyString) {
 
+  // Trim the keystring first.
+  keyString = keyString.replace(/^\s+|\s+$/g, '');
+
   // Split the key from the line feeds.
-  var lines = keyString.split('\n');
+  var lines = keyString.split(/\r?\n/);
 
   // Only remove the first and last lines if it contains the begin stmt.
   if (lines[0].substring(0,10) == '-----BEGIN') {
@@ -1747,13 +1750,13 @@ RSAKey.prototype.getBaseKey = function() {
         length = "0" + length;
       }
 
-      // Add the length.
-      b16 += length;
-
-      // If the value has an offset, then add the length again.
-      if (info.hasOwnProperty('offset')) {
+      // If the value has an extra space then add it.
+      if (info.hasOwnProperty('extraspace')) {
         b16 += length;
       }
+
+      // Add the length.
+      b16 += length;
 
       // Add the value.
       b16 += value;
@@ -1830,12 +1833,12 @@ RSAPrivateKey.prototype.structure = function() {
     'header': {length: 4},
     'versionlength': {length: 1, offset: 1, type: 'int'},
     'version': {length:'versionlength', type: 'int'},
-    'n_length': {length:1, offset:1, type: 'int'},
-    'n': {length:'n_length', offset:1, type: 'bigint', variable:true, padded: true},
+    'n_length': {length:1, offset:2, type: 'int'},
+    'n': {length:'n_length', type: 'bigint', variable:true, padded: true, extraspace: true},
     'e_length': {length:1, offset:1, type: 'int'},
     'e': {length:'e_length', type: 'int', variable:true},
-    'd_length': {length:1, offset:1, type: 'int'},
-    'd': {length:'d_length', offset:1, type: 'bigint', variable:true, padded: true},
+    'd_length': {length:1, offset:2, type: 'int'},
+    'd': {length:'d_length', type: 'bigint', variable:true, padded: true, extraspace: true},
     'p_length': {length:1, offset:1, type: 'int'},
     'p': {length:'p_length', type: 'bigint', variable:true, padded: true},
     'q_length': {length:1, offset:1, type: 'int'},
@@ -1886,8 +1889,8 @@ RSAPublicKey.prototype.constructor = RSAPublicKey;
 RSAPublicKey.prototype.structure = function() {
   return {
     'header': {length: 25},
-    'n_length': {length:1, offset:1, type: 'int'},
-    'n': {length:'n_length', offset:1, type: 'bigint', variable:true, padded: true},
+    'n_length': {length:1, offset:2, type: 'int'},
+    'n': {length:'n_length', type: 'bigint', variable:true, padded: true, extraspace: true},
     'e_length': {length:1, offset:1, type: 'int'},
     'e': {length:'e_length', type: 'int', variable:true}
   };
