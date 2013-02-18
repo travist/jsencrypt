@@ -1907,13 +1907,20 @@ var JSEncrypt = function() {
  * Set the private key.
  */
 JSEncrypt.prototype.setPrivateKey = function(privkey) {
+
+  // Create the private key.
   this.privkey = new RSAPrivateKey(privkey);
+
+  // Make sure the public key is based off of the private key.
+  this.pubkey = new RSAPublicKey(this.privkey);
 };
 
 /**
  * Set the public key.
  */
 JSEncrypt.prototype.setPublicKey = function(pubkey) {
+
+  // Sets the public key.
   this.pubkey = new RSAPublicKey(pubkey);
 };
 
