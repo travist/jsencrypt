@@ -24,7 +24,7 @@ js: ${files}
 	@cat $^ >> bin/jsencrypt.js
 	@echo "\nexports.JSEncrypt = JSEncrypt;" >> bin/jsencrypt.js
 	@echo "})(JSEncryptExports);" >> bin/jsencrypt.js
-	@echo "var JSEncrypt = JSEncryptExports.JSEncrypt;\n" >> bin/jsencrypt.js
+	@echo "var JSEncrypt = JSEncryptExports.JSEncrypt;" >> bin/jsencrypt.js
 	@echo "Generating compressed jsencrypt.min.js file"
 	curl -s \
 	  -d compilation_level=SIMPLE_OPTIMIZATIONS \
