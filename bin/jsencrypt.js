@@ -1,3 +1,5 @@
+var JSEncryptExports = {};
+(function(exports) {
 // Copyright (c) 2005  Tom Wu
 // All Rights Reserved.
 // See "LICENSE" for details.
@@ -2006,3 +2008,7 @@ JSEncrypt.prototype.getPublicKey = function() {
   // Return the private representation of this key.
   return this.pubkey.getPublicKey();
 };
+exports.JSEncrypt = JSEncrypt;
+})(JSEncryptExports);
+var JSEncrypt = JSEncryptExports.JSEncrypt;
+

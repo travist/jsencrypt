@@ -19,7 +19,12 @@ jslint: ${files}
 # Create an aggregated js file and a compressed js file.
 js: ${files}
 	@echo "Generating aggregated jsencrypt.js file"
-	@cat > bin/jsencrypt.js $^
+	@echo "var JSEncryptExports = {};" > bin/jsencrypt.js
+	@echo "(function(exports) {" >> bin/jsencrypt.js
+	@cat $^ >> bin/jsencrypt.js
+	@echo "\nexports.JSEncrypt = JSEncrypt;" >> bin/jsencrypt.js
+	@echo "})(JSEncryptExports);" >> bin/jsencrypt.js
+	@echo "var JSEncrypt = JSEncryptExports.JSEncrypt;\n" >> bin/jsencrypt.js
 	@echo "Generating compressed jsencrypt.min.js file"
 	curl -s \
 	  -d compilation_level=SIMPLE_OPTIMIZATIONS \
