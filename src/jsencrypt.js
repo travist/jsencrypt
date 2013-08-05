@@ -42,14 +42,7 @@ RSAKey.prototype.parseKey = function(keyString) {
  * Add a char64toHex method.
  */
 RSAKey.prototype.char64ToHex = function(str) {
-  var hex = '';
-  str = atob(str);
-  for (var i = 0; i < str.length; ++i) {
-    var tmp = str.charCodeAt(i).toString(16);
-    if (tmp.length === 1) tmp = "0" + tmp;
-    hex += tmp;
-  }
-  return hex;
+  return b64tohex(str);
 };
 
 /**
