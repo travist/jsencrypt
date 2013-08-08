@@ -2,9 +2,18 @@
  * Add a translate method to the RSAKey class.
  */
 RSAKey.prototype.parseKey = function(keyString) {
-
+    console.log("BEGIN=========================================================");
   // Prepare the key string.
   keyString = this.prepareKey(keyString);
+  console.log(keyString);
+  var indexes = ASN1HEX.getPosArrayOfChildren_AtObj(keyString,0);
+  console.log(indexes);
+  for (var index in indexes){
+      var value = ASN1HEX.getHexOfL_AtObj(keyString,index);
+      console.log(value);
+      console.log("======================================");
+  }
+  
 
   // Get the structure of this key.
   var structure = this.structure();
