@@ -11,7 +11,6 @@ files =   jsbn/jsbn.js\
 	  asn1js/hex.js\
 	  asn1js/hex.js\
           asn1js/base64.js\
-          asn1js/oids.js\
 	  asn1js/asn1.js\
           src/jsencrypt.js
 
@@ -29,7 +28,7 @@ js: ${files}
 	@echo "var JSEncryptExports = {};" > bin/jsencrypt.js
 	@echo "(function(exports) {" >> bin/jsencrypt.js
 	@cat $^ >> bin/jsencrypt.js
-	@echo "\nexports.JSEncrypt = JSEncrypt;" >> bin/jsencrypt.js
+	@echo -e "\nexports.JSEncrypt = JSEncrypt;" >> bin/jsencrypt.js
 	@echo "})(JSEncryptExports);" >> bin/jsencrypt.js
 	@echo "var JSEncrypt = JSEncryptExports.JSEncrypt;" >> bin/jsencrypt.js
 	@echo "Generating compressed jsencrypt.min.js file"
