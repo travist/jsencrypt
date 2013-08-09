@@ -6,8 +6,13 @@ files =   jsbn/jsbn.js\
           jsbn/rsa.js\
           jsbn/rsa2.js\
           jsbn/base64.js\
+          yahoo/yahoo-min.js\
 	  jsrsasign/asn1-1.0.js\
-	  jsrsasign/asn1hex-1.1.js\
+	  asn1js/hex.js\
+	  asn1js/hex.js\
+          asn1js/base64.js\
+          asn1js/oids.js\
+	  asn1js/asn1.js\
           src/jsencrypt.js
 
 .DEFAULT_GOAL := all
