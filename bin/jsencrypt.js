@@ -3951,11 +3951,28 @@ JSEncrypt.prototype.getPrivateKey = function() {
 };
 
 /**
+ * Return the private key, in base64 format, without BEGIN/END private key headers
+ */
+JSEncrypt.prototype.getPrivateKeyB64 = function() {
+  // Return the private representation of this key.
+  return this.getKey().getPrivateBaseKeyB64();
+};
+
+
+/**
  * Return the public key, or a generated one if it doesn't exist.
  */
 JSEncrypt.prototype.getPublicKey = function() {
   // Return the private representation of this key.
   return this.getKey().getPublicKey();
+};
+
+/**
+ * Return the public key, in base64 format, without BEGIN/END public key headers
+ */
+JSEncrypt.prototype.getPublicKeyB64 = function() {
+  // Return the private representation of this key.
+  return this.getKey().getPublicBaseKeyB64();
 };
 exports.JSEncrypt = JSEncrypt;
 })(JSEncryptExports);
