@@ -1643,370 +1643,2474 @@ function b64toBA(s) {
   }
   return a;
 }
-/**
- * Add a translate method to the RSAKey class.
+/*! asn1-1.0.2.js (c) 2013 Kenji Urushima | kjur.github.com/jsrsasign/license
  */
-RSAKey.prototype.parseKey = function(keyString) {
 
-  // Prepare the key string.
-  keyString = this.prepareKey(keyString);
+var JSX = JSX || {};
+JSX.env = JSX.env || {};
 
-  // Get the structure of this key.
-  var structure = this.structure();
+var L = JSX, OP = Object.prototype, FUNCTION_TOSTRING = '[object Function]',ADD = ["toString", "valueOf"];
 
-  // Go through and parse all the properties.
-  var offset = 0, info = null, value = null, length = 0;
-  for (var prop in structure) {
-    info = structure[prop];
-    if (info.hasOwnProperty('offset')) {
-      offset += (info.offset * 2);
+JSX.env.parseUA = function(agent) {
+
+    var numberify = function(s) {
+        var c = 0;
+        return parseFloat(s.replace(/\./g, function() {
+            return (c++ == 1) ? '' : '.';
+        }));
+    },
+
+    nav = navigator,
+    o = {
+        ie: 0,
+        opera: 0,
+        gecko: 0,
+        webkit: 0,
+        chrome: 0,
+        mobile: null,
+        air: 0,
+        ipad: 0,
+        iphone: 0,
+        ipod: 0,
+        ios: null,
+        android: 0,
+        webos: 0,
+        caja: nav && nav.cajaVersion,
+        secure: false,
+        os: null
+
+    },
+
+    ua = agent || (navigator && navigator.userAgent),
+    loc = window && window.location,
+    href = loc && loc.href,
+    m;
+
+    o.secure = href && (href.toLowerCase().indexOf("https") === 0);
+
+    if (ua) {
+
+        if ((/windows|win32/i).test(ua)) {
+            o.os = 'windows';
+        } else if ((/macintosh/i).test(ua)) {
+            o.os = 'macintosh';
+        } else if ((/rhino/i).test(ua)) {
+            o.os = 'rhino';
+        }
+        if ((/KHTML/).test(ua)) {
+            o.webkit = 1;
+        }
+        m = ua.match(/AppleWebKit\/([^\s]*)/);
+        if (m && m[1]) {
+            o.webkit = numberify(m[1]);
+            if (/ Mobile\//.test(ua)) {
+                o.mobile = 'Apple'; // iPhone or iPod Touch
+                m = ua.match(/OS ([^\s]*)/);
+                if (m && m[1]) {
+                    m = numberify(m[1].replace('_', '.'));
+                }
+                o.ios = m;
+                o.ipad = o.ipod = o.iphone = 0;
+                m = ua.match(/iPad|iPod|iPhone/);
+                if (m && m[0]) {
+                    o[m[0].toLowerCase()] = o.ios;
+                }
+            } else {
+                m = ua.match(/NokiaN[^\/]*|Android \d\.\d|webOS\/\d\.\d/);
+                if (m) {
+                    o.mobile = m[0];
+                }
+                if (/webOS/.test(ua)) {
+                    o.mobile = 'WebOS';
+                    m = ua.match(/webOS\/([^\s]*);/);
+                    if (m && m[1]) {
+                        o.webos = numberify(m[1]);
+                    }
+                }
+                if (/ Android/.test(ua)) {
+                    o.mobile = 'Android';
+                    m = ua.match(/Android ([^\s]*);/);
+                    if (m && m[1]) {
+                        o.android = numberify(m[1]);
+                    }
+                }
+            }
+            m = ua.match(/Chrome\/([^\s]*)/);
+            if (m && m[1]) {
+                o.chrome = numberify(m[1]); // Chrome
+            } else {
+                m = ua.match(/AdobeAIR\/([^\s]*)/);
+                if (m) {
+                    o.air = m[0]; // Adobe AIR 1.0 or better
+                }
+            }
+        }
+        if (!o.webkit) {
+            m = ua.match(/Opera[\s\/]([^\s]*)/);
+            if (m && m[1]) {
+                o.opera = numberify(m[1]);
+                m = ua.match(/Version\/([^\s]*)/);
+                if (m && m[1]) {
+                    o.opera = numberify(m[1]); // opera 10+
+                }
+                m = ua.match(/Opera Mini[^;]*/);
+                if (m) {
+                    o.mobile = m[0]; // ex: Opera Mini/2.0.4509/1316
+                }
+            } else { // not opera or webkit
+                m = ua.match(/MSIE\s([^;]*)/);
+                if (m && m[1]) {
+                    o.ie = numberify(m[1]);
+                } else { // not opera, webkit, or ie
+                    m = ua.match(/Gecko\/([^\s]*)/);
+                    if (m) {
+                        o.gecko = 1; // Gecko detected, look for revision
+                        m = ua.match(/rv:([^\s\)]*)/);
+                        if (m && m[1]) {
+                            o.gecko = numberify(m[1]);
+                        }
+                    }
+                }
+            }
+        }
     }
-
-    // Determine the length.
-    length = typeof info.length == 'string' ? this[info.length] : info.length;
-    length *= 2;
-    value = keyString.substr(offset, length);
-    if (info.hasOwnProperty('type')) {
-      if (info.type == 'int') {
-        value = parseInt(value, 16);
-      }
-      else if (info.type == 'bigint') {
-        value = parseBigInt(value, 16);
-      }
-    }
-
-    // Increment the offset with the length.
-    offset += length;
-
-    // Assign the property.
-    this[prop] = value;
-  }
+    return o;
 };
 
-/**
- * Add a char64toHex method.
- */
-RSAKey.prototype.char64ToHex = function(str) {
-  var hex = '';
-  str = atob(str);
-  for (var i = 0; i < str.length; ++i) {
-    var tmp = str.charCodeAt(i).toString(16);
-    if (tmp.length === 1) tmp = "0" + tmp;
-    hex += tmp;
-  }
-  return hex;
+JSX.env.ua = JSX.env.parseUA();
+
+JSX.isFunction = function(o) {
+    return (typeof o === 'function') || OP.toString.apply(o) === FUNCTION_TOSTRING;
 };
 
-/**
- * Add a prepare key method.
+JSX._IEEnumFix = (JSX.env.ua.ie) ? function(r, s) {
+    var i, fname, f;
+    for (i=0;i<ADD.length;i=i+1) {
+
+        fname = ADD[i];
+        f = s[fname];
+
+        if (L.isFunction(f) && f!=OP[fname]) {
+            r[fname]=f;
+        }
+    }
+} : function(){};
+
+JSX.extend = function(subc, superc, overrides) {
+    if (!superc||!subc) {
+        throw new Error("extend failed, please check that " +
+                        "all dependencies are included.");
+    }
+    var F = function() {}, i;
+    F.prototype=superc.prototype;
+    subc.prototype=new F();
+    subc.prototype.constructor=subc;
+    subc.superclass=superc.prototype;
+    if (superc.prototype.constructor == OP.constructor) {
+        superc.prototype.constructor=superc;
+    }
+
+    if (overrides) {
+        for (i in overrides) {
+            if (L.hasOwnProperty(overrides, i)) {
+                subc.prototype[i]=overrides[i];
+            }
+        }
+
+        L._IEEnumFix(subc.prototype, overrides);
+    }
+};
+
+/*
+ * asn1.js - ASN.1 DER encoder classes
  *
- * @param {string} The key to prepare.
- * @return {string} The hexidecimal version of the key.
+ * Copyright (c) 2013 Kenji Urushima (kenji.urushima@gmail.com)
+ *
+ * This software is licensed under the terms of the MIT License.
+ * http://kjur.github.com/jsrsasign/license
+ *
+ * The above copyright and license notice shall be 
+ * included in all copies or substantial portions of the Software.
  */
-RSAKey.prototype.prepareKey = function(keyString) {
-
-  // Trim the keystring first.
-  keyString = keyString.replace(/^\s+|\s+$/g, '');
-
-  // Split the key from the line feeds.
-  var lines = keyString.split(/\r?\n/);
-
-  // Only remove the first and last lines if it contains the begin stmt.
-  if (lines[0].substring(0,10) == '-----BEGIN') {
-
-    // Remove the first and last lines.
-    lines = lines.slice(1, (lines.length - 1));
-  }
-
-  // Join these back into the key.
-  keyString = lines.join('');
-
-  // Convert the key to hex.
-  return this.char64ToHex(keyString);
-};
 
 /**
- * Returns the base key without header in base16 (hex) format.
+ * @fileOverview
+ * @name asn1-1.0.js
+ * @author Kenji Urushima kenji.urushima@gmail.com
+ * @version 1.0.2 (2013-May-30)
+ * @since 2.1
+ * @license <a href="http://kjur.github.io/jsrsasign/license/">MIT License</a>
  */
-RSAKey.prototype.getBaseKey = function() {
-  var b16 = '';
-  var structure = this.structure();
-  var info = null, value = null, length = 0;
-  for (var prop in structure) {
-    info = structure[prop];
-    if (info.variable) {
 
-      // Get the value in hex form.
-      value = this[prop].toString(16);
-      if (!!(value.length % 2)) {
-        value = "0" + value;
-      }
-      if (info.hasOwnProperty('padded') && info.padded) {
-        value = "00" + value;
-      }
+/** 
+ * kjur's class library name space
+ * <p>
+ * This name space provides following name spaces:
+ * <ul>
+ * <li>{@link KJUR.asn1} - ASN.1 primitive hexadecimal encoder</li>
+ * <li>{@link KJUR.asn1.x509} - ASN.1 structure for X.509 certificate and CRL</li>
+ * <li>{@link KJUR.crypto} - Java Cryptographic Extension(JCE) style MessageDigest/Signature 
+ * class and utilities</li>
+ * </ul>
+ * </p> 
+ * NOTE: Please ignore method summary and document of this namespace. This caused by a bug of jsdoc2.
+  * @name KJUR
+ * @namespace kjur's class library name space
+ */
+if (typeof KJUR == "undefined" || !KJUR) KJUR = {};
 
-      // Get the length in hex form.
-      length = (value.length / 2);
-      length = length.toString(16);
-      if (!!(length.length % 2)) {
-        length = "0" + length;
-      }
+/**
+ * kjur's ASN.1 class library name space
+ * <p>
+ * This is ITU-T X.690 ASN.1 DER encoder class library and
+ * class structure and methods is very similar to 
+ * org.bouncycastle.asn1 package of 
+ * well known BouncyCaslte Cryptography Library.
+ *
+ * <h4>PROVIDING ASN.1 PRIMITIVES</h4>
+ * Here are ASN.1 DER primitive classes.
+ * <ul>
+ * <li>{@link KJUR.asn1.DERBoolean}</li>
+ * <li>{@link KJUR.asn1.DERInteger}</li>
+ * <li>{@link KJUR.asn1.DERBitString}</li>
+ * <li>{@link KJUR.asn1.DEROctetString}</li>
+ * <li>{@link KJUR.asn1.DERNull}</li>
+ * <li>{@link KJUR.asn1.DERObjectIdentifier}</li>
+ * <li>{@link KJUR.asn1.DERUTF8String}</li>
+ * <li>{@link KJUR.asn1.DERNumericString}</li>
+ * <li>{@link KJUR.asn1.DERPrintableString}</li>
+ * <li>{@link KJUR.asn1.DERTeletexString}</li>
+ * <li>{@link KJUR.asn1.DERIA5String}</li>
+ * <li>{@link KJUR.asn1.DERUTCTime}</li>
+ * <li>{@link KJUR.asn1.DERGeneralizedTime}</li>
+ * <li>{@link KJUR.asn1.DERSequence}</li>
+ * <li>{@link KJUR.asn1.DERSet}</li>
+ * </ul>
+ *
+ * <h4>OTHER ASN.1 CLASSES</h4>
+ * <ul>
+ * <li>{@link KJUR.asn1.ASN1Object}</li>
+ * <li>{@link KJUR.asn1.DERAbstractString}</li>
+ * <li>{@link KJUR.asn1.DERAbstractTime}</li>
+ * <li>{@link KJUR.asn1.DERAbstractStructured}</li>
+ * <li>{@link KJUR.asn1.DERTaggedObject}</li>
+ * </ul>
+ * </p>
+ * NOTE: Please ignore method summary and document of this namespace. This caused by a bug of jsdoc2.
+ * @name KJUR.asn1
+ * @namespace
+ */
+if (typeof KJUR.asn1 == "undefined" || !KJUR.asn1) KJUR.asn1 = {};
 
-      // If the value has an extra space then add it.
-      if (info.hasOwnProperty('extraspace')) {
-        b16 += length;
-      }
+/**
+ * ASN1 utilities class
+ * @name KJUR.asn1.ASN1Util
+ * @classs ASN1 utilities class
+ * @since asn1 1.0.2
+ */
+KJUR.asn1.ASN1Util = new function() {
+    this.integerToByteHex = function(i) {
+	var h = i.toString(16);
+	if ((h.length % 2) == 1) h = '0' + h;
+	return h;
+    };
+    this.bigIntToMinTwosComplementsHex = function(bigIntegerValue) {
+	var h = bigIntegerValue.toString(16);
+	if (h.substr(0, 1) != '-') {
+	    if (h.length % 2 == 1) {
+		h = '0' + h;
+	    } else {
+		if (! h.match(/^[0-7]/)) {
+		    h = '00' + h;
+		}
+	    }
+	} else {
+	    var hPos = h.substr(1);
+	    var xorLen = hPos.length;
+	    if (xorLen % 2 == 1) {
+		xorLen += 1;
+	    } else {
+		if (! h.match(/^[0-7]/)) {
+		    xorLen += 2;
+		}
+	    }
+	    var hMask = '';
+	    for (var i = 0; i < xorLen; i++) {
+		hMask += 'f';
+	    }
+	    var biMask = new BigInteger(hMask, 16);
+	    var biNeg = biMask.xor(bigIntegerValue).add(BigInteger.ONE);
+	    h = biNeg.toString(16).replace(/^-/, '');
+	}
+	return h;
+    };
+    /**
+     * get PEM string from hexadecimal data and header string
+     * @name getPEMStringFromHex
+     * @memberOf KJUR.asn1.ASN1Util
+     * @function
+     * @param {String} dataHex hexadecimal string of PEM body
+     * @param {String} pemHeader PEM header string (ex. 'RSA PRIVATE KEY')
+     * @return {String} PEM formatted string of input data
+     * @description
+     * @example
+     * var pem  = KJUR.asn1.ASN1Util.getPEMStringFromHex('616161', 'RSA PRIVATE KEY');
+     * // value of pem will be:
+     * -----BEGIN PRIVATE KEY-----
+     * YWFh
+     * -----END PRIVATE KEY-----
+     */
+    this.getPEMStringFromHex = function(dataHex, pemHeader) {
+	var dataWA = CryptoJS.enc.Hex.parse(dataHex);
+	var dataB64 = CryptoJS.enc.Base64.stringify(dataWA);
+	var pemBody = dataB64.replace(/(.{64})/g, "$1\r\n");
+        pemBody = pemBody.replace(/\r\n$/, '');
+	return "-----BEGIN " + pemHeader + "-----\r\n" + 
+               pemBody + 
+               "\r\n-----END " + pemHeader + "-----\r\n";
+    };
+};
 
-      // Add the length.
-      b16 += length;
+// ********************************************************************
+//  Abstract ASN.1 Classes
+// ********************************************************************
 
-      // Add the value.
-      b16 += value;
+// ********************************************************************
 
-      // Add the spacer.
-      b16 += "02";
+/**
+ * base class for ASN.1 DER encoder object
+ * @name KJUR.asn1.ASN1Object
+ * @class base class for ASN.1 DER encoder object
+ * @property {Boolean} isModified flag whether internal data was changed
+ * @property {String} hTLV hexadecimal string of ASN.1 TLV
+ * @property {String} hT hexadecimal string of ASN.1 TLV tag(T)
+ * @property {String} hL hexadecimal string of ASN.1 TLV length(L)
+ * @property {String} hV hexadecimal string of ASN.1 TLV value(V)
+ * @description
+ */
+KJUR.asn1.ASN1Object = function() {
+    var isModified = true;
+    var hTLV = null;
+    var hT = '00'
+    var hL = '00';
+    var hV = '';
+
+    /**
+     * get hexadecimal ASN.1 TLV length(L) bytes from TLV value(V)
+     * @name getLengthHexFromValue
+     * @memberOf KJUR.asn1.ASN1Object
+     * @function
+     * @return {String} hexadecimal string of ASN.1 TLV length(L)
+     */
+    this.getLengthHexFromValue = function() {
+	if (typeof this.hV == "undefined" || this.hV == null) {
+	    throw "this.hV is null or undefined.";
+	}
+	if (this.hV.length % 2 == 1) {
+	    throw "value hex must be even length: n=" + hV.length + ",v=" + this.hV;
+	}
+	var n = this.hV.length / 2;
+	var hN = n.toString(16);
+	if (hN.length % 2 == 1) {
+	    hN = "0" + hN;
+	}
+	if (n < 128) {
+	    return hN;
+	} else {
+	    var hNlen = hN.length / 2;
+	    if (hNlen > 15) {
+		throw "ASN.1 length too long to represent by 8x: n = " + n.toString(16);
+	    }
+	    var head = 128 + hNlen;
+	    return head.toString(16) + hN;
+	}
+    };
+
+    /**
+     * get hexadecimal string of ASN.1 TLV bytes
+     * @name getEncodedHex
+     * @memberOf KJUR.asn1.ASN1Object
+     * @function
+     * @return {String} hexadecimal string of ASN.1 TLV
+     */
+    this.getEncodedHex = function() {
+	if (this.hTLV == null || this.isModified) {
+	    this.hV = this.getFreshValueHex();
+	    this.hL = this.getLengthHexFromValue();
+	    this.hTLV = this.hT + this.hL + this.hV;
+	    this.isModified = false;
+	    //alert("first time: " + this.hTLV);
+	}
+	return this.hTLV;
+    };
+
+    /**
+     * get hexadecimal string of ASN.1 TLV value(V) bytes
+     * @name getValueHex
+     * @memberOf KJUR.asn1.ASN1Object
+     * @function
+     * @return {String} hexadecimal string of ASN.1 TLV value(V) bytes
+     */
+    this.getValueHex = function() {
+	this.getEncodedHex();
+	return this.hV;
     }
-  }
 
-  // Remove the last spacer.
-  return b16.slice(0, -2);
+    this.getFreshValueHex = function() {
+	return '';
+    };
+};
+
+// == BEGIN DERAbstractString ================================================
+/**
+ * base class for ASN.1 DER string classes
+ * @name KJUR.asn1.DERAbstractString
+ * @class base class for ASN.1 DER string classes
+ * @param {Array} params associative array of parameters (ex. {'str': 'aaa'})
+ * @property {String} s internal string of value
+ * @extends KJUR.asn1.ASN1Object
+ * @description
+ * <br/>
+ * As for argument 'params' for constructor, you can specify one of
+ * following properties:
+ * <ul>
+ * <li>str - specify initial ASN.1 value(V) by a string</li>
+ * <li>hex - specify initial ASN.1 value(V) by a hexadecimal string</li>
+ * </ul>
+ * NOTE: 'params' can be omitted.
+ */
+KJUR.asn1.DERAbstractString = function(params) {
+    KJUR.asn1.DERAbstractString.superclass.constructor.call(this);
+    var s = null;
+    var hV = null;
+
+    /**
+     * get string value of this string object
+     * @name getString
+     * @memberOf KJUR.asn1.DERAbstractString
+     * @function
+     * @return {String} string value of this string object
+     */
+    this.getString = function() {
+	return this.s;
+    };
+
+    /**
+     * set value by a string
+     * @name setString
+     * @memberOf KJUR.asn1.DERAbstractString
+     * @function
+     * @param {String} newS value by a string to set
+     */
+    this.setString = function(newS) {
+	this.hTLV = null;
+	this.isModified = true;
+	this.s = newS;
+	this.hV = stohex(this.s);
+    };
+
+    /**
+     * set value by a hexadecimal string
+     * @name setStringHex
+     * @memberOf KJUR.asn1.DERAbstractString
+     * @function
+     * @param {String} newHexString value by a hexadecimal string to set
+     */
+    this.setStringHex = function(newHexString) {
+	this.hTLV = null;
+	this.isModified = true;
+	this.s = null;
+	this.hV = newHexString;
+    };
+
+    this.getFreshValueHex = function() {
+	return this.hV;
+    };
+
+    if (typeof params != "undefined") {
+	if (typeof params['str'] != "undefined") {
+	    this.setString(params['str']);
+	} else if (typeof params['hex'] != "undefined") {
+	    this.setStringHex(params['hex']);
+	}
+    }
+};
+JSX.extend(KJUR.asn1.DERAbstractString, KJUR.asn1.ASN1Object);
+// == END   DERAbstractString ================================================
+
+// == BEGIN DERAbstractTime ==================================================
+/**
+ * base class for ASN.1 DER Generalized/UTCTime class
+ * @name KJUR.asn1.DERAbstractTime
+ * @class base class for ASN.1 DER Generalized/UTCTime class
+ * @param {Array} params associative array of parameters (ex. {'str': '130430235959Z'})
+ * @extends KJUR.asn1.ASN1Object
+ * @description
+ * @see KJUR.asn1.ASN1Object - superclass
+ */
+KJUR.asn1.DERAbstractTime = function(params) {
+    KJUR.asn1.DERAbstractTime.superclass.constructor.call(this);
+    var s = null;
+    var date = null;
+
+    // --- PRIVATE METHODS --------------------
+    this.localDateToUTC = function(d) {
+	utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+	var utcDate = new Date(utc);
+	return utcDate;
+    };
+
+    this.formatDate = function(dateObject, type) {
+	var pad = this.zeroPadding;
+	var d = this.localDateToUTC(dateObject);
+	var year = String(d.getFullYear());
+	if (type == 'utc') year = year.substr(2, 2);
+	var month = pad(String(d.getMonth() + 1), 2);
+	var day = pad(String(d.getDate()), 2);
+	var hour = pad(String(d.getHours()), 2);
+	var min = pad(String(d.getMinutes()), 2);
+	var sec = pad(String(d.getSeconds()), 2);
+	return year + month + day + hour + min + sec + 'Z';
+    };
+
+    this.zeroPadding = function(s, len) {
+	if (s.length >= len) return s;
+	return new Array(len - s.length + 1).join('0') + s;
+    };
+
+    // --- PUBLIC METHODS --------------------
+    /**
+     * get string value of this string object
+     * @name getString
+     * @memberOf KJUR.asn1.DERAbstractTime
+     * @function
+     * @return {String} string value of this time object
+     */
+    this.getString = function() {
+	return this.s;
+    };
+
+    /**
+     * set value by a string
+     * @name setString
+     * @memberOf KJUR.asn1.DERAbstractTime
+     * @function
+     * @param {String} newS value by a string to set such like "130430235959Z"
+     */
+    this.setString = function(newS) {
+	this.hTLV = null;
+	this.isModified = true;
+	this.s = newS;
+	this.hV = stohex(this.s);
+    };
+
+    /**
+     * set value by a Date object
+     * @name setByDateValue
+     * @memberOf KJUR.asn1.DERAbstractTime
+     * @function
+     * @param {Integer} year year of date (ex. 2013)
+     * @param {Integer} month month of date between 1 and 12 (ex. 12)
+     * @param {Integer} day day of month
+     * @param {Integer} hour hours of date
+     * @param {Integer} min minutes of date
+     * @param {Integer} sec seconds of date
+     */
+    this.setByDateValue = function(year, month, day, hour, min, sec) {
+	var dateObject = new Date(Date.UTC(year, month - 1, day, hour, min, sec, 0));
+	this.setByDate(dateObject);
+    };
+
+    this.getFreshValueHex = function() {
+	return this.hV;
+    };
+};
+JSX.extend(KJUR.asn1.DERAbstractTime, KJUR.asn1.ASN1Object);
+// == END   DERAbstractTime ==================================================
+
+// == BEGIN DERAbstractStructured ============================================
+/**
+ * base class for ASN.1 DER structured class
+ * @name KJUR.asn1.DERAbstractStructured
+ * @class base class for ASN.1 DER structured class
+ * @property {Array} asn1Array internal array of ASN1Object
+ * @extends KJUR.asn1.ASN1Object
+ * @description
+ * @see KJUR.asn1.ASN1Object - superclass
+ */
+KJUR.asn1.DERAbstractStructured = function(params) {
+    KJUR.asn1.DERAbstractString.superclass.constructor.call(this);
+    var asn1Array = null;
+
+    /**
+     * set value by array of ASN1Object
+     * @name setByASN1ObjectArray
+     * @memberOf KJUR.asn1.DERAbstractStructured
+     * @function
+     * @param {array} asn1ObjectArray array of ASN1Object to set
+     */
+    this.setByASN1ObjectArray = function(asn1ObjectArray) {
+	this.hTLV = null;
+	this.isModified = true;
+	this.asn1Array = asn1ObjectArray;
+    };
+
+    /**
+     * append an ASN1Object to internal array
+     * @name appendASN1Object
+     * @memberOf KJUR.asn1.DERAbstractStructured
+     * @function
+     * @param {ASN1Object} asn1Object to add
+     */
+    this.appendASN1Object = function(asn1Object) {
+	this.hTLV = null;
+	this.isModified = true;
+	this.asn1Array.push(asn1Object);
+    };
+
+    this.asn1Array = new Array();
+    if (typeof params != "undefined") {
+	if (typeof params['array'] != "undefined") {
+	    this.asn1Array = params['array'];
+	}
+    }
+};
+JSX.extend(KJUR.asn1.DERAbstractStructured, KJUR.asn1.ASN1Object);
+
+
+// ********************************************************************
+//  ASN.1 Object Classes
+// ********************************************************************
+
+// ********************************************************************
+/**
+ * class for ASN.1 DER Boolean
+ * @name KJUR.asn1.DERBoolean
+ * @class class for ASN.1 DER Boolean
+ * @extends KJUR.asn1.ASN1Object
+ * @description
+ * @see KJUR.asn1.ASN1Object - superclass
+ */
+KJUR.asn1.DERBoolean = function() {
+    KJUR.asn1.DERBoolean.superclass.constructor.call(this);
+    this.hT = "01";
+    this.hTLV = "0101ff";
+};
+JSX.extend(KJUR.asn1.DERBoolean, KJUR.asn1.ASN1Object);
+
+// ********************************************************************
+/**
+ * class for ASN.1 DER Integer
+ * @name KJUR.asn1.DERInteger
+ * @class class for ASN.1 DER Integer
+ * @extends KJUR.asn1.ASN1Object
+ * @description
+ * <br/>
+ * As for argument 'params' for constructor, you can specify one of
+ * following properties:
+ * <ul>
+ * <li>int - specify initial ASN.1 value(V) by integer value</li>
+ * <li>bigint - specify initial ASN.1 value(V) by BigInteger object</li>
+ * <li>hex - specify initial ASN.1 value(V) by a hexadecimal string</li>
+ * </ul>
+ * NOTE: 'params' can be omitted.
+ */
+KJUR.asn1.DERInteger = function(params) {
+    KJUR.asn1.DERInteger.superclass.constructor.call(this);
+    this.hT = "02";
+
+    /**
+     * set value by Tom Wu's BigInteger object
+     * @name setByBigInteger
+     * @memberOf KJUR.asn1.DERInteger
+     * @function
+     * @param {BigInteger} bigIntegerValue to set
+     */
+    this.setByBigInteger = function(bigIntegerValue) {
+	this.hTLV = null;
+	this.isModified = true;
+	this.hV = KJUR.asn1.ASN1Util.bigIntToMinTwosComplementsHex(bigIntegerValue);
+    };
+
+    /**
+     * set value by integer value
+     * @name setByInteger
+     * @memberOf KJUR.asn1.DERInteger
+     * @function
+     * @param {Integer} integer value to set
+     */
+    this.setByInteger = function(intValue) {
+	var bi = new BigInteger(String(intValue), 10);
+	this.setByBigInteger(bi);
+    };
+
+    /**
+     * set value by integer value
+     * @name setValueHex
+     * @memberOf KJUR.asn1.DERInteger
+     * @function
+     * @param {String} hexadecimal string of integer value
+     * @description
+     * <br/>
+     * NOTE: Value shall be represented by minimum octet length of
+     * two's complement representation.
+     */
+    this.setValueHex = function(newHexString) {
+	this.hV = newHexString;
+    };
+
+    this.getFreshValueHex = function() {
+	return this.hV;
+    };
+
+    if (typeof params != "undefined") {
+	if (typeof params['bigint'] != "undefined") {
+	    this.setByBigInteger(params['bigint']);
+	} else if (typeof params['int'] != "undefined") {
+	    this.setByInteger(params['int']);
+	} else if (typeof params['hex'] != "undefined") {
+	    this.setValueHex(params['hex']);
+	}
+    }
+};
+JSX.extend(KJUR.asn1.DERInteger, KJUR.asn1.ASN1Object);
+
+// ********************************************************************
+/**
+ * class for ASN.1 DER encoded BitString primitive
+ * @name KJUR.asn1.DERBitString
+ * @class class for ASN.1 DER encoded BitString primitive
+ * @extends KJUR.asn1.ASN1Object
+ * @description 
+ * <br/>
+ * As for argument 'params' for constructor, you can specify one of
+ * following properties:
+ * <ul>
+ * <li>bin - specify binary string (ex. '10111')</li>
+ * <li>array - specify array of boolean (ex. [true,false,true,true])</li>
+ * <li>hex - specify hexadecimal string of ASN.1 value(V) including unused bits</li>
+ * </ul>
+ * NOTE: 'params' can be omitted.
+ */
+KJUR.asn1.DERBitString = function(params) {
+    KJUR.asn1.DERBitString.superclass.constructor.call(this);
+    this.hT = "03";
+
+    /**
+     * set ASN.1 value(V) by a hexadecimal string including unused bits
+     * @name setHexValueIncludingUnusedBits
+     * @memberOf KJUR.asn1.DERBitString
+     * @function
+     * @param {String} newHexStringIncludingUnusedBits
+     */
+    this.setHexValueIncludingUnusedBits = function(newHexStringIncludingUnusedBits) {
+	this.hTLV = null;
+	this.isModified = true;
+	this.hV = newHexStringIncludingUnusedBits;
+    };
+
+    /**
+     * set ASN.1 value(V) by unused bit and hexadecimal string of value
+     * @name setUnusedBitsAndHexValue
+     * @memberOf KJUR.asn1.DERBitString
+     * @function
+     * @param {Integer} unusedBits
+     * @param {String} hValue
+     */
+    this.setUnusedBitsAndHexValue = function(unusedBits, hValue) {
+	if (unusedBits < 0 || 7 < unusedBits) {
+	    throw "unused bits shall be from 0 to 7: u = " + unusedBits;
+	}
+	var hUnusedBits = "0" + unusedBits;
+	this.hTLV = null;
+	this.isModified = true;
+	this.hV = hUnusedBits + hValue;
+    };
+
+    /**
+     * set ASN.1 DER BitString by binary string
+     * @name setByBinaryString
+     * @memberOf KJUR.asn1.DERBitString
+     * @function
+     * @param {String} binaryString binary value string (i.e. '10111')
+     * @description
+     * Its unused bits will be calculated automatically by length of 
+     * 'binaryValue'. <br/>
+     * NOTE: Trailing zeros '0' will be ignored.
+     */
+    this.setByBinaryString = function(binaryString) {
+	binaryString = binaryString.replace(/0+$/, '');
+	var unusedBits = 8 - binaryString.length % 8;
+	if (unusedBits == 8) unusedBits = 0;
+	for (var i = 0; i <= unusedBits; i++) {
+	    binaryString += '0';
+	}
+	var h = '';
+	for (var i = 0; i < binaryString.length - 1; i += 8) {
+	    var b = binaryString.substr(i, 8);
+	    var x = parseInt(b, 2).toString(16);
+	    if (x.length == 1) x = '0' + x;
+	    h += x;  
+	}
+	this.hTLV = null;
+	this.isModified = true;
+	this.hV = '0' + unusedBits + h;
+    };
+
+    /**
+     * set ASN.1 TLV value(V) by an array of boolean
+     * @name setByBooleanArray
+     * @memberOf KJUR.asn1.DERBitString
+     * @function
+     * @param {array} booleanArray array of boolean (ex. [true, false, true])
+     * @description
+     * NOTE: Trailing falses will be ignored.
+     */
+    this.setByBooleanArray = function(booleanArray) {
+	var s = '';
+	for (var i = 0; i < booleanArray.length; i++) {
+	    if (booleanArray[i] == true) {
+		s += '1';
+	    } else {
+		s += '0';
+	    }
+	}
+	this.setByBinaryString(s);
+    };
+
+    /**
+     * generate an array of false with specified length
+     * @name newFalseArray
+     * @memberOf KJUR.asn1.DERBitString
+     * @function
+     * @param {Integer} nLength length of array to generate
+     * @return {array} array of boolean faluse
+     * @description
+     * This static method may be useful to initialize boolean array.
+     */
+    this.newFalseArray = function(nLength) {
+	var a = new Array(nLength);
+	for (var i = 0; i < nLength; i++) {
+	    a[i] = false;
+	}
+	return a;
+    };
+
+    this.getFreshValueHex = function() {
+	return this.hV;
+    };
+
+    if (typeof params != "undefined") {
+	if (typeof params['hex'] != "undefined") {
+	    this.setHexValueIncludingUnusedBits(params['hex']);
+	} else if (typeof params['bin'] != "undefined") {
+	    this.setByBinaryString(params['bin']);
+	} else if (typeof params['array'] != "undefined") {
+	    this.setByBooleanArray(params['array']);
+	}
+    }
+};
+JSX.extend(KJUR.asn1.DERBitString, KJUR.asn1.ASN1Object);
+
+// ********************************************************************
+/**
+ * class for ASN.1 DER OctetString
+ * @name KJUR.asn1.DEROctetString
+ * @class class for ASN.1 DER OctetString
+ * @param {Array} params associative array of parameters (ex. {'str': 'aaa'})
+ * @extends KJUR.asn1.DERAbstractString
+ * @description
+ * @see KJUR.asn1.DERAbstractString - superclass
+ */
+KJUR.asn1.DEROctetString = function(params) {
+    KJUR.asn1.DEROctetString.superclass.constructor.call(this, params);
+    this.hT = "04";
+};
+JSX.extend(KJUR.asn1.DEROctetString, KJUR.asn1.DERAbstractString);
+
+// ********************************************************************
+/**
+ * class for ASN.1 DER Null
+ * @name KJUR.asn1.DERNull
+ * @class class for ASN.1 DER Null
+ * @extends KJUR.asn1.ASN1Object
+ * @description
+ * @see KJUR.asn1.ASN1Object - superclass
+ */
+KJUR.asn1.DERNull = function() {
+    KJUR.asn1.DERNull.superclass.constructor.call(this);
+    this.hT = "05";
+    this.hTLV = "0500";
+};
+JSX.extend(KJUR.asn1.DERNull, KJUR.asn1.ASN1Object);
+
+// ********************************************************************
+/**
+ * class for ASN.1 DER ObjectIdentifier
+ * @name KJUR.asn1.DERObjectIdentifier
+ * @class class for ASN.1 DER ObjectIdentifier
+ * @param {Array} params associative array of parameters (ex. {'oid': '2.5.4.5'})
+ * @extends KJUR.asn1.ASN1Object
+ * @description
+ * <br/>
+ * As for argument 'params' for constructor, you can specify one of
+ * following properties:
+ * <ul>
+ * <li>oid - specify initial ASN.1 value(V) by a oid string (ex. 2.5.4.13)</li>
+ * <li>hex - specify initial ASN.1 value(V) by a hexadecimal string</li>
+ * </ul>
+ * NOTE: 'params' can be omitted.
+ */
+KJUR.asn1.DERObjectIdentifier = function(params) {
+    var itox = function(i) {
+	var h = i.toString(16);
+	if (h.length == 1) h = '0' + h;
+	return h;
+    };
+    var roidtox = function(roid) {
+	var h = '';
+	var bi = new BigInteger(roid, 10);
+	var b = bi.toString(2);
+	var padLen = 7 - b.length % 7;
+	if (padLen == 7) padLen = 0;
+	var bPad = '';
+	for (var i = 0; i < padLen; i++) bPad += '0';
+	b = bPad + b;
+	for (var i = 0; i < b.length - 1; i += 7) {
+	    var b8 = b.substr(i, 7);
+	    if (i != b.length - 7) b8 = '1' + b8;
+	    h += itox(parseInt(b8, 2));
+	}
+	return h;
+    }
+
+    KJUR.asn1.DERObjectIdentifier.superclass.constructor.call(this);
+    this.hT = "06";
+
+    /**
+     * set value by a hexadecimal string
+     * @name setValueHex
+     * @memberOf KJUR.asn1.DERObjectIdentifier
+     * @function
+     * @param {String} newHexString hexadecimal value of OID bytes
+     */
+    this.setValueHex = function(newHexString) {
+	this.hTLV = null;
+	this.isModified = true;
+	this.s = null;
+	this.hV = newHexString;
+    };
+
+    /**
+     * set value by a OID string
+     * @name setValueOidString
+     * @memberOf KJUR.asn1.DERObjectIdentifier
+     * @function
+     * @param {String} oidString OID string (ex. 2.5.4.13)
+     */
+    this.setValueOidString = function(oidString) {
+	if (! oidString.match(/^[0-9.]+$/)) {
+	    throw "malformed oid string: " + oidString;
+	}
+	var h = '';
+	var a = oidString.split('.');
+	var i0 = parseInt(a[0]) * 40 + parseInt(a[1]);
+	h += itox(i0);
+	a.splice(0, 2);
+	for (var i = 0; i < a.length; i++) {
+	    h += roidtox(a[i]);
+	}
+	this.hTLV = null;
+	this.isModified = true;
+	this.s = null;
+	this.hV = h;
+    };
+
+    /**
+     * set value by a OID name
+     * @name setValueName
+     * @memberOf KJUR.asn1.DERObjectIdentifier
+     * @function
+     * @param {String} oidName OID name (ex. 'serverAuth')
+     * @since 1.0.1
+     * @description
+     * OID name shall be defined in 'KJUR.asn1.x509.OID.name2oidList'.
+     * Otherwise raise error.
+     */
+    this.setValueName = function(oidName) {
+	if (typeof KJUR.asn1.x509.OID.name2oidList[oidName] != "undefined") {
+	    var oid = KJUR.asn1.x509.OID.name2oidList[oidName];
+	    this.setValueOidString(oid);
+	} else {
+	    throw "DERObjectIdentifier oidName undefined: " + oidName;
+	}
+    };
+
+    this.getFreshValueHex = function() {
+	return this.hV;
+    };
+
+    if (typeof params != "undefined") {
+	if (typeof params['oid'] != "undefined") {
+	    this.setValueOidString(params['oid']);
+	} else if (typeof params['hex'] != "undefined") {
+	    this.setValueHex(params['hex']);
+	} else if (typeof params['name'] != "undefined") {
+	    this.setValueName(params['name']);
+	}
+    }
+};
+JSX.extend(KJUR.asn1.DERObjectIdentifier, KJUR.asn1.ASN1Object);
+
+// ********************************************************************
+/**
+ * class for ASN.1 DER UTF8String
+ * @name KJUR.asn1.DERUTF8String
+ * @class class for ASN.1 DER UTF8String
+ * @param {Array} params associative array of parameters (ex. {'str': 'aaa'})
+ * @extends KJUR.asn1.DERAbstractString
+ * @description
+ * @see KJUR.asn1.DERAbstractString - superclass
+ */
+KJUR.asn1.DERUTF8String = function(params) {
+    KJUR.asn1.DERUTF8String.superclass.constructor.call(this, params);
+    this.hT = "0c";
+};
+JSX.extend(KJUR.asn1.DERUTF8String, KJUR.asn1.DERAbstractString);
+
+// ********************************************************************
+/**
+ * class for ASN.1 DER NumericString
+ * @name KJUR.asn1.DERNumericString
+ * @class class for ASN.1 DER NumericString
+ * @param {Array} params associative array of parameters (ex. {'str': 'aaa'})
+ * @extends KJUR.asn1.DERAbstractString
+ * @description
+ * @see KJUR.asn1.DERAbstractString - superclass
+ */
+KJUR.asn1.DERNumericString = function(params) {
+    KJUR.asn1.DERNumericString.superclass.constructor.call(this, params);
+    this.hT = "12";
+};
+JSX.extend(KJUR.asn1.DERNumericString, KJUR.asn1.DERAbstractString);
+
+// ********************************************************************
+/**
+ * class for ASN.1 DER PrintableString
+ * @name KJUR.asn1.DERPrintableString
+ * @class class for ASN.1 DER PrintableString
+ * @param {Array} params associative array of parameters (ex. {'str': 'aaa'})
+ * @extends KJUR.asn1.DERAbstractString
+ * @description
+ * @see KJUR.asn1.DERAbstractString - superclass
+ */
+KJUR.asn1.DERPrintableString = function(params) {
+    KJUR.asn1.DERPrintableString.superclass.constructor.call(this, params);
+    this.hT = "13";
+};
+JSX.extend(KJUR.asn1.DERPrintableString, KJUR.asn1.DERAbstractString);
+
+// ********************************************************************
+/**
+ * class for ASN.1 DER TeletexString
+ * @name KJUR.asn1.DERTeletexString
+ * @class class for ASN.1 DER TeletexString
+ * @param {Array} params associative array of parameters (ex. {'str': 'aaa'})
+ * @extends KJUR.asn1.DERAbstractString
+ * @description
+ * @see KJUR.asn1.DERAbstractString - superclass
+ */
+KJUR.asn1.DERTeletexString = function(params) {
+    KJUR.asn1.DERTeletexString.superclass.constructor.call(this, params);
+    this.hT = "14";
+};
+JSX.extend(KJUR.asn1.DERTeletexString, KJUR.asn1.DERAbstractString);
+
+// ********************************************************************
+/**
+ * class for ASN.1 DER IA5String
+ * @name KJUR.asn1.DERIA5String
+ * @class class for ASN.1 DER IA5String
+ * @param {Array} params associative array of parameters (ex. {'str': 'aaa'})
+ * @extends KJUR.asn1.DERAbstractString
+ * @description
+ * @see KJUR.asn1.DERAbstractString - superclass
+ */
+KJUR.asn1.DERIA5String = function(params) {
+    KJUR.asn1.DERIA5String.superclass.constructor.call(this, params);
+    this.hT = "16";
+};
+JSX.extend(KJUR.asn1.DERIA5String, KJUR.asn1.DERAbstractString);
+
+// ********************************************************************
+/**
+ * class for ASN.1 DER UTCTime
+ * @name KJUR.asn1.DERUTCTime
+ * @class class for ASN.1 DER UTCTime
+ * @param {Array} params associative array of parameters (ex. {'str': '130430235959Z'})
+ * @extends KJUR.asn1.DERAbstractTime
+ * @description
+ * <br/>
+ * As for argument 'params' for constructor, you can specify one of
+ * following properties:
+ * <ul>
+ * <li>str - specify initial ASN.1 value(V) by a string (ex.'130430235959Z')</li>
+ * <li>hex - specify initial ASN.1 value(V) by a hexadecimal string</li>
+ * <li>date - specify Date object.</li>
+ * </ul>
+ * NOTE: 'params' can be omitted.
+ * <h4>EXAMPLES</h4>
+ * @example
+ * var d1 = new KJUR.asn1.DERUTCTime();
+ * d1.setString('130430125959Z');
+ *
+ * var d2 = new KJUR.asn1.DERUTCTime({'str': '130430125959Z'});
+ *
+ * var d3 = new KJUR.asn1.DERUTCTime({'date': new Date(Date.UTC(2015, 0, 31, 0, 0, 0, 0))});
+ */
+KJUR.asn1.DERUTCTime = function(params) {
+    KJUR.asn1.DERUTCTime.superclass.constructor.call(this, params);
+    this.hT = "17";
+
+    /**
+     * set value by a Date object
+     * @name setByDate
+     * @memberOf KJUR.asn1.DERUTCTime
+     * @function
+     * @param {Date} dateObject Date object to set ASN.1 value(V)
+     */
+    this.setByDate = function(dateObject) {
+	this.hTLV = null;
+	this.isModified = true;
+	this.date = dateObject;
+	this.s = this.formatDate(this.date, 'utc');
+	this.hV = stohex(this.s);
+    };
+
+    if (typeof params != "undefined") {
+	if (typeof params['str'] != "undefined") {
+	    this.setString(params['str']);
+	} else if (typeof params['hex'] != "undefined") {
+	    this.setStringHex(params['hex']);
+	} else if (typeof params['date'] != "undefined") {
+	    this.setByDate(params['date']);
+	}
+    }
+};
+JSX.extend(KJUR.asn1.DERUTCTime, KJUR.asn1.DERAbstractTime);
+
+// ********************************************************************
+/**
+ * class for ASN.1 DER GeneralizedTime
+ * @name KJUR.asn1.DERGeneralizedTime
+ * @class class for ASN.1 DER GeneralizedTime
+ * @param {Array} params associative array of parameters (ex. {'str': '20130430235959Z'})
+ * @extends KJUR.asn1.DERAbstractTime
+ * @description
+ * <br/>
+ * As for argument 'params' for constructor, you can specify one of
+ * following properties:
+ * <ul>
+ * <li>str - specify initial ASN.1 value(V) by a string (ex.'20130430235959Z')</li>
+ * <li>hex - specify initial ASN.1 value(V) by a hexadecimal string</li>
+ * <li>date - specify Date object.</li>
+ * </ul>
+ * NOTE: 'params' can be omitted.
+ */
+KJUR.asn1.DERGeneralizedTime = function(params) {
+    KJUR.asn1.DERGeneralizedTime.superclass.constructor.call(this, params);
+    this.hT = "18";
+
+    /**
+     * set value by a Date object
+     * @name setByDate
+     * @memberOf KJUR.asn1.DERGeneralizedTime
+     * @function
+     * @param {Date} dateObject Date object to set ASN.1 value(V)
+     * @example
+     * When you specify UTC time, use 'Date.UTC' method like this:<br/>
+     * var o = new DERUTCTime();
+     * var date = new Date(Date.UTC(2015, 0, 31, 23, 59, 59, 0)); #2015JAN31 23:59:59
+     * o.setByDate(date);
+     */
+    this.setByDate = function(dateObject) {
+	this.hTLV = null;
+	this.isModified = true;
+	this.date = dateObject;
+	this.s = this.formatDate(this.date, 'gen');
+	this.hV = stohex(this.s);
+    };
+
+    if (typeof params != "undefined") {
+	if (typeof params['str'] != "undefined") {
+	    this.setString(params['str']);
+	} else if (typeof params['hex'] != "undefined") {
+	    this.setStringHex(params['hex']);
+	} else if (typeof params['date'] != "undefined") {
+	    this.setByDate(params['date']);
+	}
+    }
+};
+JSX.extend(KJUR.asn1.DERGeneralizedTime, KJUR.asn1.DERAbstractTime);
+
+// ********************************************************************
+/**
+ * class for ASN.1 DER Sequence
+ * @name KJUR.asn1.DERSequence
+ * @class class for ASN.1 DER Sequence
+ * @extends KJUR.asn1.DERAbstractStructured
+ * @description
+ * <br/>
+ * As for argument 'params' for constructor, you can specify one of
+ * following properties:
+ * <ul>
+ * <li>array - specify array of ASN1Object to set elements of content</li>
+ * </ul>
+ * NOTE: 'params' can be omitted.
+ */
+KJUR.asn1.DERSequence = function(params) {
+    KJUR.asn1.DERSequence.superclass.constructor.call(this, params);
+    this.hT = "30";
+    this.getFreshValueHex = function() {
+	var h = '';
+	for (var i = 0; i < this.asn1Array.length; i++) {
+	    var asn1Obj = this.asn1Array[i];
+	    h += asn1Obj.getEncodedHex();
+	}
+	this.hV = h;
+	return this.hV;
+    };
+};
+JSX.extend(KJUR.asn1.DERSequence, KJUR.asn1.DERAbstractStructured);
+
+// ********************************************************************
+/**
+ * class for ASN.1 DER Set
+ * @name KJUR.asn1.DERSet
+ * @class class for ASN.1 DER Set
+ * @extends KJUR.asn1.DERAbstractStructured
+ * @description
+ * <br/>
+ * As for argument 'params' for constructor, you can specify one of
+ * following properties:
+ * <ul>
+ * <li>array - specify array of ASN1Object to set elements of content</li>
+ * </ul>
+ * NOTE: 'params' can be omitted.
+ */
+KJUR.asn1.DERSet = function(params) {
+    KJUR.asn1.DERSet.superclass.constructor.call(this, params);
+    this.hT = "31";
+    this.getFreshValueHex = function() {
+	var a = new Array();
+	for (var i = 0; i < this.asn1Array.length; i++) {
+	    var asn1Obj = this.asn1Array[i];
+	    a.push(asn1Obj.getEncodedHex());
+	}
+	a.sort();
+	this.hV = a.join('');
+	return this.hV;
+    };
+};
+JSX.extend(KJUR.asn1.DERSet, KJUR.asn1.DERAbstractStructured);
+
+// ********************************************************************
+/**
+ * class for ASN.1 DER TaggedObject
+ * @name KJUR.asn1.DERTaggedObject
+ * @class class for ASN.1 DER TaggedObject
+ * @extends KJUR.asn1.ASN1Object
+ * @description
+ * <br/>
+ * Parameter 'tagNoNex' is ASN.1 tag(T) value for this object.
+ * For example, if you find '[1]' tag in a ASN.1 dump, 
+ * 'tagNoHex' will be 'a1'.
+ * <br/>
+ * As for optional argument 'params' for constructor, you can specify *ANY* of
+ * following properties:
+ * <ul>
+ * <li>explicit - specify true if this is explicit tag otherwise false 
+ *     (default is 'true').</li>
+ * <li>tag - specify tag (default is 'a0' which means [0])</li>
+ * <li>obj - specify ASN1Object which is tagged</li>
+ * </ul>
+ * @example
+ * d1 = new KJUR.asn1.DERUTF8String({'str':'a'});
+ * d2 = new KJUR.asn1.DERTaggedObject({'obj': d1});
+ * hex = d2.getEncodedHex();
+ */
+KJUR.asn1.DERTaggedObject = function(params) {
+    KJUR.asn1.DERTaggedObject.superclass.constructor.call(this);
+    this.hT = "a0";
+    this.hV = '';
+    this.isExplicit = true;
+    this.asn1Object = null;
+
+    /**
+     * set value by an ASN1Object
+     * @name setString
+     * @memberOf KJUR.asn1.DERTaggedObject
+     * @function
+     * @param {Boolean} isExplicitFlag flag for explicit/implicit tag
+     * @param {Integer} tagNoHex hexadecimal string of ASN.1 tag
+     * @param {ASN1Object} asn1Object ASN.1 to encapsulate
+     */
+    this.setASN1Object = function(isExplicitFlag, tagNoHex, asn1Object) {
+	this.hT = tagNoHex;
+	this.isExplicit = isExplicitFlag;
+	this.asn1Object = asn1Object;
+	if (this.isExplicit) {
+	    this.hV = this.asn1Object.getEncodedHex();
+	    this.hTLV = null;
+	    this.isModified = true;
+	} else {
+	    this.hV = null;
+	    this.hTLV = asn1Object.getEncodedHex();
+	    this.hTLV = this.hTLV.replace(/^../, tagNoHex);
+	    this.isModified = false;
+	}
+    };
+
+    this.getFreshValueHex = function() {
+	return this.hV;
+    };
+
+    if (typeof params != "undefined") {
+	if (typeof params['tag'] != "undefined") {
+	    this.hT = params['tag'];
+	}
+	if (typeof params['explicit'] != "undefined") {
+	    this.isExplicit = params['explicit'];
+	}
+	if (typeof params['obj'] != "undefined") {
+	    this.asn1Object = params['obj'];
+	    this.setASN1Object(this.isExplicit, this.hT, this.asn1Object);
+	}
+    }
+};
+JSX.extend(KJUR.asn1.DERTaggedObject, KJUR.asn1.ASN1Object);// Hex JavaScript decoder
+// Copyright (c) 2008-2013 Lapo Luchini <lapo@lapo.it>
+
+// Permission to use, copy, modify, and/or distribute this software for any
+// purpose with or without fee is hereby granted, provided that the above
+// copyright notice and this permission notice appear in all copies.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+// WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+// MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+// ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+// WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+// ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+// OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+/*jshint browser: true, strict: true, immed: true, latedef: true, undef: true, regexdash: false */
+(function (undefined) {
+"use strict";
+
+var Hex = {},
+    decoder;
+
+Hex.decode = function(a) {
+    var i;
+    if (decoder === undefined) {
+        var hex = "0123456789ABCDEF",
+            ignore = " \f\n\r\t\u00A0\u2028\u2029";
+        decoder = [];
+        for (i = 0; i < 16; ++i)
+            decoder[hex.charAt(i)] = i;
+        hex = hex.toLowerCase();
+        for (i = 10; i < 16; ++i)
+            decoder[hex.charAt(i)] = i;
+        for (i = 0; i < ignore.length; ++i)
+            decoder[ignore.charAt(i)] = -1;
+    }
+    var out = [],
+        bits = 0,
+        char_count = 0;
+    for (i = 0; i < a.length; ++i) {
+        var c = a.charAt(i);
+        if (c == '=')
+            break;
+        c = decoder[c];
+        if (c == -1)
+            continue;
+        if (c === undefined)
+            throw 'Illegal character at offset ' + i;
+        bits |= c;
+        if (++char_count >= 2) {
+            out[out.length] = bits;
+            bits = 0;
+            char_count = 0;
+        } else {
+            bits <<= 4;
+        }
+    }
+    if (char_count)
+        throw "Hex encoding incomplete: 4 bits missing";
+    return out;
+};
+
+// export globals
+window.Hex = Hex;
+})();// Base64 JavaScript decoder
+// Copyright (c) 2008-2013 Lapo Luchini <lapo@lapo.it>
+
+// Permission to use, copy, modify, and/or distribute this software for any
+// purpose with or without fee is hereby granted, provided that the above
+// copyright notice and this permission notice appear in all copies.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+// WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+// MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+// ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+// WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+// ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+// OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+/*jshint browser: true, strict: true, immed: true, latedef: true, undef: true, regexdash: false */
+(function (undefined) {
+"use strict";
+
+var Base64 = {},
+    decoder;
+
+Base64.decode = function (a) {
+    var i;
+    if (decoder === undefined) {
+        var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",
+            ignore = "= \f\n\r\t\u00A0\u2028\u2029";
+        decoder = [];
+        for (i = 0; i < 64; ++i)
+            decoder[b64.charAt(i)] = i;
+        for (i = 0; i < ignore.length; ++i)
+            decoder[ignore.charAt(i)] = -1;
+    }
+    var out = [];
+    var bits = 0, char_count = 0;
+    for (i = 0; i < a.length; ++i) {
+        var c = a.charAt(i);
+        if (c == '=')
+            break;
+        c = decoder[c];
+        if (c == -1)
+            continue;
+        if (c === undefined)
+            throw 'Illegal character at offset ' + i;
+        bits |= c;
+        if (++char_count >= 4) {
+            out[out.length] = (bits >> 16);
+            out[out.length] = (bits >> 8) & 0xFF;
+            out[out.length] = bits & 0xFF;
+            bits = 0;
+            char_count = 0;
+        } else {
+            bits <<= 6;
+        }
+    }
+    switch (char_count) {
+      case 1:
+        throw "Base64 encoding incomplete: at least 2 bits missing";
+      case 2:
+        out[out.length] = (bits >> 10);
+        break;
+      case 3:
+        out[out.length] = (bits >> 16);
+        out[out.length] = (bits >> 8) & 0xFF;
+        break;
+    }
+    return out;
+};
+
+Base64.re = /-----BEGIN [^-]+-----([A-Za-z0-9+\/=\s]+)-----END [^-]+-----|begin-base64[^\n]+\n([A-Za-z0-9+\/=\s]+)====/;
+Base64.unarmor = function (a) {
+    var m = Base64.re.exec(a);
+    if (m) {
+        if (m[1])
+            a = m[1];
+        else if (m[2])
+            a = m[2];
+        else
+            throw "RegExp out of sync";
+    }
+    return Base64.decode(a);
+};
+
+// export globals
+window.Base64 = Base64;
+})();// ASN.1 JavaScript decoder
+// Copyright (c) 2008-2013 Lapo Luchini <lapo@lapo.it>
+
+// Permission to use, copy, modify, and/or distribute this software for any
+// purpose with or without fee is hereby granted, provided that the above
+// copyright notice and this permission notice appear in all copies.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+// WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+// MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+// ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+// WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+// ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+// OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+/*jshint browser: true, strict: true, immed: true, latedef: true, undef: true, regexdash: false */
+/*global oids */
+(function (undefined) {
+"use strict";
+
+var hardLimit = 100,
+    ellipsis = "\u2026",
+    DOM = {
+        tag: function (tagName, className) {
+            var t = document.createElement(tagName);
+            t.className = className;
+            return t;
+        },
+        text: function (str) {
+            return document.createTextNode(str);
+        }
+    };
+
+function Stream(enc, pos) {
+    if (enc instanceof Stream) {
+        this.enc = enc.enc;
+        this.pos = enc.pos;
+    } else {
+        this.enc = enc;
+        this.pos = pos;
+    }
+}
+Stream.prototype.get = function (pos) {
+    if (pos === undefined)
+        pos = this.pos++;
+    if (pos >= this.enc.length)
+        throw 'Requesting byte offset ' + pos + ' on a stream of length ' + this.enc.length;
+    return this.enc[pos];
+};
+Stream.prototype.hexDigits = "0123456789ABCDEF";
+Stream.prototype.hexByte = function (b) {
+    return this.hexDigits.charAt((b >> 4) & 0xF) + this.hexDigits.charAt(b & 0xF);
+};
+Stream.prototype.hexDump = function (start, end, raw) {
+    var s = "";
+    for (var i = start; i < end; ++i) {
+        s += this.hexByte(this.get(i));
+        if (raw !== true)
+            switch (i & 0xF) {
+            case 0x7: s += "  "; break;
+            case 0xF: s += "\n"; break;
+            default:  s += " ";
+            }
+    }
+    return s;
+};
+Stream.prototype.parseStringISO = function (start, end) {
+    var s = "";
+    for (var i = start; i < end; ++i)
+        s += String.fromCharCode(this.get(i));
+    return s;
+};
+Stream.prototype.parseStringUTF = function (start, end) {
+    var s = "";
+    for (var i = start; i < end; ) {
+        var c = this.get(i++);
+        if (c < 128)
+            s += String.fromCharCode(c);
+        else if ((c > 191) && (c < 224))
+            s += String.fromCharCode(((c & 0x1F) << 6) | (this.get(i++) & 0x3F));
+        else
+            s += String.fromCharCode(((c & 0x0F) << 12) | ((this.get(i++) & 0x3F) << 6) | (this.get(i++) & 0x3F));
+    }
+    return s;
+};
+Stream.prototype.parseStringBMP = function (start, end) {
+    var str = ""
+    for (var i = start; i < end; i += 2) {
+        var high_byte = this.get(i);
+        var low_byte = this.get(i + 1);
+        str += String.fromCharCode( (high_byte << 8) + low_byte );
+    }
+
+    return str;
+};
+Stream.prototype.reTime = /^((?:1[89]|2\d)?\d\d)(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])([01]\d|2[0-3])(?:([0-5]\d)(?:([0-5]\d)(?:[.,](\d{1,3}))?)?)?(Z|[-+](?:[0]\d|1[0-2])([0-5]\d)?)?$/;
+Stream.prototype.parseTime = function (start, end) {
+    var s = this.parseStringISO(start, end),
+        m = this.reTime.exec(s);
+    if (!m)
+        return "Unrecognized time: " + s;
+    s = m[1] + "-" + m[2] + "-" + m[3] + " " + m[4];
+    if (m[5]) {
+        s += ":" + m[5];
+        if (m[6]) {
+            s += ":" + m[6];
+            if (m[7])
+                s += "." + m[7];
+        }
+    }
+    if (m[8]) {
+        s += " UTC";
+        if (m[8] != 'Z') {
+            s += m[8];
+            if (m[9])
+                s += ":" + m[9];
+        }
+    }
+    return s;
+};
+Stream.prototype.parseInteger = function (start, end) {
+    //TODO support negative numbers
+    var len = end - start;
+    if (len > 4) {
+        len <<= 3;
+        var s = this.get(start);
+        if (s === 0)
+            len -= 8;
+        else
+            while (s < 128) {
+                s <<= 1;
+                --len;
+            }
+        return "(" + len + " bit)";
+    }
+    var n = 0;
+    for (var i = start; i < end; ++i)
+        n = (n << 8) | this.get(i);
+    return n;
+};
+Stream.prototype.parseBitString = function (start, end) {
+    var unusedBit = this.get(start),
+        lenBit = ((end - start - 1) << 3) - unusedBit,
+        s = "(" + lenBit + " bit)";
+    if (lenBit <= 20) {
+        var skip = unusedBit;
+        s += " ";
+        for (var i = end - 1; i > start; --i) {
+            var b = this.get(i);
+            for (var j = skip; j < 8; ++j)
+                s += (b >> j) & 1 ? "1" : "0";
+            skip = 0;
+        }
+    }
+    return s;
+};
+Stream.prototype.parseOctetString = function (start, end) {
+    var len = end - start,
+        s = "(" + len + " byte) ";
+    if (len > hardLimit)
+        end = start + hardLimit;
+    for (var i = start; i < end; ++i)
+        s += this.hexByte(this.get(i)); //TODO: also try Latin1?
+    if (len > hardLimit)
+        s += ellipsis;
+    return s;
+};
+Stream.prototype.parseOID = function (start, end) {
+    var s = '',
+        n = 0,
+        bits = 0;
+    for (var i = start; i < end; ++i) {
+        var v = this.get(i);
+        n = (n << 7) | (v & 0x7F);
+        bits += 7;
+        if (!(v & 0x80)) { // finished
+            if (s === '') {
+                var m = n < 80 ? n < 40 ? 0 : 1 : 2;
+                s = m + "." + (n - m * 40);
+            } else
+                s += "." + ((bits >= 31) ? "bigint" : n);
+            n = bits = 0;
+        }
+    }
+    return s;
+};
+
+function ASN1(stream, header, length, tag, sub) {
+    this.stream = stream;
+    this.header = header;
+    this.length = length;
+    this.tag = tag;
+    this.sub = sub;
+}
+ASN1.prototype.typeName = function () {
+    if (this.tag === undefined)
+        return "unknown";
+    var tagClass = this.tag >> 6,
+        tagConstructed = (this.tag >> 5) & 1,
+        tagNumber = this.tag & 0x1F;
+    switch (tagClass) {
+    case 0: // universal
+        switch (tagNumber) {
+        case 0x00: return "EOC";
+        case 0x01: return "BOOLEAN";
+        case 0x02: return "INTEGER";
+        case 0x03: return "BIT_STRING";
+        case 0x04: return "OCTET_STRING";
+        case 0x05: return "NULL";
+        case 0x06: return "OBJECT_IDENTIFIER";
+        case 0x07: return "ObjectDescriptor";
+        case 0x08: return "EXTERNAL";
+        case 0x09: return "REAL";
+        case 0x0A: return "ENUMERATED";
+        case 0x0B: return "EMBEDDED_PDV";
+        case 0x0C: return "UTF8String";
+        case 0x10: return "SEQUENCE";
+        case 0x11: return "SET";
+        case 0x12: return "NumericString";
+        case 0x13: return "PrintableString"; // ASCII subset
+        case 0x14: return "TeletexString"; // aka T61String
+        case 0x15: return "VideotexString";
+        case 0x16: return "IA5String"; // ASCII
+        case 0x17: return "UTCTime";
+        case 0x18: return "GeneralizedTime";
+        case 0x19: return "GraphicString";
+        case 0x1A: return "VisibleString"; // ASCII subset
+        case 0x1B: return "GeneralString";
+        case 0x1C: return "UniversalString";
+        case 0x1E: return "BMPString";
+        default:   return "Universal_" + tagNumber.toString(16);
+        }
+    case 1: return "Application_" + tagNumber.toString(16);
+    case 2: return "[" + tagNumber + "]"; // Context
+    case 3: return "Private_" + tagNumber.toString(16);
+    }
+};
+ASN1.prototype.reSeemsASCII = /^[ -~]+$/;
+ASN1.prototype.content = function () {
+    if (this.tag === undefined)
+        return null;
+    var tagClass = this.tag >> 6,
+        tagNumber = this.tag & 0x1F,
+        content = this.posContent(),
+        len = Math.abs(this.length);
+    if (tagClass !== 0) { // universal
+        if (this.sub !== null)
+            return "(" + this.sub.length + " elem)";
+        //TODO: TRY TO PARSE ASCII STRING
+        var s = this.stream.parseStringISO(content, content + Math.min(len, hardLimit));
+        if (this.reSeemsASCII.test(s))
+            return s.substring(0, 2 * hardLimit) + ((s.length > 2 * hardLimit) ? ellipsis : "");
+        else
+            return this.stream.parseOctetString(content, content + len);
+    }
+    switch (tagNumber) {
+    case 0x01: // BOOLEAN
+        return (this.stream.get(content) === 0) ? "false" : "true";
+    case 0x02: // INTEGER
+        return this.stream.parseInteger(content, content + len);
+    case 0x03: // BIT_STRING
+        return this.sub ? "(" + this.sub.length + " elem)" :
+            this.stream.parseBitString(content, content + len);
+    case 0x04: // OCTET_STRING
+        return this.sub ? "(" + this.sub.length + " elem)" :
+            this.stream.parseOctetString(content, content + len);
+    //case 0x05: // NULL
+    case 0x06: // OBJECT_IDENTIFIER
+        return this.stream.parseOID(content, content + len);
+    //case 0x07: // ObjectDescriptor
+    //case 0x08: // EXTERNAL
+    //case 0x09: // REAL
+    //case 0x0A: // ENUMERATED
+    //case 0x0B: // EMBEDDED_PDV
+    case 0x10: // SEQUENCE
+    case 0x11: // SET
+        return "(" + this.sub.length + " elem)";
+    case 0x0C: // UTF8String
+        return this.stream.parseStringUTF(content, content + len);
+    case 0x12: // NumericString
+    case 0x13: // PrintableString
+    case 0x14: // TeletexString
+    case 0x15: // VideotexString
+    case 0x16: // IA5String
+    //case 0x19: // GraphicString
+    case 0x1A: // VisibleString
+    //case 0x1B: // GeneralString
+    //case 0x1C: // UniversalString
+        return this.stream.parseStringISO(content, content + len);
+    case 0x1E: // BMPString
+        return this.stream.parseStringBMP(content, content + len);
+    case 0x17: // UTCTime
+    case 0x18: // GeneralizedTime
+        return this.stream.parseTime(content, content + len);
+    }
+    return null;
+};
+ASN1.prototype.toString = function () {
+    return this.typeName() + "@" + this.stream.pos + "[header:" + this.header + ",length:" + this.length + ",sub:" + ((this.sub === null) ? 'null' : this.sub.length) + "]";
+};
+ASN1.prototype.print = function (indent) {
+    if (indent === undefined) indent = '';
+    document.writeln(indent + this);
+    if (this.sub !== null) {
+        indent += '  ';
+        for (var i = 0, max = this.sub.length; i < max; ++i)
+            this.sub[i].print(indent);
+    }
+};
+ASN1.prototype.toPrettyString = function (indent) {
+    if (indent === undefined) indent = '';
+    var s = indent + this.typeName() + " @" + this.stream.pos;
+    if (this.length >= 0)
+        s += "+";
+    s += this.length;
+    if (this.tag & 0x20)
+        s += " (constructed)";
+    else if (((this.tag == 0x03) || (this.tag == 0x04)) && (this.sub !== null))
+        s += " (encapsulates)";
+    s += "\n";
+    if (this.sub !== null) {
+        indent += '  ';
+        for (var i = 0, max = this.sub.length; i < max; ++i)
+            s += this.sub[i].toPrettyString(indent);
+    }
+    return s;
+};
+ASN1.prototype.toDOM = function () {
+    var node = DOM.tag("div", "node");
+    node.asn1 = this;
+    var head = DOM.tag("div", "head");
+    var s = this.typeName().replace(/_/g, " ");
+    head.innerHTML = s;
+    var content = this.content();
+    if (content !== null) {
+        content = String(content).replace(/</g, "&lt;");
+        var preview = DOM.tag("span", "preview");
+        preview.appendChild(DOM.text(content));
+        head.appendChild(preview);
+    }
+    node.appendChild(head);
+    this.node = node;
+    this.head = head;
+    var value = DOM.tag("div", "value");
+    s = "Offset: " + this.stream.pos + "<br/>";
+    s += "Length: " + this.header + "+";
+    if (this.length >= 0)
+        s += this.length;
+    else
+        s += (-this.length) + " (undefined)";
+    if (this.tag & 0x20)
+        s += "<br/>(constructed)";
+    else if (((this.tag == 0x03) || (this.tag == 0x04)) && (this.sub !== null))
+        s += "<br/>(encapsulates)";
+    //TODO if (this.tag == 0x03) s += "Unused bits: "
+    if (content !== null) {
+        s += "<br/>Value:<br/><b>" + content + "</b>";
+        if ((typeof oids === 'object') && (this.tag == 0x06)) {
+            var oid = oids[content];
+            if (oid) {
+                if (oid.d) s += "<br/>" + oid.d;
+                if (oid.c) s += "<br/>" + oid.c;
+                if (oid.w) s += "<br/>(warning!)";
+            }
+        }
+    }
+    value.innerHTML = s;
+    node.appendChild(value);
+    var sub = DOM.tag("div", "sub");
+    if (this.sub !== null) {
+        for (var i = 0, max = this.sub.length; i < max; ++i)
+            sub.appendChild(this.sub[i].toDOM());
+    }
+    node.appendChild(sub);
+    head.onclick = function () {
+        node.className = (node.className == "node collapsed") ? "node" : "node collapsed";
+    };
+    return node;
+};
+ASN1.prototype.posStart = function () {
+    return this.stream.pos;
+};
+ASN1.prototype.posContent = function () {
+    return this.stream.pos + this.header;
+};
+ASN1.prototype.posEnd = function () {
+    return this.stream.pos + this.header + Math.abs(this.length);
+};
+ASN1.prototype.fakeHover = function (current) {
+    this.node.className += " hover";
+    if (current)
+        this.head.className += " hover";
+};
+ASN1.prototype.fakeOut = function (current) {
+    var re = / ?hover/;
+    this.node.className = this.node.className.replace(re, "");
+    if (current)
+        this.head.className = this.head.className.replace(re, "");
+};
+ASN1.prototype.toHexDOM_sub = function (node, className, stream, start, end) {
+    if (start >= end)
+        return;
+    var sub = DOM.tag("span", className);
+    sub.appendChild(DOM.text(
+        stream.hexDump(start, end)));
+    node.appendChild(sub);
+};
+ASN1.prototype.toHexDOM = function (root) {
+    var node = DOM.tag("span", "hex");
+    if (root === undefined) root = node;
+    this.head.hexNode = node;
+    this.head.onmouseover = function () { this.hexNode.className = "hexCurrent"; };
+    this.head.onmouseout  = function () { this.hexNode.className = "hex"; };
+    node.asn1 = this;
+    node.onmouseover = function () {
+        var current = !root.selected;
+        if (current) {
+            root.selected = this.asn1;
+            this.className = "hexCurrent";
+        }
+        this.asn1.fakeHover(current);
+    };
+    node.onmouseout  = function () {
+        var current = (root.selected == this.asn1);
+        this.asn1.fakeOut(current);
+        if (current) {
+            root.selected = null;
+            this.className = "hex";
+        }
+    };
+    this.toHexDOM_sub(node, "tag", this.stream, this.posStart(), this.posStart() + 1);
+    this.toHexDOM_sub(node, (this.length >= 0) ? "dlen" : "ulen", this.stream, this.posStart() + 1, this.posContent());
+    if (this.sub === null)
+        node.appendChild(DOM.text(
+            this.stream.hexDump(this.posContent(), this.posEnd())));
+    else if (this.sub.length > 0) {
+        var first = this.sub[0];
+        var last = this.sub[this.sub.length - 1];
+        this.toHexDOM_sub(node, "intro", this.stream, this.posContent(), first.posStart());
+        for (var i = 0, max = this.sub.length; i < max; ++i)
+            node.appendChild(this.sub[i].toHexDOM(root));
+        this.toHexDOM_sub(node, "outro", this.stream, last.posEnd(), this.posEnd());
+    }
+    return node;
+};
+ASN1.prototype.toHexString = function (root) {
+    return this.stream.hexDump(this.posStart(), this.posEnd(), true);
+};
+ASN1.decodeLength = function (stream) {
+    var buf = stream.get(),
+        len = buf & 0x7F;
+    if (len == buf)
+        return len;
+    if (len > 3)
+        throw "Length over 24 bits not supported at position " + (stream.pos - 1);
+    if (len === 0)
+        return -1; // undefined
+    buf = 0;
+    for (var i = 0; i < len; ++i)
+        buf = (buf << 8) | stream.get();
+    return buf;
+};
+ASN1.hasContent = function (tag, len, stream) {
+    if (tag & 0x20) // constructed
+        return true;
+    if ((tag < 0x03) || (tag > 0x04))
+        return false;
+    var p = new Stream(stream);
+    if (tag == 0x03) p.get(); // BitString unused bits, must be in [0, 7]
+    var subTag = p.get();
+    if ((subTag >> 6) & 0x01) // not (universal or context)
+        return false;
+    try {
+        var subLength = ASN1.decodeLength(p);
+        return ((p.pos - stream.pos) + subLength == len);
+    } catch (exception) {
+        return false;
+    }
+};
+ASN1.decode = function (stream) {
+    if (!(stream instanceof Stream))
+        stream = new Stream(stream, 0);
+    var streamStart = new Stream(stream),
+        tag = stream.get(),
+        len = ASN1.decodeLength(stream),
+        header = stream.pos - streamStart.pos,
+        sub = null;
+    if (ASN1.hasContent(tag, len, stream)) {
+        // it has content, so we decode it
+        var start = stream.pos;
+        if (tag == 0x03) stream.get(); // skip BitString unused bits, must be in [0, 7]
+        sub = [];
+        if (len >= 0) {
+            // definite length
+            var end = start + len;
+            while (stream.pos < end)
+                sub[sub.length] = ASN1.decode(stream);
+            if (stream.pos != end)
+                throw "Content size is not correct for container starting at offset " + start;
+        } else {
+            // undefined length
+            try {
+                for (;;) {
+                    var s = ASN1.decode(stream);
+                    if (s.tag === 0)
+                        break;
+                    sub[sub.length] = s;
+                }
+                len = start - stream.pos;
+            } catch (e) {
+                throw "Exception while decoding undefined length content: " + e;
+            }
+        }
+    } else
+        stream.pos += len; // skip content
+    return new ASN1(streamStart, header, len, tag, sub);
+};
+ASN1.test = function () {
+    var test = [
+        { value: [0x27],                   expected: 0x27     },
+        { value: [0x81, 0xC9],             expected: 0xC9     },
+        { value: [0x83, 0xFE, 0xDC, 0xBA], expected: 0xFEDCBA }
+    ];
+    for (var i = 0, max = test.length; i < max; ++i) {
+        var pos = 0,
+            stream = new Stream(test[i].value, 0),
+            res = ASN1.decodeLength(stream);
+        if (res != test[i].expected)
+            document.write("In test[" + i + "] expected " + test[i].expected + " got " + res + "\n");
+    }
+};
+
+// export globals
+window.ASN1 = ASN1;
+})();/**
+ * Retrieve the hexadecimal value (as a string) of the current ASN.1 element
+ * @returns {string}
+ */
+ASN1.prototype.getHexStringValue = function(){
+    var hexString = this.toHexString();
+    var offset = this.header * 2;
+    var length = this.length * 2;
+    return hexString.substr(offset,length);
 };
 
 /**
- * Create a word wrap.
+ * Method to parse a pem encoded string containing both a public or private key.
+ * The method will translate the pem encoded string in a der encoded string and
+ * will parse private key and public key parameters. This method accepts public key
+ * in the rsaencryption pkcs #1 format (oid: 1.2.840.113549.1.1.1). 
+ * @todo Check how many rsa formats use the same format of pkcs #1. The format is defined as:
+ * PublicKeyInfo ::= SEQUENCE {
+ *   algorithm       AlgorithmIdentifier,
+ *   PublicKey       BIT STRING
+ * }
+ * Where AlgorithmIdentifier is: 
+ * AlgorithmIdentifier ::= SEQUENCE {
+ *   algorithm       OBJECT IDENTIFIER,     the OID of the enc algorithm
+ *   parameters      ANY DEFINED BY algorithm OPTIONAL (NULL for PKCS #1)
+ * }
+ * and PublicKey is a SEQUENCE encapsulated in a BIT STRING
+ * RSAPublicKey ::= SEQUENCE {
+ *   modulus           INTEGER,  -- n
+ *   publicExponent    INTEGER   -- e
+ * }
+ * it's possible to examine the structure of the keys obtained from openssl using 
+ * an asn.1 dumper as the one used here to parse the components: http://lapo.it/asn1js/
+ * @argument {string} pem the pem encoded string, can include the BEGIN/END header/footer
+ */
+RSAKey.prototype.parseKey = function(pem) {
+    try{
+        var reHex = /^\s*(?:[0-9A-Fa-f][0-9A-Fa-f]\s*)+$/;
+        var der = reHex.test(pem) ? Hex.decode(pem) : Base64.unarmor(pem);
+        var asn1 = ASN1.decode(der);
+        if (asn1.sub.length === 9){
+            // the data is a Private key
+            //in order
+            //Algorithm version, n, e, d, p, q, dmp1, dmq1, coeff
+            //Alg version, modulus, public exponent, private exponent, prime 1, prime 2, exponent 1, exponent 2, coefficient
+            var modulus = asn1.sub[1].getHexStringValue(); //bigint
+            this.n = parseBigInt(modulus, 16);
+
+            var public_exponent = asn1.sub[2].getHexStringValue(); //int
+            this.e = parseInt(public_exponent, 16);
+
+            var private_exponent = asn1.sub[3].getHexStringValue(); //bigint
+            this.d = parseBigInt(private_exponent, 16);
+
+            var prime1 = asn1.sub[4].getHexStringValue(); //bigint
+            this.p = parseBigInt(prime1, 16);
+
+            var prime2 = asn1.sub[5].getHexStringValue(); //bigint 
+            this.q = parseBigInt(prime2, 16);
+
+            var exponent1 = asn1.sub[6].getHexStringValue(); //bigint
+            this.dmp1 = parseBigInt(exponent1, 16);
+
+            var exponent2 = asn1.sub[7].getHexStringValue(); //bigint
+            this.dmq1 = parseBigInt(exponent2, 16);
+
+            var coefficient = asn1.sub[8].getHexStringValue(); //bigint
+            this.coeff = parseBigInt(coefficient, 16);
+
+        }else if (asn1.sub.length === 2){
+            //Public key
+            //The data PROBABLY is a public key
+            var bit_string = asn1.sub[1];
+            var sequence   = bit_string.sub[0];
+
+            var modulus = sequence.sub[0].getHexStringValue();
+            this.n = parseBigInt(modulus, 16);
+            var public_exponent = sequence.sub[1].getHexStringValue();
+            this.e = parseInt(public_exponent, 16);
+
+        }else{
+            return false;
+        }
+        return true;
+    }catch(ex){
+        return false;
+    }
+};
+
+/**
+ * Translate rsa parameters in a hex encoded string representing the rsa key.
+ * The translation follow the ASN.1 notation :
+ * RSAPrivateKey ::= SEQUENCE {
+ *   version           Version,
+ *   modulus           INTEGER,  -- n
+ *   publicExponent    INTEGER,  -- e
+ *   privateExponent   INTEGER,  -- d
+ *   prime1            INTEGER,  -- p
+ *   prime2            INTEGER,  -- q
+ *   exponent1         INTEGER,  -- d mod (p1)
+ *   exponent2         INTEGER,  -- d mod (q-1)
+ *   coefficient       INTEGER,  -- (inverse of q) mod p
+ * }
+ * @returns {string}  DER Encoded String representing the rsa private key
+ */
+RSAKey.prototype.getPrivateBaseKey = function() {
+    //Algorithm version, n, e, d, p, q, dmp1, dmq1, coeff
+    //Alg version, modulus, public exponent, private exponent, prime 1, prime 2, exponent 1, exponent 2, coefficient
+    var options = {
+        'array' : [
+            new KJUR.asn1.DERInteger({'int'    : 0}),
+            new KJUR.asn1.DERInteger({'bigint' : this.n}),
+            new KJUR.asn1.DERInteger({'int'    : this.e}),
+            new KJUR.asn1.DERInteger({'bigint' : this.d}),
+            new KJUR.asn1.DERInteger({'bigint' : this.p}),
+            new KJUR.asn1.DERInteger({'bigint' : this.q}),
+            new KJUR.asn1.DERInteger({'bigint' : this.dmp1}),
+            new KJUR.asn1.DERInteger({'bigint' : this.dmq1}),
+            new KJUR.asn1.DERInteger({'bigint' : this.coeff})
+        ]
+    };
+    var seq = new KJUR.asn1.DERSequence(options);
+    return seq.getEncodedHex();
+};
+
+/**
+ * base64 (pem) encoded version of the DER encoded representation
+ * @returns {string} pem encoded representation without header and footer
+ */
+RSAKey.prototype.getPrivateBaseKeyB64 = function (){
+    return hex2b64(this.getPrivateBaseKey());
+};
+
+/**
+ * Translate rsa parameters in a hex encoded string representing the rsa public key.
+ * The representation follow the ASN.1 notation :
+ * PublicKeyInfo ::= SEQUENCE {
+ *   algorithm       AlgorithmIdentifier,
+ *   PublicKey       BIT STRING
+ * }
+ * Where AlgorithmIdentifier is: 
+ * AlgorithmIdentifier ::= SEQUENCE {
+ *   algorithm       OBJECT IDENTIFIER,     the OID of the enc algorithm
+ *   parameters      ANY DEFINED BY algorithm OPTIONAL (NULL for PKCS #1)
+ * }
+ * and PublicKey is a SEQUENCE encapsulated in a BIT STRING
+ * RSAPublicKey ::= SEQUENCE {
+ *   modulus           INTEGER,  -- n
+ *   publicExponent    INTEGER   -- e
+ * }
+ * @returns {string} DER Encoded String representing the rsa public key
+ */
+RSAKey.prototype.getPublicBaseKey = function() {
+    var options = {
+        'array' : [
+            new KJUR.asn1.DERObjectIdentifier({'oid':'1.2.840.113549.1.1.1'}), //RSA Encryption pkcs #1 oid
+            new KJUR.asn1.DERNull()
+        ]
+    };
+    var first_sequence = new KJUR.asn1.DERSequence(options);
+    
+    options = {
+        'array' : [
+            new KJUR.asn1.DERInteger({'bigint' : this.n}),
+            new KJUR.asn1.DERInteger({'int' : this.e})
+        ]
+    };
+    var second_sequence = new KJUR.asn1.DERSequence(options);
+    
+    options = {
+        'hex' : '00'+second_sequence.getEncodedHex()
+    };
+    var bit_string = new KJUR.asn1.DERBitString(options);
+    
+    options = {
+        'array' : [
+            first_sequence,
+            bit_string
+        ]
+    };
+    var seq = new KJUR.asn1.DERSequence(options);
+    return seq.getEncodedHex();
+};
+
+/**
+ * base64 (pem) encoded version of the DER encoded representation
+ * @returns {string} pem encoded representation without header and footer
+ */
+RSAKey.prototype.getPublicBaseKeyB64 = function (){
+    return hex2b64(this.getPublicBaseKey());
+};
+
+/**
+ * wrap the string in block of width chars. The default value for rsa keys is 64
+ * characters.
+ * @param {string} str the pem encoded string without header and footer
+ * @param {Number} [width=64] - the length the string has to be wrapped at
+ * @returns {string} 
  */
 RSAKey.prototype.wordwrap = function(str, width) {
-  width = width || 64;
-  if (!str) {
-    return str;
-  }
-  var regex = '(.{1,' + width + '})( +|$\n?)|(.{1,' + width + '})';
-  return str.match(RegExp(regex, 'g')).join('\n');
-}
+    width = width || 64;
+    if (!str)
+        return str;
+    var regex = '(.{1,' + width + '})( +|$\n?)|(.{1,' + width + '})';
+    return str.match(RegExp(regex, 'g')).join('\n');
+};
 
-// Return a new Private key.
+/**
+ * Retrieve the pem encoded private key
+ * @returns {string} the pem encoded private key with header/footer
+ */
 RSAKey.prototype.getPrivateKey = function() {
-  var key = "-----BEGIN RSA PRIVATE KEY-----\n";
-  var b16 = "3082025e02010002";  // header + spacer + verlen + version + spacer.
-  b16 += this.getBaseKey();
-  key += this.wordwrap(hex2b64(b16)) + "\n";
-  key += "-----END RSA PRIVATE KEY-----";
-  return key;
+    var key = "-----BEGIN RSA PRIVATE KEY-----\n";
+    key += this.wordwrap(this.getPrivateBaseKeyB64()) + "\n";
+    key += "-----END RSA PRIVATE KEY-----";
+    return key;
 };
 
-// Return a new Public key.
+/**
+ * Retrieve the pem encoded public key
+ * @returns {string} the pem encoded public key with header/footer
+ */
 RSAKey.prototype.getPublicKey = function() {
-  var key = "-----BEGIN PUBLIC KEY-----\n";
-  var b16 = "30819f300d06092a864886f70d010101050003818d0030818902";  // header + spacer.
-  b16 += this.getBaseKey();
-  key += this.wordwrap(hex2b64(b16)) + "\n";
-  key += "-----END PUBLIC KEY-----";
-  return key;
+    var key = "-----BEGIN PUBLIC KEY-----\n";
+    key += this.wordwrap(this.getPublicBaseKeyB64()) + "\n";
+    key += "-----END PUBLIC KEY-----";
+    return key;
 };
 
 /**
- * Create a private key class to extend the RSAKey.
- *
- * @param string privkey - The private key in string format.
+ * Check if the object contains the necessary parameters to populate the rsa modulus
+ * and public exponent parameters.
+ * @param {Object} [obj={}] - An object that may contain the two public key
+ * parameters
+ * @returns {boolean} true if the object contains both the modulus and the public exponent
+ * properties (n and e)
+ * @todo check for types of n and e. N should be a parseable bigInt object, E should
+ * be a parseable integer number
  */
-var RSAPrivateKey = function(privkey) {
+RSAKey.prototype.hasPublicKeyProperty = function(obj){
+    obj = obj || {};
+    return obj.hasOwnProperty('n') &&
+           obj.hasOwnProperty('e');
+};
 
-  // Call teh constructor.
-  RSAKey.call(this);
+/**
+ * Check if the object contains ALL the parameters of an RSA key.
+ * @param {Object} [obj={}] - An object that may contain nine rsa key
+ * parameters
+ * @returns {boolean} true if the object contains all the parameters needed
+ * @todo check for types of the parameters all the parameters but the public exponent
+ * should be parseable bigint objects, the public exponent should be a parseable integer number
+ */
+RSAKey.prototype.hasPrivateKeyProperty = function(obj){
+    obj = obj || {};
+    return obj.hasOwnProperty('n') &&
+           obj.hasOwnProperty('e') &&
+           obj.hasOwnProperty('d') &&
+           obj.hasOwnProperty('p') &&
+           obj.hasOwnProperty('q') &&
+           obj.hasOwnProperty('dmp1') &&
+           obj.hasOwnProperty('dmq1') &&
+           obj.hasOwnProperty('coeff');
+};
 
-  // If a private key was provided.
-  if (privkey) {
+/**
+ * Parse the properties of obj in the current rsa object. Obj should AT LEAST
+ * include the modulus and public exponent (n, e) parameters.
+ * @param {Object} obj - the object containing rsa parameters
+ */
+RSAKey.prototype.parsePropertiesFrom = function(obj){
+    this.n = obj.n;
+    this.e = obj.e;        
+    
+    if (obj.hasOwnProperty('d')){
+        this.d = obj.d;
+        this.p = obj.p;
+        this.q = obj.q;
+        this.dmp1 = obj.dmp1;
+        this.dmq1 = obj.dmq1;
+        this.coeff = obj.coeff;
+    }
+};
 
-    // Parse the key.
-    this.parseKey(privkey);
-  }
+/**
+ * Create a new JSEncryptRSAKey that extends Tom Wu's RSA key object.
+ * This object is just a decorator for parsing the key parameter
+ * @param {string|Object} key - The key in string format, or an object containing
+ * the parameters needed to build a RSAKey object.
+ * @constructor
+ */
+var JSEncryptRSAKey = function(key) {
+    // Call the super constructor.
+    RSAKey.call(this);
+    // If a key key was provided.
+    if (key) {
+        // If this is a string...
+        if (typeof key === 'string') {
+            this.parseKey(key);
+        }else if (this.hasPrivateKeyProperty(key)||this.hasPublicKeyProperty(key)) {
+            // Set the values for the key.
+            this.parsePropertiesFrom(key);
+        }
+    }
 };
 
 // Derive from RSAKey.
-RSAPrivateKey.prototype = new RSAKey();
+JSEncryptRSAKey.prototype = new RSAKey();
 
 // Reset the contructor.
-RSAPrivateKey.prototype.constructor = RSAPrivateKey;
+JSEncryptRSAKey.prototype.constructor = JSEncryptRSAKey;
 
-// Returns the structure for the private key.
-// See http://etherhack.co.uk/asymmetric/docs/rsa_key_breakdown.html
-RSAPrivateKey.prototype.structure = function() {
-  return {
-    'header': {length: 4},
-    'versionlength': {length: 1, offset: 1, type: 'int'},
-    'version': {length:'versionlength', type: 'int'},
-    'n_length': {length:1, offset:2, type: 'int'},
-    'n': {length:'n_length', type: 'bigint', variable:true, padded: true, extraspace: true},
-    'e_length': {length:1, offset:1, type: 'int'},
-    'e': {length:'e_length', type: 'int', variable:true},
-    'd_length': {length:1, offset:2, type: 'int'},
-    'd': {length:'d_length', type: 'bigint', variable:true, padded: true, extraspace: true},
-    'p_length': {length:1, offset:1, type: 'int'},
-    'p': {length:'p_length', type: 'bigint', variable:true, padded: true},
-    'q_length': {length:1, offset:1, type: 'int'},
-    'q': {length:'q_length', type: 'bigint', variable:true, padded: true},
-    'dmp1_length': {length: 1, offset: 1, type: 'int'},
-    'dmp1': {length: 'dmp1_length', type: 'bigint', variable:true},
-    'dmq1_length': {length: 1, offset: 1, type: 'int'},
-    'dmq1': {length: 'dmq1_length', type: 'bigint', variable:true, padded: true},
-    'coeff_length': {length: 1, offset: 1, type: 'int'},
-    'coeff': {length: 'coeff_length', type: 'bigint', variable:true, padded: true}
-  };
-};
 
 /**
- * Create a public key class to extend the RSAKey.
- *
- * @param string pubkey - The public key in string format, or RSAPrivateKey.
+ * 
+ * @param {Object} [options = {}] - An object to customize JSEncrypt behaviour 
+ * possible parameters are:
+ * - default_key_size        {number}  default: 1024 the key size in bit
+ * - default_public_exponent {string}  default: '010001' the hexadecimal representation of the public exponent
+ * - log                     {boolean} default: false whether log warn/error or not
+ * @constructor
  */
-var RSAPublicKey = function(pubkey) {
-
-  // Call teh constructor.
-  RSAKey.call(this);
-
-  // If a pubkey key was provided.
-  if (pubkey) {
-
-    // If this is a string...
-    if (typeof pubkey == 'string') {
-      this.parseKey(pubkey);
-    }
-    else if (pubkey.hasOwnProperty('n') && pubkey.hasOwnProperty('e')) {
-
-      // Set the values for the public key.
-      this.n = pubkey.n;
-      this.e = pubkey.e;
-    }
-  }
-};
-
-// Derive from RSAKey.
-RSAPublicKey.prototype = new RSAKey();
-
-// Reset the contructor.
-RSAPublicKey.prototype.constructor = RSAPublicKey;
-
-// Returns the structure for the public key.
-// See http://etherhack.co.uk/asymmetric/docs/rsa_key_breakdown.html
-RSAPublicKey.prototype.structure = function() {
-  return {
-    'header': {length: 25},
-    'n_length': {length:1, offset:2, type: 'int'},
-    'n': {length:'n_length', type: 'bigint', variable:true, padded: true, extraspace: true},
-    'e_length': {length:1, offset:1, type: 'int'},
-    'e': {length:'e_length', type: 'int', variable:true}
-  };
+var JSEncrypt = function(options) {
+    options = options || {};
+    this.default_key_size = options.default_key_size || 1024;
+    this.default_public_exponent = options.default_public_exponent || '010001'; //65537 default openssl public exponent for rsa key type
+    this.log = options.log || false; 
+    // The private and public key.
+    this.key = null;
 };
 
 /**
- * Class to do the encryption.
+ * Method to set the rsa key parameter (one method is enough to set both the public
+ * and the private key, since the private key contains the public key paramenters)
+ * Log a warning if logs are enabled
+ * @param {Object|string} key the pem encoded string or an object (with or without header/footer)
  */
-var JSEncrypt = function() {
-
-  // The private and public keys.
-  this.privkey = null;
-  this.pubkey = null;
+JSEncrypt.prototype.setKey = function(key){
+    if (this.log && this.key)
+        console.warn('A key was already set, overriding existing.');
+    this.key = new JSEncryptRSAKey(key);
 };
 
 /**
- * Set the private key.
+ * Proxy method for setKey, for api compatibility
+ * @see setKey
  */
 JSEncrypt.prototype.setPrivateKey = function(privkey) {
-
-  // Create the private key.
-  this.privkey = new RSAPrivateKey(privkey);
-
-  // Make sure the public key is based off of the private key.
-  this.pubkey = new RSAPublicKey(this.privkey);
+    // Create the key.
+    this.setKey(privkey);
 };
 
 /**
- * Set the public key.
+ * Proxy method for setKey, for api compatibility
+ * @see setKey
  */
 JSEncrypt.prototype.setPublicKey = function(pubkey) {
-
-  // Sets the public key.
-  this.pubkey = new RSAPublicKey(pubkey);
+    // Sets the public key.
+    this.setKey(pubkey);
 };
 
 /**
- * Decryption method to take a private PEM string and decrypt text.
+ * Proxy method for RSAKey object's decrypt, decrypt the string using the private
+ * components of the rsa key object. Note that if the object was not set will be created
+ * on the fly (by the getKey method) using the parameters passed in the JSEncrypt constructor
+ * @param {string} string base64 encoded crypted string to decrypt
+ * @return {string} the decrypted string
  */
 JSEncrypt.prototype.decrypt = function(string) {
-
-  // If a private ke is available, then decrypt.
-  if (this.privkey) {
-
     // Return the decrypted string.
-    return this.privkey.decrypt(b64tohex(string));
-  }
-  else {
-
-    // Return false...
-    return false;
-  }
-}
-
-/**
- * Encrypttion method to take a public PEM string and encrypt text.
- */
-JSEncrypt.prototype.encrypt = function(string) {
-
-  // We can use either the public key or the private key for encryption.
-  var key = this.pubkey || this.privkey;
-
-  // If the key exists.
-  if (key) {
-
-    // Return the encrypted string.
-    return hex2b64(key.encrypt(string));
-  }
-  else {
-
-    // Return false.
-    return false;
-  }
-}
-
-/**
- * Return the private key, or a generated one if it doesn't exist.
- */
-JSEncrypt.prototype.getPrivateKey = function() {
-
-  // Only create new if it does not exist.
-  if (!this.privkey) {
-
-    // Get a new private key.
-    this.privkey = new RSAPrivateKey();
-
-    // Generate the key.
-    this.privkey.generate(1024, '010001');
-
-    // Make sure the public key is based off of the private key.
-    this.pubkey = new RSAPublicKey(this.privkey);
-  }
-
-  // Return the private representation of this key.
-  return this.privkey.getPrivateKey();
+    return this.getKey().decrypt(b64tohex(string));
 };
 
 /**
- * Return the public key, or a generated one if it doesn't exist.
+ * Proxy method for RSAKey object's encrypt, encrypt the string using the public
+ * components of the rsa key object. Note that if the object was not set will be created
+ * on the fly (by the getKey method) using the parameters passed in the JSEncrypt constructor
+ * @param {string} string the string to encrypt
+ * @return {string} the encrypted string encoded in base64
+ */
+JSEncrypt.prototype.encrypt = function(string) {
+    // Return the encrypted string.
+    return hex2b64(this.getKey().encrypt(string));
+};
+
+/**
+ * Getter for the current JSEncryptRSAKey object. If it doesn't exists a new object 
+ * will be created and returned
+ * @returns {JSEncryptRSAKey} the JSEncryptRSAKey object
+ */
+JSEncrypt.prototype.getKey = function(){
+    // Only create new if it does not exist.
+    if (!this.key) {
+        // Get a new private key.
+        this.key = new JSEncryptRSAKey();
+        // Generate the key.
+        this.key.generate(this.default_key_size, this.default_public_exponent);
+    }
+    return this.key;
+};
+
+/**
+ * Returns the pem encoded representation of the private key
+ * If the key doesn't exists a new key will be created
+ * @returns {string} pem encoded representation of the private key WITH header and footer
+ */
+JSEncrypt.prototype.getPrivateKey = function() {
+    // Return the private representation of this key.
+    return this.getKey().getPrivateKey();
+};
+
+/**
+ * Returns the pem encoded representation of the private key
+ * If the key doesn't exists a new key will be created
+ * @returns {string} pem encoded representation of the private key WITHOUT header and footer
+ */
+JSEncrypt.prototype.getPrivateKeyB64 = function() {
+    // Return the private representation of this key.
+    return this.getKey().getPrivateBaseKeyB64();
+};
+
+
+/**
+ * Returns the pem encoded representation of the public key
+ * If the key doesn't exists a new key will be created
+ * @returns {string} pem encoded representation of the public key WITH header and footer
  */
 JSEncrypt.prototype.getPublicKey = function() {
+    // Return the private representation of this key.
+    return this.getKey().getPublicKey();
+};
 
-  // Only create new if it does not exist.
-  if (!this.pubkey) {
-
-    // Get a new private key.
-    this.pubkey = new RSAPublicKey();
-
-    // Generate the key.
-    this.pubkey.generate(1024, '010001');
-  }
-
-  // Return the private representation of this key.
-  return this.pubkey.getPublicKey();
+/**
+ * Returns the pem encoded representation of the public key
+ * If the key doesn't exists a new key will be created
+ * @returns {string} pem encoded representation of the public key WITHOUT header and footer
+ */
+JSEncrypt.prototype.getPublicKeyB64 = function() {
+    // Return the private representation of this key.
+    return this.getKey().getPublicBaseKeyB64();
 };
 exports.JSEncrypt = JSEncrypt;
 })(JSEncryptExports);

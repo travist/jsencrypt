@@ -2,8 +2,21 @@
 <html>
   <head>
     <title>JavaScript RSA Encryption Demo</title>
-    <script src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
-    <script src="bin/jsencrypt.min.js"></script>
+    
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
+    <script type="text/javascript" src="jsbn/jsbn.js"></script>
+    <script type="text/javascript" src="jsbn/jsbn2.js"></script>
+    <script type="text/javascript" src="jsbn/prng4.js"></script>
+    <script type="text/javascript" src="jsbn/rng.js"></script>
+    <script type="text/javascript" src="jsbn/rsa.js"></script>
+    <script type="text/javascript" src="jsbn/rsa2.js"></script>
+    <script type="text/javascript" src="jsbn/base64.js"></script>
+    <script type="text/javascript" src="jsrsasign/asn1-1.0.js"></script>
+    <script type="text/javascript" src="asn1js/hex.js"></script>
+    <script type="text/javascript" src="asn1js/base64.js"></script>
+    <script type="text/javascript" src="asn1js/asn1.js"></script>
+    <script type="text/javascript" src="src/jsencrypt.js"></script>
+    
     <script type="text/javascript">
       $(function() {
 
@@ -15,13 +28,10 @@
 
           // Set the private.
           crypt.setPrivateKey($('#privkey').val());
-
+          //return;
           // If no public key is set then set it here...
           var pubkey = $('#pubkey').val();
-          if (pubkey) {
-            crypt.setPublicKey($('#pubkey').val());
-          }
-          else {
+          if (!pubkey) {
             $('#pubkey').val(crypt.getPublicKey());
           }
 
@@ -35,7 +45,7 @@
             $('#input').val('');
           }
           else if (crypted) {
-            $('#input').val(crypt.decrypt(  crypted));
+            $('#input').val(crypt.decrypt(crypted));
             $('#crypted').val('');
           }
         });
@@ -76,9 +86,9 @@ a3Y+Nzl+XWTxDBWk4YPh2ZlKv402hZEfWBYxUDn5ZkH/bw==
     <input id="generate" type="button" value="Generate Keys" />
     <h2>Decryption / Encryption Test</h2>
     <label for="input">Text to encrypt:</label><br/>
-    <textarea id="input" name="input" type="text" rows=4 cols=70>This is a test!</textarea><br/>
+    <textarea id="input" name="input" rows=4 cols=70>This is a test!</textarea><br/>
     <label for="crypted">Encrypted:</label><br/>
-    <textarea id="crypted" name="crypted" type="text" rows=4 cols=70></textarea><br/>
+    <textarea id="crypted" name="crypted" rows=4 cols=70></textarea><br/>
     <input id="execute" type="button" value="Encrypt / Decrypt" />
   </body>
 </html>

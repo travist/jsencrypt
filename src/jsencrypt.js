@@ -1,358 +1,463 @@
 /**
- * Add a translate method to the RSAKey class.
+ * Retrieve the hexadecimal value (as a string) of the current ASN.1 element
+ * @returns {string}
+ * @public
  */
-RSAKey.prototype.parseKey = function(keyString) {
+ASN1.prototype.getHexStringValue = function(){
+    var hexString = this.toHexString();
+    var offset = this.header * 2;
+    var length = this.length * 2;
+    return hexString.substr(offset,length);
+};
 
-  // Prepare the key string.
-  keyString = this.prepareKey(keyString);
+/**
+ * Method to parse a pem encoded string containing both a public or private key.
+ * The method will translate the pem encoded string in a der encoded string and
+ * will parse private key and public key parameters. This method accepts public key
+ * in the rsaencryption pkcs #1 format (oid: 1.2.840.113549.1.1.1). 
+ * @todo Check how many rsa formats use the same format of pkcs #1. The format is defined as:
+ * PublicKeyInfo ::= SEQUENCE {
+ *   algorithm       AlgorithmIdentifier,
+ *   PublicKey       BIT STRING
+ * }
+ * Where AlgorithmIdentifier is: 
+ * AlgorithmIdentifier ::= SEQUENCE {
+ *   algorithm       OBJECT IDENTIFIER,     the OID of the enc algorithm
+ *   parameters      ANY DEFINED BY algorithm OPTIONAL (NULL for PKCS #1)
+ * }
+ * and PublicKey is a SEQUENCE encapsulated in a BIT STRING
+ * RSAPublicKey ::= SEQUENCE {
+ *   modulus           INTEGER,  -- n
+ *   publicExponent    INTEGER   -- e
+ * }
+ * it's possible to examine the structure of the keys obtained from openssl using 
+ * an asn.1 dumper as the one used here to parse the components: http://lapo.it/asn1js/
+ * @argument {string} pem the pem encoded string, can include the BEGIN/END header/footer
+ * @private
+ */
+RSAKey.prototype.parseKey = function(pem) {
+    try{
+        var reHex = /^\s*(?:[0-9A-Fa-f][0-9A-Fa-f]\s*)+$/;
+        var der = reHex.test(pem) ? Hex.decode(pem) : Base64.unarmor(pem);
+        var asn1 = ASN1.decode(der);
+        if (asn1.sub.length === 9){
+            // the data is a Private key
+            //in order
+            //Algorithm version, n, e, d, p, q, dmp1, dmq1, coeff
+            //Alg version, modulus, public exponent, private exponent, prime 1, prime 2, exponent 1, exponent 2, coefficient
+            var modulus = asn1.sub[1].getHexStringValue(); //bigint
+            this.n = parseBigInt(modulus, 16);
 
-  // Get the structure of this key.
-  var structure = this.structure();
+            var public_exponent = asn1.sub[2].getHexStringValue(); //int
+            this.e = parseInt(public_exponent, 16);
 
-  // Go through and parse all the properties.
-  var offset = 0, info = null, value = null, length = 0;
-  for (var prop in structure) {
-    info = structure[prop];
-    if (info.hasOwnProperty('offset')) {
-      offset += (info.offset * 2);
+            var private_exponent = asn1.sub[3].getHexStringValue(); //bigint
+            this.d = parseBigInt(private_exponent, 16);
+
+            var prime1 = asn1.sub[4].getHexStringValue(); //bigint
+            this.p = parseBigInt(prime1, 16);
+
+            var prime2 = asn1.sub[5].getHexStringValue(); //bigint 
+            this.q = parseBigInt(prime2, 16);
+
+            var exponent1 = asn1.sub[6].getHexStringValue(); //bigint
+            this.dmp1 = parseBigInt(exponent1, 16);
+
+            var exponent2 = asn1.sub[7].getHexStringValue(); //bigint
+            this.dmq1 = parseBigInt(exponent2, 16);
+
+            var coefficient = asn1.sub[8].getHexStringValue(); //bigint
+            this.coeff = parseBigInt(coefficient, 16);
+
+        }else if (asn1.sub.length === 2){
+            //Public key
+            //The data PROBABLY is a public key
+            var bit_string = asn1.sub[1];
+            var sequence   = bit_string.sub[0];
+
+            var modulus = sequence.sub[0].getHexStringValue();
+            this.n = parseBigInt(modulus, 16);
+            var public_exponent = sequence.sub[1].getHexStringValue();
+            this.e = parseInt(public_exponent, 16);
+
+        }else{
+            return false;
+        }
+        return true;
+    }catch(ex){
+        return false;
     }
-
-    // Determine the length.
-    length = typeof info.length == 'string' ? this[info.length] : info.length;
-    length *= 2;
-    value = keyString.substr(offset, length);
-    if (info.hasOwnProperty('type')) {
-      if (info.type == 'int') {
-        value = parseInt(value, 16);
-      }
-      else if (info.type == 'bigint') {
-        value = parseBigInt(value, 16);
-      }
-    }
-
-    // Increment the offset with the length.
-    offset += length;
-
-    // Assign the property.
-    this[prop] = value;
-  }
 };
 
 /**
- * Add a char64toHex method.
+ * Translate rsa parameters in a hex encoded string representing the rsa key.
+ * The translation follow the ASN.1 notation :
+ * RSAPrivateKey ::= SEQUENCE {
+ *   version           Version,
+ *   modulus           INTEGER,  -- n
+ *   publicExponent    INTEGER,  -- e
+ *   privateExponent   INTEGER,  -- d
+ *   prime1            INTEGER,  -- p
+ *   prime2            INTEGER,  -- q
+ *   exponent1         INTEGER,  -- d mod (p1)
+ *   exponent2         INTEGER,  -- d mod (q-1)
+ *   coefficient       INTEGER,  -- (inverse of q) mod p
+ * }
+ * @returns {string}  DER Encoded String representing the rsa private key
+ * @private
  */
-RSAKey.prototype.char64ToHex = function(str) {
-  return b64tohex(str);
+RSAKey.prototype.getPrivateBaseKey = function() {
+    //Algorithm version, n, e, d, p, q, dmp1, dmq1, coeff
+    //Alg version, modulus, public exponent, private exponent, prime 1, prime 2, exponent 1, exponent 2, coefficient
+    var options = {
+        'array' : [
+            new KJUR.asn1.DERInteger({'int'    : 0}),
+            new KJUR.asn1.DERInteger({'bigint' : this.n}),
+            new KJUR.asn1.DERInteger({'int'    : this.e}),
+            new KJUR.asn1.DERInteger({'bigint' : this.d}),
+            new KJUR.asn1.DERInteger({'bigint' : this.p}),
+            new KJUR.asn1.DERInteger({'bigint' : this.q}),
+            new KJUR.asn1.DERInteger({'bigint' : this.dmp1}),
+            new KJUR.asn1.DERInteger({'bigint' : this.dmq1}),
+            new KJUR.asn1.DERInteger({'bigint' : this.coeff})
+        ]
+    };
+    var seq = new KJUR.asn1.DERSequence(options);
+    return seq.getEncodedHex();
 };
 
 /**
- * Add a prepare key method.
- *
- * @param {string} The key to prepare.
- * @return {string} The hexidecimal version of the key.
+ * base64 (pem) encoded version of the DER encoded representation
+ * @returns {string} pem encoded representation without header and footer
+ * @public
  */
-RSAKey.prototype.prepareKey = function(keyString) {
-
-  // Trim the keystring first.
-  keyString = keyString.replace(/^\s+|\s+$/g, '');
-
-  // Split the key from the line feeds.
-  var lines = keyString.split(/\r?\n/);
-
-  // Only remove the first and last lines if it contains the begin stmt.
-  if (lines[0].substring(0,10) == '-----BEGIN') {
-
-    // Remove the first and last lines.
-    lines = lines.slice(1, (lines.length - 1));
-  }
-
-  // Join these back into the key.
-  keyString = lines.join('');
-
-  // Convert the key to hex.
-  return this.char64ToHex(keyString);
+RSAKey.prototype.getPrivateBaseKeyB64 = function (){
+    return hex2b64(this.getPrivateBaseKey());
 };
 
 /**
- * Returns the base key without header in base16 (hex) format.
+ * Translate rsa parameters in a hex encoded string representing the rsa public key.
+ * The representation follow the ASN.1 notation :
+ * PublicKeyInfo ::= SEQUENCE {
+ *   algorithm       AlgorithmIdentifier,
+ *   PublicKey       BIT STRING
+ * }
+ * Where AlgorithmIdentifier is: 
+ * AlgorithmIdentifier ::= SEQUENCE {
+ *   algorithm       OBJECT IDENTIFIER,     the OID of the enc algorithm
+ *   parameters      ANY DEFINED BY algorithm OPTIONAL (NULL for PKCS #1)
+ * }
+ * and PublicKey is a SEQUENCE encapsulated in a BIT STRING
+ * RSAPublicKey ::= SEQUENCE {
+ *   modulus           INTEGER,  -- n
+ *   publicExponent    INTEGER   -- e
+ * }
+ * @returns {string} DER Encoded String representing the rsa public key
+ * @private
  */
-RSAKey.prototype.getBaseKey = function() {
-  var b16 = '';
-  var structure = this.structure();
-  var info = null, value = null, length = 0;
-  for (var prop in structure) {
-    info = structure[prop];
-    if (info.variable) {
-
-      // Get the value in hex form.
-      value = this[prop].toString(16);
-      if (!!(value.length % 2)) {
-        value = "0" + value;
-      }
-      if (info.hasOwnProperty('padded') && info.padded) {
-        value = "00" + value;
-      }
-
-      // Get the length in hex form.
-      length = (value.length / 2);
-      length = length.toString(16);
-      if (!!(length.length % 2)) {
-        length = "0" + length;
-      }
-
-      // If the value has an extra space then add it.
-      if (info.hasOwnProperty('extraspace')) {
-        b16 += length;
-      }
-
-      // Add the length.
-      b16 += length;
-
-      // Add the value.
-      b16 += value;
-
-      // Add the spacer.
-      b16 += "02";
-    }
-  }
-
-  // Remove the last spacer.
-  return b16.slice(0, -2);
+RSAKey.prototype.getPublicBaseKey = function() {
+    var options = {
+        'array' : [
+            new KJUR.asn1.DERObjectIdentifier({'oid':'1.2.840.113549.1.1.1'}), //RSA Encryption pkcs #1 oid
+            new KJUR.asn1.DERNull()
+        ]
+    };
+    var first_sequence = new KJUR.asn1.DERSequence(options);
+    
+    options = {
+        'array' : [
+            new KJUR.asn1.DERInteger({'bigint' : this.n}),
+            new KJUR.asn1.DERInteger({'int' : this.e})
+        ]
+    };
+    var second_sequence = new KJUR.asn1.DERSequence(options);
+    
+    options = {
+        'hex' : '00'+second_sequence.getEncodedHex()
+    };
+    var bit_string = new KJUR.asn1.DERBitString(options);
+    
+    options = {
+        'array' : [
+            first_sequence,
+            bit_string
+        ]
+    };
+    var seq = new KJUR.asn1.DERSequence(options);
+    return seq.getEncodedHex();
 };
 
 /**
- * Create a word wrap.
+ * base64 (pem) encoded version of the DER encoded representation
+ * @returns {string} pem encoded representation without header and footer
+ * @public
+ */
+RSAKey.prototype.getPublicBaseKeyB64 = function (){
+    return hex2b64(this.getPublicBaseKey());
+};
+
+/**
+ * wrap the string in block of width chars. The default value for rsa keys is 64
+ * characters.
+ * @param {string} str the pem encoded string without header and footer
+ * @param {Number} [width=64] - the length the string has to be wrapped at
+ * @returns {string} 
+ * @private
  */
 RSAKey.prototype.wordwrap = function(str, width) {
-  width = width || 64;
-  if (!str) {
-    return str;
-  }
-  var regex = '(.{1,' + width + '})( +|$\n?)|(.{1,' + width + '})';
-  return str.match(RegExp(regex, 'g')).join('\n');
-}
+    width = width || 64;
+    if (!str)
+        return str;
+    var regex = '(.{1,' + width + '})( +|$\n?)|(.{1,' + width + '})';
+    return str.match(RegExp(regex, 'g')).join('\n');
+};
 
-// Return a new Private key.
+/**
+ * Retrieve the pem encoded private key
+ * @returns {string} the pem encoded private key with header/footer
+ * @public
+ */
 RSAKey.prototype.getPrivateKey = function() {
-  var key = "-----BEGIN RSA PRIVATE KEY-----\n";
-  var b16 = "3082025e02010002";  // header + spacer + verlen + version + spacer.
-  b16 += this.getBaseKey();
-  key += this.wordwrap(hex2b64(b16)) + "\n";
-  key += "-----END RSA PRIVATE KEY-----";
-  return key;
+    var key = "-----BEGIN RSA PRIVATE KEY-----\n";
+    key += this.wordwrap(this.getPrivateBaseKeyB64()) + "\n";
+    key += "-----END RSA PRIVATE KEY-----";
+    return key;
 };
 
-// Return a new Public key.
+/**
+ * Retrieve the pem encoded public key
+ * @returns {string} the pem encoded public key with header/footer
+ * @public
+ */
 RSAKey.prototype.getPublicKey = function() {
-  var key = "-----BEGIN PUBLIC KEY-----\n";
-  var b16 = "30819f300d06092a864886f70d010101050003818d0030818902";  // header + spacer.
-  b16 += this.getBaseKey();
-  key += this.wordwrap(hex2b64(b16)) + "\n";
-  key += "-----END PUBLIC KEY-----";
-  return key;
+    var key = "-----BEGIN PUBLIC KEY-----\n";
+    key += this.wordwrap(this.getPublicBaseKeyB64()) + "\n";
+    key += "-----END PUBLIC KEY-----";
+    return key;
 };
 
 /**
- * Create a private key class to extend the RSAKey.
- *
- * @param string privkey - The private key in string format.
+ * Check if the object contains the necessary parameters to populate the rsa modulus
+ * and public exponent parameters.
+ * @param {Object} [obj={}] - An object that may contain the two public key
+ * parameters
+ * @returns {boolean} true if the object contains both the modulus and the public exponent
+ * properties (n and e)
+ * @todo check for types of n and e. N should be a parseable bigInt object, E should
+ * be a parseable integer number
+ * @private
  */
-var RSAPrivateKey = function(privkey) {
+RSAKey.prototype.hasPublicKeyProperty = function(obj){
+    obj = obj || {};
+    return obj.hasOwnProperty('n') &&
+           obj.hasOwnProperty('e');
+};
 
-  // Call teh constructor.
-  RSAKey.call(this);
+/**
+ * Check if the object contains ALL the parameters of an RSA key.
+ * @param {Object} [obj={}] - An object that may contain nine rsa key
+ * parameters
+ * @returns {boolean} true if the object contains all the parameters needed
+ * @todo check for types of the parameters all the parameters but the public exponent
+ * should be parseable bigint objects, the public exponent should be a parseable integer number
+ * @private
+ */
+RSAKey.prototype.hasPrivateKeyProperty = function(obj){
+    obj = obj || {};
+    return obj.hasOwnProperty('n') &&
+           obj.hasOwnProperty('e') &&
+           obj.hasOwnProperty('d') &&
+           obj.hasOwnProperty('p') &&
+           obj.hasOwnProperty('q') &&
+           obj.hasOwnProperty('dmp1') &&
+           obj.hasOwnProperty('dmq1') &&
+           obj.hasOwnProperty('coeff');
+};
 
-  // If a private key was provided.
-  if (privkey) {
+/**
+ * Parse the properties of obj in the current rsa object. Obj should AT LEAST
+ * include the modulus and public exponent (n, e) parameters.
+ * @param {Object} obj - the object containing rsa parameters
+ * @private
+ */
+RSAKey.prototype.parsePropertiesFrom = function(obj){
+    this.n = obj.n;
+    this.e = obj.e;        
+    
+    if (obj.hasOwnProperty('d')){
+        this.d = obj.d;
+        this.p = obj.p;
+        this.q = obj.q;
+        this.dmp1 = obj.dmp1;
+        this.dmq1 = obj.dmq1;
+        this.coeff = obj.coeff;
+    }
+};
 
-    // Parse the key.
-    this.parseKey(privkey);
-  }
+/**
+ * Create a new JSEncryptRSAKey that extends Tom Wu's RSA key object.
+ * This object is just a decorator for parsing the key parameter
+ * @param {string|Object} key - The key in string format, or an object containing
+ * the parameters needed to build a RSAKey object.
+ * @constructor
+ */
+var JSEncryptRSAKey = function(key) {
+    // Call the super constructor.
+    RSAKey.call(this);
+    // If a key key was provided.
+    if (key) {
+        // If this is a string...
+        if (typeof key === 'string') {
+            this.parseKey(key);
+        }else if (this.hasPrivateKeyProperty(key)||this.hasPublicKeyProperty(key)) {
+            // Set the values for the key.
+            this.parsePropertiesFrom(key);
+        }
+    }
 };
 
 // Derive from RSAKey.
-RSAPrivateKey.prototype = new RSAKey();
+JSEncryptRSAKey.prototype = new RSAKey();
 
 // Reset the contructor.
-RSAPrivateKey.prototype.constructor = RSAPrivateKey;
+JSEncryptRSAKey.prototype.constructor = JSEncryptRSAKey;
 
-// Returns the structure for the private key.
-// See http://etherhack.co.uk/asymmetric/docs/rsa_key_breakdown.html
-RSAPrivateKey.prototype.structure = function() {
-  return {
-    'header': {length: 4},
-    'versionlength': {length: 1, offset: 1, type: 'int'},
-    'version': {length:'versionlength', type: 'int'},
-    'n_length': {length:1, offset:2, type: 'int'},
-    'n': {length:'n_length', type: 'bigint', variable:true, padded: true, extraspace: true},
-    'e_length': {length:1, offset:1, type: 'int'},
-    'e': {length:'e_length', type: 'int', variable:true},
-    'd_length': {length:1, offset:2, type: 'int'},
-    'd': {length:'d_length', type: 'bigint', variable:true, padded: true, extraspace: true},
-    'p_length': {length:1, offset:1, type: 'int'},
-    'p': {length:'p_length', type: 'bigint', variable:true, padded: true},
-    'q_length': {length:1, offset:1, type: 'int'},
-    'q': {length:'q_length', type: 'bigint', variable:true, padded: true},
-    'dmp1_length': {length: 1, offset: 1, type: 'int'},
-    'dmp1': {length: 'dmp1_length', type: 'bigint', variable:true},
-    'dmq1_length': {length: 1, offset: 1, type: 'int'},
-    'dmq1': {length: 'dmq1_length', type: 'bigint', variable:true, padded: true},
-    'coeff_length': {length: 1, offset: 1, type: 'int'},
-    'coeff': {length: 'coeff_length', type: 'bigint', variable:true, padded: true}
-  };
-};
 
 /**
- * Create a public key class to extend the RSAKey.
- *
- * @param string pubkey - The public key in string format, or RSAPrivateKey.
+ * 
+ * @param {Object} [options = {}] - An object to customize JSEncrypt behaviour 
+ * possible parameters are:
+ * - default_key_size        {number}  default: 1024 the key size in bit
+ * - default_public_exponent {string}  default: '010001' the hexadecimal representation of the public exponent
+ * - log                     {boolean} default: false whether log warn/error or not
+ * @constructor
  */
-var RSAPublicKey = function(pubkey) {
-
-  // Call teh constructor.
-  RSAKey.call(this);
-
-  // If a pubkey key was provided.
-  if (pubkey) {
-
-    // If this is a string...
-    if (typeof pubkey == 'string') {
-      this.parseKey(pubkey);
-    }
-    else if (pubkey.hasOwnProperty('n') && pubkey.hasOwnProperty('e')) {
-
-      // Set the values for the public key.
-      this.n = pubkey.n;
-      this.e = pubkey.e;
-    }
-  }
-};
-
-// Derive from RSAKey.
-RSAPublicKey.prototype = new RSAKey();
-
-// Reset the contructor.
-RSAPublicKey.prototype.constructor = RSAPublicKey;
-
-// Returns the structure for the public key.
-// See http://etherhack.co.uk/asymmetric/docs/rsa_key_breakdown.html
-RSAPublicKey.prototype.structure = function() {
-  return {
-    'header': {length: 25},
-    'n_length': {length:1, offset:2, type: 'int'},
-    'n': {length:'n_length', type: 'bigint', variable:true, padded: true, extraspace: true},
-    'e_length': {length:1, offset:1, type: 'int'},
-    'e': {length:'e_length', type: 'int', variable:true}
-  };
+var JSEncrypt = function(options) {
+    options = options || {};
+    this.default_key_size = options.default_key_size || 1024;
+    this.default_public_exponent = options.default_public_exponent || '010001'; //65537 default openssl public exponent for rsa key type
+    this.log = options.log || false; 
+    // The private and public key.
+    this.key = null;
 };
 
 /**
- * Class to do the encryption.
+ * Method to set the rsa key parameter (one method is enough to set both the public
+ * and the private key, since the private key contains the public key paramenters)
+ * Log a warning if logs are enabled
+ * @param {Object|string} key the pem encoded string or an object (with or without header/footer)
+ * @public
  */
-var JSEncrypt = function() {
-
-  // The private and public keys.
-  this.privkey = null;
-  this.pubkey = null;
+JSEncrypt.prototype.setKey = function(key){
+    if (this.log && this.key)
+        console.warn('A key was already set, overriding existing.');
+    this.key = new JSEncryptRSAKey(key);
 };
 
 /**
- * Set the private key.
+ * Proxy method for setKey, for api compatibility
+ * @see setKey
+ * @public
  */
 JSEncrypt.prototype.setPrivateKey = function(privkey) {
-
-  // Create the private key.
-  this.privkey = new RSAPrivateKey(privkey);
-
-  // Make sure the public key is based off of the private key.
-  this.pubkey = new RSAPublicKey(this.privkey);
+    // Create the key.
+    this.setKey(privkey);
 };
 
 /**
- * Set the public key.
+ * Proxy method for setKey, for api compatibility
+ * @see setKey
+ * @public
  */
 JSEncrypt.prototype.setPublicKey = function(pubkey) {
-
-  // Sets the public key.
-  this.pubkey = new RSAPublicKey(pubkey);
+    // Sets the public key.
+    this.setKey(pubkey);
 };
 
 /**
- * Decryption method to take a private PEM string and decrypt text.
+ * Proxy method for RSAKey object's decrypt, decrypt the string using the private
+ * components of the rsa key object. Note that if the object was not set will be created
+ * on the fly (by the getKey method) using the parameters passed in the JSEncrypt constructor
+ * @param {string} string base64 encoded crypted string to decrypt
+ * @return {string} the decrypted string
+ * @public
  */
 JSEncrypt.prototype.decrypt = function(string) {
-
-  // If a private ke is available, then decrypt.
-  if (this.privkey) {
-
     // Return the decrypted string.
-    return this.privkey.decrypt(b64tohex(string));
-  }
-  else {
-
-    // Return false...
-    return false;
-  }
-}
-
-/**
- * Encrypttion method to take a public PEM string and encrypt text.
- */
-JSEncrypt.prototype.encrypt = function(string) {
-
-  // We can use either the public key or the private key for encryption.
-  var key = this.pubkey || this.privkey;
-
-  // If the key exists.
-  if (key) {
-
-    // Return the encrypted string.
-    return hex2b64(key.encrypt(string));
-  }
-  else {
-
-    // Return false.
-    return false;
-  }
-}
-
-/**
- * Return the private key, or a generated one if it doesn't exist.
- */
-JSEncrypt.prototype.getPrivateKey = function() {
-
-  // Only create new if it does not exist.
-  if (!this.privkey) {
-
-    // Get a new private key.
-    this.privkey = new RSAPrivateKey();
-
-    // Generate the key.
-    this.privkey.generate(1024, '010001');
-
-    // Make sure the public key is based off of the private key.
-    this.pubkey = new RSAPublicKey(this.privkey);
-  }
-
-  // Return the private representation of this key.
-  return this.privkey.getPrivateKey();
+    return this.getKey().decrypt(b64tohex(string));
 };
 
 /**
- * Return the public key, or a generated one if it doesn't exist.
+ * Proxy method for RSAKey object's encrypt, encrypt the string using the public
+ * components of the rsa key object. Note that if the object was not set will be created
+ * on the fly (by the getKey method) using the parameters passed in the JSEncrypt constructor
+ * @param {string} string the string to encrypt
+ * @return {string} the encrypted string encoded in base64
+ * @public
+ */
+JSEncrypt.prototype.encrypt = function(string) {
+    // Return the encrypted string.
+    return hex2b64(this.getKey().encrypt(string));
+};
+
+/**
+ * Getter for the current JSEncryptRSAKey object. If it doesn't exists a new object 
+ * will be created and returned
+ * @returns {JSEncryptRSAKey} the JSEncryptRSAKey object
+ * @public
+ */
+JSEncrypt.prototype.getKey = function(){
+    // Only create new if it does not exist.
+    if (!this.key) {
+        // Get a new private key.
+        this.key = new JSEncryptRSAKey();
+        // Generate the key.
+        this.key.generate(this.default_key_size, this.default_public_exponent);
+    }
+    return this.key;
+};
+
+/**
+ * Returns the pem encoded representation of the private key
+ * If the key doesn't exists a new key will be created
+ * @returns {string} pem encoded representation of the private key WITH header and footer
+ * @public
+ */
+JSEncrypt.prototype.getPrivateKey = function() {
+    // Return the private representation of this key.
+    return this.getKey().getPrivateKey();
+};
+
+/**
+ * Returns the pem encoded representation of the private key
+ * If the key doesn't exists a new key will be created
+ * @returns {string} pem encoded representation of the private key WITHOUT header and footer
+ * @public
+ */
+JSEncrypt.prototype.getPrivateKeyB64 = function() {
+    // Return the private representation of this key.
+    return this.getKey().getPrivateBaseKeyB64();
+};
+
+
+/**
+ * Returns the pem encoded representation of the public key
+ * If the key doesn't exists a new key will be created
+ * @returns {string} pem encoded representation of the public key WITH header and footer
+ * @public
  */
 JSEncrypt.prototype.getPublicKey = function() {
+    // Return the private representation of this key.
+    return this.getKey().getPublicKey();
+};
 
-  // Only create new if it does not exist.
-  if (!this.pubkey) {
-
-    // Get a new private key.
-    this.pubkey = new RSAPublicKey();
-
-    // Generate the key.
-    this.pubkey.generate(1024, '010001');
-  }
-
-  // Return the private representation of this key.
-  return this.pubkey.getPublicKey();
+/**
+ * Returns the pem encoded representation of the public key
+ * If the key doesn't exists a new key will be created
+ * @returns {string} pem encoded representation of the public key WITHOUT header and footer
+ * @public
+ */
+JSEncrypt.prototype.getPublicKeyB64 = function() {
+    // Return the private representation of this key.
+    return this.getKey().getPublicBaseKeyB64();
 };
