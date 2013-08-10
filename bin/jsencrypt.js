@@ -4111,7 +4111,7 @@ JSEncrypt.prototype.getPublicKey = function() {
 JSEncrypt.prototype.getPublicKeyB64 = function() {
     // Return the private representation of this key.
     return this.getKey().getPublicBaseKeyB64();
-};-e 
+};
 exports.JSEncrypt = JSEncrypt;
 })(JSEncryptExports);
 var JSEncrypt = JSEncryptExports.JSEncrypt;
