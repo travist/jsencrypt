@@ -14,6 +14,11 @@ files =   jsbn/jsbn.js\
 	  asn1js/asn1.js\
           src/jsencrypt.js
 
+licenses =  src/LICENSE.txt\
+	    jsrsasign/LICENSE.txt\
+	    jsbn/LICENSE.txt\
+	    asn1js/LICENSE.txt
+
 .DEFAULT_GOAL := all
 
 all: js
@@ -39,3 +44,6 @@ js: ${files}
 	  --data-urlencode "js_code@bin/jsencrypt.js" \
 	  http://closure-compiler.appspot.com/compile \
 	  > bin/jsencrypt.min.js
+	
+licenses: ${licenses}
+	@cat $^ > LICENSE.txt
