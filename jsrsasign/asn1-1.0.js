@@ -394,7 +394,7 @@ KJUR.asn1.ASN1Object = function() {
 	    this.hL = this.getLengthHexFromValue();
 	    this.hTLV = this.hT + this.hL + this.hV;
 	    this.isModified = false;
-	    //alert("first time: " + this.hTLV);
+	    //console.error("first time: " + this.hTLV);
 	}
 	return this.hTLV;
     };

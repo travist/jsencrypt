@@ -1357,7 +1357,7 @@ function byte2Hex(b) {
 // PKCS#1 (type 2, random) pad input string s to n bytes, and return a bigint
 function pkcs1pad2(s,n) {
   if(n < s.length + 11) { // TODO: fix for utf-8
-    alert("Message too long for RSA");
+    console.error("Message too long for RSA");
     return null;
   }
   var ba = new Array();
@@ -1409,7 +1409,7 @@ function RSASetPublic(N,E) {
     this.e = parseInt(E,16);
   }
   else
-    alert("Invalid RSA public key");
+    console.error("Invalid RSA public key");
 }
 
 // Perform raw public operation on "x": return x^e (mod n)
@@ -1480,7 +1480,7 @@ function RSASetPrivate(N,E,D) {
     this.d = parseBigInt(D,16);
   }
   else
-    alert("Invalid RSA private key");
+    console.error("Invalid RSA private key");
 }
 
 // Set the private key fields N, e, d and CRT params from hex strings
@@ -1496,7 +1496,7 @@ function RSASetPrivateEx(N,E,D,P,Q,DP,DQ,C) {
     this.coeff = parseBigInt(C,16);
   }
   else
-    alert("Invalid RSA private key");
+    console.error("Invalid RSA private key");
 }
 
 // Generate a new random private key B bits long, using public expt E
@@ -1572,7 +1572,158 @@ RSAKey.prototype.setPrivateEx = RSASetPrivateEx;
 RSAKey.prototype.generate = RSAGenerate;
 RSAKey.prototype.decrypt = RSADecrypt;
 //RSAKey.prototype.b64_decrypt = RSAB64Decrypt;
-var b64map="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+// Copyright (c) 2011  Kevin M Burns Jr.
+// All Rights Reserved.
+// See "LICENSE" for details.
+//
+// Extension to jsbn which adds facilities for asynchronous RSA key generation
+// Primarily created to avoid execution timeout on mobile devices
+//
+// http://www-cs-students.stanford.edu/~tjw/jsbn/
+//
+// ---
+
+(function(){
+
+// Generate a new random private key B bits long, using public expt E
+var RSAGenerateAsync = function (B, E, callback) {
+    //var rng = new SeededRandom();
+    var rng = new SecureRandom();
+    var qs = B >> 1;
+    this.e = parseInt(E, 16);
+    var ee = new BigInteger(E, 16);
+    var rsa = this;
+    // These functions have non-descript names because they were originally for(;;) loops.
+    // I don't know about cryptography to give them better names than loop1-4.
+    var loop1 = function() {
+        var loop4 = function() {
+            if (rsa.p.compareTo(rsa.q) <= 0) {
+                var t = rsa.p;
+                rsa.p = rsa.q;
+                rsa.q = t;
+            }
+            var p1 = rsa.p.subtract(BigInteger.ONE);
+            var q1 = rsa.q.subtract(BigInteger.ONE);
+            var phi = p1.multiply(q1);
+            if (phi.gcd(ee).compareTo(BigInteger.ONE) == 0) {
+                rsa.n = rsa.p.multiply(rsa.q);
+                rsa.d = ee.modInverse(phi);
+                rsa.dmp1 = rsa.d.mod(p1);
+                rsa.dmq1 = rsa.d.mod(q1);
+                rsa.coeff = rsa.q.modInverse(rsa.p);
+                setTimeout(function(){callback()},0); // escape
+            } else {
+                setTimeout(loop1,0);
+            }
+        };
+        var loop3 = function() {
+            rsa.q = nbi();
+            rsa.q.fromNumberAsync(qs, 1, rng, function(){
+                rsa.q.subtract(BigInteger.ONE).gcda(ee, function(r){
+                    if (r.compareTo(BigInteger.ONE) == 0 && rsa.q.isProbablePrime(10)) {
+                        setTimeout(loop4,0);
+                    } else {
+                        setTimeout(loop3,0);
+                    }
+                });
+            });
+        };
+        var loop2 = function() {
+            rsa.p = nbi();
+            rsa.p.fromNumberAsync(B - qs, 1, rng, function(){
+                rsa.p.subtract(BigInteger.ONE).gcda(ee, function(r){
+                    if (r.compareTo(BigInteger.ONE) == 0 && rsa.p.isProbablePrime(10)) {
+                        setTimeout(loop3,0);
+                    } else {
+                        setTimeout(loop2,0);
+                    }
+                });
+            });
+        };
+        setTimeout(loop2,0);
+    };
+    setTimeout(loop1,0);
+};
+RSAKey.prototype.generateAsync = RSAGenerateAsync;
+
+// Public API method
+var bnGCDAsync = function (a, callback) {
+    var x = (this.s < 0) ? this.negate() : this.clone();
+    var y = (a.s < 0) ? a.negate() : a.clone();
+    if (x.compareTo(y) < 0) {
+        var t = x;
+        x = y;
+        y = t;
+    }
+    var i = x.getLowestSetBit(),
+        g = y.getLowestSetBit();
+    if (g < 0) {
+        callback(x);
+        return;
+    }
+    if (i < g) g = i;
+    if (g > 0) {
+        x.rShiftTo(g, x);
+        y.rShiftTo(g, y);
+    }
+    // Workhorse of the algorithm, gets called 200 - 800 times per 512 bit keygen.
+    var gcda1 = function() {
+        if ((i = x.getLowestSetBit()) > 0){ x.rShiftTo(i, x); }
+        if ((i = y.getLowestSetBit()) > 0){ y.rShiftTo(i, y); }
+        if (x.compareTo(y) >= 0) {
+            x.subTo(y, x);
+            x.rShiftTo(1, x);
+        } else {
+            y.subTo(x, y);
+            y.rShiftTo(1, y);
+        }
+        if(!(x.signum() > 0)) {
+            if (g > 0) y.lShiftTo(g, y);
+            setTimeout(function(){callback(y)},0); // escape
+        } else {
+            setTimeout(gcda1,0);
+        }
+    };
+    setTimeout(gcda1,10);
+};
+BigInteger.prototype.gcda = bnGCDAsync;
+
+// (protected) alternate constructor
+var bnpFromNumberAsync = function (a,b,c,callback) {
+  if("number" == typeof b) {
+    if(a < 2) {
+        this.fromInt(1);
+    } else {
+      this.fromNumber(a,c);
+      if(!this.testBit(a-1)){
+        this.bitwiseTo(BigInteger.ONE.shiftLeft(a-1),op_or,this);
+      }
+      if(this.isEven()) {
+        this.dAddOffset(1,0);
+      }
+      var bnp = this;
+      var bnpfn1 = function(){
+        bnp.dAddOffset(2,0);
+        if(bnp.bitLength() > a) bnp.subTo(BigInteger.ONE.shiftLeft(a-1),bnp);
+        if(bnp.isProbablePrime(b)) {
+            setTimeout(function(){callback()},0); // escape
+        } else {
+            setTimeout(bnpfn1,0);
+        }
+      };
+      setTimeout(bnpfn1,0);
+    }
+  } else {
+    var x = new Array(), t = a&7;
+    x.length = (a>>3)+1;
+    b.nextBytes(x);
+    if(t > 0) x[0] &= ((1<<t)-1); else x[0] = 0;
+    this.fromString(x,256);
+  }
+};
+BigInteger.prototype.fromNumberAsync = bnpFromNumberAsync;
+
+})();var b64map="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 var b64pad="=";
 
 function hex2b64(h) {
@@ -2039,7 +2190,7 @@ KJUR.asn1.ASN1Object = function() {
 	    this.hL = this.getLengthHexFromValue();
 	    this.hTLV = this.hT + this.hL + this.hV;
 	    this.isModified = false;
-	    //alert("first time: " + this.hTLV);
+	    //console.error("first time: " + this.hTLV);
 	}
 	return this.hTLV;
     };
@@ -3674,6 +3825,7 @@ window.ASN1 = ASN1;
 })();/**
  * Retrieve the hexadecimal value (as a string) of the current ASN.1 element
  * @returns {string}
+ * @public
  */
 ASN1.prototype.getHexStringValue = function(){
     var hexString = this.toHexString();
@@ -3705,6 +3857,7 @@ ASN1.prototype.getHexStringValue = function(){
  * it's possible to examine the structure of the keys obtained from openssl using 
  * an asn.1 dumper as the one used here to parse the components: http://lapo.it/asn1js/
  * @argument {string} pem the pem encoded string, can include the BEGIN/END header/footer
+ * @private
  */
 RSAKey.prototype.parseKey = function(pem) {
     try{
@@ -3775,6 +3928,7 @@ RSAKey.prototype.parseKey = function(pem) {
  *   coefficient       INTEGER,  -- (inverse of q) mod p
  * }
  * @returns {string}  DER Encoded String representing the rsa private key
+ * @private
  */
 RSAKey.prototype.getPrivateBaseKey = function() {
     //Algorithm version, n, e, d, p, q, dmp1, dmq1, coeff
@@ -3799,6 +3953,7 @@ RSAKey.prototype.getPrivateBaseKey = function() {
 /**
  * base64 (pem) encoded version of the DER encoded representation
  * @returns {string} pem encoded representation without header and footer
+ * @public
  */
 RSAKey.prototype.getPrivateBaseKeyB64 = function (){
     return hex2b64(this.getPrivateBaseKey());
@@ -3822,6 +3977,7 @@ RSAKey.prototype.getPrivateBaseKeyB64 = function (){
  *   publicExponent    INTEGER   -- e
  * }
  * @returns {string} DER Encoded String representing the rsa public key
+ * @private
  */
 RSAKey.prototype.getPublicBaseKey = function() {
     var options = {
@@ -3858,6 +4014,7 @@ RSAKey.prototype.getPublicBaseKey = function() {
 /**
  * base64 (pem) encoded version of the DER encoded representation
  * @returns {string} pem encoded representation without header and footer
+ * @public
  */
 RSAKey.prototype.getPublicBaseKeyB64 = function (){
     return hex2b64(this.getPublicBaseKey());
@@ -3869,6 +4026,7 @@ RSAKey.prototype.getPublicBaseKeyB64 = function (){
  * @param {string} str the pem encoded string without header and footer
  * @param {Number} [width=64] - the length the string has to be wrapped at
  * @returns {string} 
+ * @private
  */
 RSAKey.prototype.wordwrap = function(str, width) {
     width = width || 64;
@@ -3881,6 +4039,7 @@ RSAKey.prototype.wordwrap = function(str, width) {
 /**
  * Retrieve the pem encoded private key
  * @returns {string} the pem encoded private key with header/footer
+ * @public
  */
 RSAKey.prototype.getPrivateKey = function() {
     var key = "-----BEGIN RSA PRIVATE KEY-----\n";
@@ -3892,6 +4051,7 @@ RSAKey.prototype.getPrivateKey = function() {
 /**
  * Retrieve the pem encoded public key
  * @returns {string} the pem encoded public key with header/footer
+ * @public
  */
 RSAKey.prototype.getPublicKey = function() {
     var key = "-----BEGIN PUBLIC KEY-----\n";
@@ -3909,6 +4069,7 @@ RSAKey.prototype.getPublicKey = function() {
  * properties (n and e)
  * @todo check for types of n and e. N should be a parseable bigInt object, E should
  * be a parseable integer number
+ * @private
  */
 RSAKey.prototype.hasPublicKeyProperty = function(obj){
     obj = obj || {};
@@ -3923,6 +4084,7 @@ RSAKey.prototype.hasPublicKeyProperty = function(obj){
  * @returns {boolean} true if the object contains all the parameters needed
  * @todo check for types of the parameters all the parameters but the public exponent
  * should be parseable bigint objects, the public exponent should be a parseable integer number
+ * @private
  */
 RSAKey.prototype.hasPrivateKeyProperty = function(obj){
     obj = obj || {};
@@ -3940,6 +4102,7 @@ RSAKey.prototype.hasPrivateKeyProperty = function(obj){
  * Parse the properties of obj in the current rsa object. Obj should AT LEAST
  * include the modulus and public exponent (n, e) parameters.
  * @param {Object} obj - the object containing rsa parameters
+ * @private
  */
 RSAKey.prototype.parsePropertiesFrom = function(obj){
     this.n = obj.n;
@@ -3995,7 +4158,7 @@ JSEncryptRSAKey.prototype.constructor = JSEncryptRSAKey;
  */
 var JSEncrypt = function(options) {
     options = options || {};
-    this.default_key_size = options.default_key_size || 1024;
+    this.default_key_size = parseInt(options.default_key_size) || 1024;
     this.default_public_exponent = options.default_public_exponent || '010001'; //65537 default openssl public exponent for rsa key type
     this.log = options.log || false; 
     // The private and public key.
@@ -4007,6 +4170,7 @@ var JSEncrypt = function(options) {
  * and the private key, since the private key contains the public key paramenters)
  * Log a warning if logs are enabled
  * @param {Object|string} key the pem encoded string or an object (with or without header/footer)
+ * @public
  */
 JSEncrypt.prototype.setKey = function(key){
     if (this.log && this.key)
@@ -4017,6 +4181,7 @@ JSEncrypt.prototype.setKey = function(key){
 /**
  * Proxy method for setKey, for api compatibility
  * @see setKey
+ * @public
  */
 JSEncrypt.prototype.setPrivateKey = function(privkey) {
     // Create the key.
@@ -4026,6 +4191,7 @@ JSEncrypt.prototype.setPrivateKey = function(privkey) {
 /**
  * Proxy method for setKey, for api compatibility
  * @see setKey
+ * @public
  */
 JSEncrypt.prototype.setPublicKey = function(pubkey) {
     // Sets the public key.
@@ -4038,10 +4204,15 @@ JSEncrypt.prototype.setPublicKey = function(pubkey) {
  * on the fly (by the getKey method) using the parameters passed in the JSEncrypt constructor
  * @param {string} string base64 encoded crypted string to decrypt
  * @return {string} the decrypted string
+ * @public
  */
 JSEncrypt.prototype.decrypt = function(string) {
     // Return the decrypted string.
-    return this.getKey().decrypt(b64tohex(string));
+    try{
+        return this.getKey().decrypt(b64tohex(string));
+    }catch(ex){
+        return false;
+    }
 };
 
 /**
@@ -4050,22 +4221,34 @@ JSEncrypt.prototype.decrypt = function(string) {
  * on the fly (by the getKey method) using the parameters passed in the JSEncrypt constructor
  * @param {string} string the string to encrypt
  * @return {string} the encrypted string encoded in base64
+ * @public
  */
 JSEncrypt.prototype.encrypt = function(string) {
     // Return the encrypted string.
-    return hex2b64(this.getKey().encrypt(string));
+    try{
+        return hex2b64(this.getKey().encrypt(string));
+    }catch(ex){
+        return false;
+    }
 };
 
 /**
  * Getter for the current JSEncryptRSAKey object. If it doesn't exists a new object 
  * will be created and returned
+ * @param {callback} [cb] the callback to be called if we want the key to be generated
+ * in an async fashion
  * @returns {JSEncryptRSAKey} the JSEncryptRSAKey object
+ * @public
  */
-JSEncrypt.prototype.getKey = function(){
+JSEncrypt.prototype.getKey = function(cb){
     // Only create new if it does not exist.
     if (!this.key) {
         // Get a new private key.
         this.key = new JSEncryptRSAKey();
+        if (cb && {}.toString.call(cb) === '[object Function]'){
+            this.key.generateAsync(this.default_key_size, this.default_public_exponent,cb);
+            return;
+        }
         // Generate the key.
         this.key.generate(this.default_key_size, this.default_public_exponent);
     }
@@ -4076,6 +4259,7 @@ JSEncrypt.prototype.getKey = function(){
  * Returns the pem encoded representation of the private key
  * If the key doesn't exists a new key will be created
  * @returns {string} pem encoded representation of the private key WITH header and footer
+ * @public
  */
 JSEncrypt.prototype.getPrivateKey = function() {
     // Return the private representation of this key.
@@ -4086,6 +4270,7 @@ JSEncrypt.prototype.getPrivateKey = function() {
  * Returns the pem encoded representation of the private key
  * If the key doesn't exists a new key will be created
  * @returns {string} pem encoded representation of the private key WITHOUT header and footer
+ * @public
  */
 JSEncrypt.prototype.getPrivateKeyB64 = function() {
     // Return the private representation of this key.
@@ -4097,6 +4282,7 @@ JSEncrypt.prototype.getPrivateKeyB64 = function() {
  * Returns the pem encoded representation of the public key
  * If the key doesn't exists a new key will be created
  * @returns {string} pem encoded representation of the public key WITH header and footer
+ * @public
  */
 JSEncrypt.prototype.getPublicKey = function() {
     // Return the private representation of this key.
@@ -4107,6 +4293,7 @@ JSEncrypt.prototype.getPublicKey = function() {
  * Returns the pem encoded representation of the public key
  * If the key doesn't exists a new key will be created
  * @returns {string} pem encoded representation of the public key WITHOUT header and footer
+ * @public
  */
 JSEncrypt.prototype.getPublicKeyB64 = function() {
     // Return the private representation of this key.

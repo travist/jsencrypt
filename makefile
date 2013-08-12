@@ -5,6 +5,7 @@ files =   jsbn/jsbn.js\
           jsbn/rng.js\
           jsbn/rsa.js\
           jsbn/rsa2.js\
+	  jsbn/rsa-async.js\
           jsbn/base64.js\
 	  jsrsasign/asn1-1.0.js\
 	  asn1js/hex.js\

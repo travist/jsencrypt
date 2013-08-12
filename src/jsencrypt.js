@@ -334,7 +334,7 @@ JSEncryptRSAKey.prototype.constructor = JSEncryptRSAKey;
  */
 var JSEncrypt = function(options) {
     options = options || {};
-    this.default_key_size = options.default_key_size || 1024;
+    this.default_key_size = parseInt(options.default_key_size) || 1024;
     this.default_public_exponent = options.default_public_exponent || '010001'; //65537 default openssl public exponent for rsa key type
     this.log = options.log || false; 
     // The private and public key.
@@ -384,7 +384,11 @@ JSEncrypt.prototype.setPublicKey = function(pubkey) {
  */
 JSEncrypt.prototype.decrypt = function(string) {
     // Return the decrypted string.
-    return this.getKey().decrypt(b64tohex(string));
+    try{
+        return this.getKey().decrypt(b64tohex(string));
+    }catch(ex){
+        return false;
+    }
 };
 
 /**
@@ -397,20 +401,30 @@ JSEncrypt.prototype.decrypt = function(string) {
  */
 JSEncrypt.prototype.encrypt = function(string) {
     // Return the encrypted string.
-    return hex2b64(this.getKey().encrypt(string));
+    try{
+        return hex2b64(this.getKey().encrypt(string));
+    }catch(ex){
+        return false;
+    }
 };
 
 /**
  * Getter for the current JSEncryptRSAKey object. If it doesn't exists a new object 
  * will be created and returned
+ * @param {callback} [cb] the callback to be called if we want the key to be generated
+ * in an async fashion
  * @returns {JSEncryptRSAKey} the JSEncryptRSAKey object
  * @public
  */
-JSEncrypt.prototype.getKey = function(){
+JSEncrypt.prototype.getKey = function(cb){
     // Only create new if it does not exist.
     if (!this.key) {
         // Get a new private key.
         this.key = new JSEncryptRSAKey();
+        if (cb && {}.toString.call(cb) === '[object Function]'){
+            this.key.generateAsync(this.default_key_size, this.default_public_exponent,cb);
+            return;
+        }
         // Generate the key.
         this.key.generate(this.default_key_size, this.default_public_exponent);
     }
