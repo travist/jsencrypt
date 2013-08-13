@@ -1,83 +1,56 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-  <head>
-    <title>JavaScript RSA Encryption Demo</title>
-    
-    <script type="text/javascript" src="jquery.js"></script>
-    <script type="text/javascript" src="bin/jsencrypt.js"></script>
-    
-    <script type="text/javascript">
-      $(function() {
-
-        // Execute when they click the button.
-        $('#execute').click(function() {
-
-          // Create the encryption object.
-          var crypt = new JSEncrypt();
-
-          // Set the private.
-          crypt.setPrivateKey($('#privkey').val());
-          //return;
-          // If no public key is set then set it here...
-          var pubkey = $('#pubkey').val();
-          if (!pubkey) {
-            $('#pubkey').val(crypt.getPublicKey());
-          }
-
-          // Get the input and crypted values.
-          var input = $('#input').val();
-          var crypted = $('#crypted').val();
-
-          // Alternate the values.
-          if (input) {
-            $('#crypted').val(crypt.encrypt(input));
-            $('#input').val('');
-          }
-          else if (crypted) {
-            $('#input').val(crypt.decrypt(crypted));
-            $('#crypted').val('');
-          }
-        });
-
-        // If they wish to generate new keys.
-        $('#generate').click(function() {
-          crypt = new JSEncrypt();
-          $('#privkey').val(crypt.getPrivateKey());
-          $('#pubkey').val(crypt.getPublicKey());
-        });
-      });
-    </script>
-  </head>
-  <body>
-    <h2>Generate your private key.</h2>
-    <pre>openssl genrsa -out rsa_1024_priv.pem 1024</pre>
-    <label for="privkey">Private Key</label><br/>
-    <textarea id="privkey" rows="15" cols="65">-----BEGIN RSA PRIVATE KEY-----
-MIICXgIBAAKBgQDHikastc8+I81zCg/qWW8dMr8mqvXQ3qbPAmu0RjxoZVI47tvs
-kYlFAXOf0sPrhO2nUuooJngnHV0639iTTEYG1vckNaW2R6U5QTdQ5Rq5u+uV3pMk
-7w7Vs4n3urQ6jnqt2rTXbC1DNa/PFeAZatbf7ffBBy0IGO0zc128IshYcwIDAQAB
-AoGBALTNl2JxTvq4SDW/3VH0fZkQXWH1MM10oeMbB2qO5beWb11FGaOO77nGKfWc
-bYgfp5Ogrql4yhBvLAXnxH8bcqqwORtFhlyV68U1y4R+8WxDNh0aevxH8hRS/1X5
-031DJm1JlU0E+vStiktN0tC3ebH5hE+1OxbIHSZ+WOWLYX7JAkEA5uigRgKp8ScG
-auUijvdOLZIhHWq7y5Wz+nOHUuDw8P7wOTKU34QJAoWEe771p9Pf/GTA/kr0BQnP
-QvWUDxGzJwJBAN05C6krwPeryFKrKtjOGJIniIoY72wRnoNcdEEs3HDRhf48YWFo
-riRbZylzzzNFy/gmzT6XJQTfktGqq+FZD9UCQGIJaGrxHJgfmpDuAhMzGsUsYtTr
-iRox0D1Iqa7dhE693t5aBG010OF6MLqdZA1CXrn5SRtuVVaCSLZEL/2J5UcCQQDA
-d3MXucNnN4NPuS/L9HMYJWD7lPoosaORcgyK77bSSNgk+u9WSjbH1uYIAIPSffUZ
-bti+jc1dUg5wb+aeZlgJAkEAurrpmpqj5vg087ZngKfFGR5rozDiTsK5DceTV97K
-a3Y+Nzl+XWTxDBWk4YPh2ZlKv402hZEfWBYxUDn5ZkH/bw==
------END RSA PRIVATE KEY-----</textarea><br/>
-    <h2>Get your public key from the private key, or leave this field blank and the library will populate it for you.</h2>
-    <pre>openssl rsa -pubout -in rsa_1024_priv.pem -out rsa_1024_pub.pem</pre>
-    <label for="pubkey">Public Key</label><br/>
-    <textarea id="pubkey" rows="15" cols="65" placeholder="Leave blank for library to populate the public key from the private key."></textarea><br/>
-    <h2>Or, let this library generate them for you...</h2>
-    <input id="generate" type="button" value="Generate Keys" />
-    <h2>Decryption / Encryption Test</h2>
-    <label for="input">Text to encrypt:</label><br/>
-    <textarea id="input" name="input" rows=4 cols=70>This is a test!</textarea><br/>
-    <label for="crypted">Encrypted:</label><br/>
-    <textarea id="crypted" name="crypted" rows=4 cols=70></textarea><br/>
-    <input id="execute" type="button" value="Encrypt / Decrypt" />
-  </body>
+    <head>
+        <title>JSEncrypt</title>
+        <base href="/jsencrypt/">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="demo/bootstrap.min.css" rel="stylesheet" type="text/css">
+        <style type="text/css">
+            body {
+                padding-top: 50px;
+            }
+            .starter-template {
+                padding: 40px 15px;
+                text-align: center;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="navbar navbar-inverse navbar-fixed-top">
+            <div class="container">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">JSEncrypt</a>
+                <div class="nav-collapse collapse">
+                    <ul class="nav navbar-nav">
+                        <li class="active">
+                            <a href="#">Home</a>
+                        </li> 
+                        <li>
+                            <a href="demo/">Demo</a>
+                        </li> 
+                        <li>
+                            <a href="test/">Test</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="starter-template">
+                <h1>Bootstrap starter template</h1>
+                <p class="lead">
+                    Use this document as a way to quickly start any new project.
+                    <br>All you get is this text and a mostly barebones HTML document.
+                </p>
+            </div>
+        </div>
+        <script type="text/javascript" src="jquery.js"></script>
+        <script type="text/javascript" src="bin/jsencrypt.js"></script>
+        <script src="demo/bootstrap.min.js"></script>
+    </body>
 </html>

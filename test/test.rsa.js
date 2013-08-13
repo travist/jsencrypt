@@ -65,7 +65,7 @@ $.each(keySizes, function(index, keySize){
     
     describe('JSEncrypt - '+keySize+' bit', function(){
         
-        this.timeout(0);
+        //this.timeout(0); //Timout for test cases, zero means infinite. Needed for key sizes > 1024
         
         describe('#getKey()', function(){
             
