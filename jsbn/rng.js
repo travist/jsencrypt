@@ -27,16 +27,18 @@ if(rng_pool == null) {
   rng_pool = new Array();
   rng_pptr = 0;
   var t;
-  if(navigator.appName == "Netscape" && navigator.appVersion < "5" && window.crypto) {
-    // Extract entropy (256 bits) from NS4 RNG if available
-    var z = window.crypto.random(32);
-    for(t = 0; t < z.length; ++t)
-      rng_pool[rng_pptr++] = z.charCodeAt(t) & 255;
-  }  
-  while(rng_pptr < rng_psize) {  // extract some randomness from Math.random()
-    t = Math.floor(65536 * Math.random());
-    rng_pool[rng_pptr++] = t >>> 8;
-    rng_pool[rng_pptr++] = t & 255;
+  if(window.crypto && window.crypto.getRandomValues) {
+    // Extract entropy (256 bits) from RNG if available
+    var randomBits = window.crypto.getRandomValues(new Uint32Array(32));
+    for (t = 0; t < randomBits.length; ++t)
+      rng_pool[rng_pptr++] = z[t] & 255;
+  } else {
+  // Otherwise, extract some randomness from Math.random()
+    while(rng_pptr < rng_psize) {
+      t = Math.floor(65536 * Math.random());
+      rng_pool[rng_pptr++] = t >>> 8;
+      rng_pool[rng_pptr++] = t & 255;
+    }
   }
   rng_pptr = 0;
   rng_seed_time();
