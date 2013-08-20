@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Mocha Tests</title>
+        <base href="/jsencrypt/">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="demo/bootstrap.min.css" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="test/mocha.css" />
+        <style type="text/css">
+            body {
+                padding-top: 50px;
+            }
+            .starter-template {
+                padding: 40px 15px;
+                text-align: center;
+            }
+            #mocha-stats {
+                top: 65px;
+            }
+            
+            #mocha-stats .progress {
+                height: 40px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="navbar navbar-inverse navbar-fixed-top">
+            <div class="container">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">JSEncrypt</a>
+                <div class="nav-collapse collapse">
+                    <ul class="nav navbar-nav">
+                        <li>
+                            <a href="#">Home</a>
+                        </li> 
+                        <li>
+                            <a href="demo/">Demo</a>
+                        </li> 
+                        <li class="active">
+                            <a href="test/">Test</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div id="mocha"></div>
+        </div>
+        <script type="text/javascript" src="jquery.js"></script>
+        <script src="demo/bootstrap.min.js"></script>
+        <script type="text/javascript" src="bin/jsencrypt.js"></script>
+        <script type="text/javascript" src="test/expect.js"></script>
+        <script type="text/javascript" src="test/mocha.js"></script>
+        <script>mocha.setup('bdd')</script>
+        <script type="text/javascript" src="test/test.rsa.js"></script>
+        <script>
+            mocha.checkLeaks();
+            mocha.globals(['jQuery']);
+            mocha.run();
+        </script>
+    </body>
+</html>
