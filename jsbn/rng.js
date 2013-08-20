@@ -10,7 +10,8 @@ if(rng_pool == null) {
   var t;
   if(window.crypto && window.crypto.getRandomValues) {
     // Extract entropy (2048 bits) from RNG if available
-    var z = window.crypto.getRandomValues(new Uint32Array(256));
+    var z = new Uint32Array(256);
+    window.crypto.getRandomValues(z);
     for (t = 0; t < z.length; ++t)
       rng_pool[rng_pptr++] = z[t] & 255;
   } 
