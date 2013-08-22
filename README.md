@@ -10,7 +10,7 @@ work done by Tom Wu @ http://www-cs-students.stanford.edu/~tjw/jsbn/ and then
 modify that code to do what they want.
 
 What I couldn't find, however, was a simple wrapper around this library that
-basically uses the library UNTOUCHED, but adds a wrapper to provide parsing of
+basically uses the library <a href="https://github.com/travist/jsencrypt/pull/6">practically</a> untouched, but adds a wrapper to provide parsing of
 actual Private and Public key-pairs generated with OpenSSL.
 
 This library is the result of these efforts.
