@@ -1,3 +1,7 @@
+Website
+======================
+http://travistidwell.com/jsencrypt
+
 Introduction
 ======================
 When browsing the internet looking for a good solution to RSA Javascript
@@ -6,7 +10,7 @@ work done by Tom Wu @ http://www-cs-students.stanford.edu/~tjw/jsbn/ and then
 modify that code to do what they want.
 
 What I couldn't find, however, was a simple wrapper around this library that
-basically uses the library UNTOUCHED, but adds a wrapper to provide parsing of
+basically uses the library <a href="https://github.com/travist/jsencrypt/pull/6">practically</a> untouched, but adds a wrapper to provide parsing of
 actual Private and Public key-pairs generated with OpenSSL.
 
 This library is the result of these efforts.
@@ -59,16 +63,15 @@ cat rsa_1024_pub.pem
         // Run a quick encryption/decryption when they click.
         $('#testme').click(function() {
 
-          // Create the encryption object and set the keys.
-          var crypt = new JSEncrypt();
-          crypt.setPrivateKey($('#privkey').val());
-          crypt.setPublicKey($('#pubkey').val());
+          // Encrypt with the public key...
+          var encrypt = new JSEncrypt();
+          encrypt.setPublicKey($('#pubkey').val());
+          var encrypted = encrypt.encrypt($('#input').val());
 
-          // Encrypt the input with the public key.
-          var encrypted = crypt.encrypt($('#input').val());
-
-          // Now decrypt the crypted text with the private key.
-          var uncrypted = crypt.decrypt(encrypted);
+          // Decrypt with the private key...
+          var decrypt = new JSEncrypt();
+          decrypt.setPrivateKey($('#privkey').val());
+          var uncrypted = decrypt.decrypt(encrypted);
 
           // Now a simple check to see if the round-trip worked.
           if (uncrypted == $('#input').val()) {

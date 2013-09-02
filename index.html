@@ -29,10 +29,10 @@
                     <ul class="nav navbar-nav">
                         <li class="active">
                             <a href="#">Home</a>
-                        </li> 
+                        </li>
                         <li>
                             <a href="demo/">Demo</a>
-                        </li> 
+                        </li>
                         <li>
                             <a href="test/">Test</a>
                         </li>
@@ -53,7 +53,7 @@ work done by Tom Wu @ http://www-cs-students.stanford.edu/~tjw/jsbn/ and then
 modify that code to do what they want.
 
 What I couldn't find, however, was a simple wrapper around this library that
-basically uses the library UNTOUCHED, but adds a wrapper to provide parsing of
+basically uses the library <a href="https://github.com/travist/jsencrypt/pull/6">practically</a> untouched, but adds a wrapper to provide parsing of
 actual Private and Public key-pairs generated with OpenSSL.
 
 This library is the result of these efforts.
@@ -88,8 +88,8 @@ This library is the result of these efforts.
 var crypt = new JSEncrypt();
 crypt.setKey(__YOUR_OPENSSL_PRIVATE_OR_PUBLIC_KEY__); //You can use also setPrivateKey and setPublicKey, they are both alias to setKey
 
-//Eventhough the methods are called setPublicKey and setPrivateKey, remember 
-//that they are only alias to setKey, so you can pass them both a private or 
+//Eventhough the methods are called setPublicKey and setPrivateKey, remember
+//that they are only alias to setKey, so you can pass them both a private or
 //a public openssl key, just remember that setting a public key allows you to only encrypt.
 
 var text = 'test';
