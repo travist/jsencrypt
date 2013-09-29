@@ -2,10 +2,9 @@
 <html>
     <head>
         <title>JSEncrypt</title>
-        <base href="/jsencrypt/">
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link href="demo/bootstrap.min.css" rel="stylesheet" type="text/css">
+        <link href="/jsencrypt/demo/bootstrap.min.css" rel="stylesheet" type="text/css">
         <style type="text/css">
             body {
                 padding-top: 50px;
@@ -24,17 +23,17 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="#">JSEncrypt</a>
+                <a class="navbar-brand" href="/jsencrypt/">JSEncrypt</a>
                 <div class="nav-collapse collapse">
                     <ul class="nav navbar-nav">
                         <li class="active">
-                            <a href="#">Home</a>
+                            <a href="/jsencrypt/">Home</a>
                         </li>
                         <li>
-                            <a href="demo/">Demo</a>
+                            <a href="/jsencrypt/demo/">Demo</a>
                         </li>
                         <li>
-                            <a href="test/">Test</a>
+                            <a href="/jsencrypt/test/">Test</a>
                         </li>
                     </ul>
                 </div>
@@ -49,7 +48,7 @@
                     <h3>Introduction</h3><hr>
                     When browsing the internet looking for a good solution to RSA Javascript
 encryption, there is a whole slew of libraries that basically take the fantastic
-work done by Tom Wu @ http://www-cs-students.stanford.edu/~tjw/jsbn/ and then
+work done by Tom Wu @ <a href="http://www-cs-students.stanford.edu/~tjw/jsbn/">http://www-cs-students.stanford.edu/~tjw/jsbn/</a> and then
 modify that code to do what they want.
 
 What I couldn't find, however, was a simple wrapper around this library that
@@ -72,7 +71,7 @@ This library is the result of these efforts.
                     </ul>
                     <pre><code>cat rsa_1024_priv.pem #if you are on mac you can | pbcopy to copy to the clipboard</code></pre>
                     <ul>
-                        <li>You can then copy and paste this in the Private Key section of the <a href="demo/">demo page</a>.</li>
+                        <li>You can then copy and paste this in the Private Key section of the <a href="/jsencrypt/demo/">demo page</a>.</li>
                         <li>Next, you can then get the public key by executing the following command.</li>
                     </ul>
                     <pre><code>openssl rsa -pubout -in rsa_1024_priv.pem -out rsa_1024_pub.pem</code></pre>
@@ -81,7 +80,7 @@ This library is the result of these efforts.
                     </ul>
                     <pre><code>cat rsa_1024_pub.pem</code></pre>
                     <ul>
-                        <li>Now you can compare with the one generated in the <a href="demo/">demo page</a>..</li>
+                        <li>Now you can compare with the one generated in the <a href="/jsencrypt/demo/">demo page</a>..</li>
                         <li>Now you can then convert to and from encrypted text by doing the following in code.</li>
                     </ul>
                     <pre><code>// Create the encryption object and set the key.
@@ -106,7 +105,7 @@ if (dec === text){
 }
                     </code></pre>
                     <ul>
-                        <li>Look at the <a href="demo/">demo page</a> to get a better idea.</li>
+                        <li>Look at the <a href="/jsencrypt/demo/">demo page</a> to get a better idea.</li>
                     </ul>
                 </div>
             </div>
