@@ -1745,7 +1745,7 @@ function b64tohex(s) {
   var slop;
   for(i = 0; i < s.length; ++i) {
     if(s.charAt(i) == b64pad) break;
-    v = b64map.indexOf(s.charAt(i));
+    var v = b64map.indexOf(s.charAt(i));
     if(v < 0) continue;
     if(k == 0) {
       ret += int2char(v >> 2);
