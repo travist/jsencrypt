@@ -33,7 +33,7 @@ js: ${files}
 	@echo "var JSEncryptExports = {};" > bin/jsencrypt.js
 	@echo "(function(exports) {" >> bin/jsencrypt.js
 	@cat $^ >> bin/jsencrypt.js
-	@echo -e "\nexports.JSEncrypt = JSEncrypt;" >> bin/jsencrypt.js
+	@echo "exports.JSEncrypt = JSEncrypt;" >> bin/jsencrypt.js
 	@echo "})(JSEncryptExports);" >> bin/jsencrypt.js
 	@echo "var JSEncrypt = JSEncryptExports.JSEncrypt;" >> bin/jsencrypt.js
 	@echo "Generating compressed jsencrypt.min.js file"

@@ -475,3 +475,4 @@ JSEncrypt.prototype.getPublicKeyB64 = function() {
     // Return the private representation of this key.
     return this.getKey().getPublicBaseKeyB64();
 };
+
