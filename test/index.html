@@ -4,8 +4,8 @@
         <title>Mocha Tests</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link href="/jsencrypt/demo/bootstrap.min.css" rel="stylesheet" type="text/css">
-        <link rel="stylesheet" href="/jsencrypt/test/mocha.css" />
+        <link href="../demo/bootstrap.min.css" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="mocha.css" />
         <style type="text/css">
             body {
                 padding-top: 50px;
@@ -31,17 +31,17 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="/jsencrypt/">JSEncrypt</a>
+                <a class="navbar-brand" href="../index.html">JSEncrypt</a>
                 <div class="nav-collapse collapse">
                     <ul class="nav navbar-nav">
                         <li>
-                            <a href="/jsencrypt/">Home</a>
+                            <a href="../index.html">Home</a>
                         </li> 
                         <li>
-                            <a href="/jsencrypt/demo/">Demo</a>
+                            <a href="../demo/index.html">Demo</a>
                         </li> 
                         <li class="active">
-                            <a href="/jsencrypt/test/">Test</a>
+                            <a href="index.html">Test</a>
                         </li>
                     </ul>
                 </div>
@@ -50,13 +50,13 @@
         <div class="container">
             <div id="mocha"></div>
         </div>
-        <script type="text/javascript" src="/jsencrypt/jquery.js"></script>
-        <script src="/jsencrypt/demo/bootstrap.min.js"></script>
-        <script type="text/javascript" src="/jsencrypt/bin/jsencrypt.js"></script>
-        <script type="text/javascript" src="/jsencrypt/test/expect.js"></script>
-        <script type="text/javascript" src="/jsencrypt/test/mocha.js"></script>
+        <script type="text/javascript" src="../jquery.js"></script>
+        <script src="../demo/bootstrap.min.js"></script>
+        <script type="text/javascript" src="../bin/jsencrypt.js"></script>
+        <script type="text/javascript" src="../test/expect.js"></script>
+        <script type="text/javascript" src="../test/mocha.js"></script>
         <script>mocha.setup('bdd')</script>
-        <script type="text/javascript" src="/jsencrypt/test/test.rsa.js"></script>
+        <script type="text/javascript" src="../test/test.rsa.js"></script>
         <script>
             mocha.checkLeaks();
             mocha.globals(['jQuery']);
