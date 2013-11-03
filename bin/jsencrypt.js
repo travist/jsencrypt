@@ -1283,15 +1283,21 @@ if(rng_pool == null) {
   var onMouseMoveListener = function(ev) {
     this.count = this.count || 0;
     if (this.count >= 256 || rng_pptr >= rng_psize) {
-      window.removeEventListener("mousemove", onMouseMoveListener);
+      if (window.removeEventListener)
+        window.removeEventListener("mousemove", onMouseMoveListener);
+      else if (window.detachEvent)
+        window.detachEvent("onmousemove", onMouseMoveListener);
       return;
     }
     this.count += 1;
     var mouseCoordinates = ev.x + ev.y;
     rng_pool[rng_pptr++] = mouseCoordinates & 255;
   };
- 
-  window.addEventListener("mousemove", onMouseMoveListener);
+  if (window.addEventListener)
+    window.addEventListener("mousemove", onMouseMoveListener);
+  else if (window.attachEvent)
+    window.attachEvent("onmousemove", onMouseMoveListener);
+  
 }
 
 function rng_get_byte() {
@@ -4290,6 +4296,7 @@ JSEncrypt.prototype.getPublicKeyB64 = function() {
     // Return the private representation of this key.
     return this.getKey().getPublicBaseKeyB64();
 };
+
 exports.JSEncrypt = JSEncrypt;
 })(JSEncryptExports);
 var JSEncrypt = JSEncryptExports.JSEncrypt;
