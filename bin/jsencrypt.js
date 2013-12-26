@@ -1569,6 +1569,39 @@ RSAKey.prototype.setPrivateEx = RSASetPrivateEx;
 RSAKey.prototype.generate = RSAGenerate;
 RSAKey.prototype.decrypt = RSADecrypt;
 //RSAKey.prototype.b64_decrypt = RSAB64Decrypt;
+
+
+/* RSA signature */
+
+// Return the PKCS#1 RSA encryption of "text" as an even-length hex string
+function RSASign(text, digestMethod) {
+	var digest = digestMethod(text); 
+	var m = pkcs1pad2(text,(this.n.bitLength()+7)>>3);
+	console.log("RSASign: encryption block :- " + m.toString());
+	if(m == null) return null;
+	var c = m.modPow(this.d, this.n);
+	if(c == null) return null;
+	var h = c.toString(16);
+	console.log("RSASign: signature (in hex) :- " + h.toString());
+	if((h.length & 1) == 0) return h; else return "0" + h;
+}
+
+function RSAVerify(text, signature, digestMethod) {
+	var c = parseBigInt(signature, 16);
+	var m = c.modPowInt(this.e, this.n);
+	if (m == null) return null;
+	var digest = pkcs1unpad2(m, (this.n.bitLength()+7)>>3);
+	console.log("RSAVerify: message digest :- " + digest);
+	return digest == digestMethod(text);
+}
+
+RSAKey.prototype.verify = RSAVerify;
+RSAKey.prototype.sign = RSASign;
+
+/* RSA signature */
+
+
+
 // Copyright (c) 2011  Kevin M Burns Jr.
 // All Rights Reserved.
 // See "LICENSE" for details.
@@ -4296,6 +4329,36 @@ JSEncrypt.prototype.getPublicKeyB64 = function() {
     // Return the private representation of this key.
     return this.getKey().getPublicBaseKeyB64();
 };
+
+/* RSA signature */
+
+/**
+ * Proxy method for RSAKey object's sign.
+ *
+*/
+JSEncrypt.prototype.sign = function(text, digestMethod) {
+	// return the RSA signature of 'string' in 'hex' format.
+	try {
+		return this.getKey().sign(text, digestMethod);
+	} catch(ex) {
+		return false;
+	}
+}
+
+/**
+ * Proxy method for RSAKey object's verify.
+ *
+*/
+JSEncrypt.prototype.verify = function(text, signature, digestMethod) {
+	// Return the decrypted 'digest' of the signature.
+	try {
+			return this.getKey().verify(text, signature, digestMethod);
+	} catch(ex) {
+		return false;
+	}
+}
+
+/* RSA signature */
 
 exports.JSEncrypt = JSEncrypt;
 })(JSEncryptExports);
