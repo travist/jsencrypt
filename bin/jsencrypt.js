@@ -1637,7 +1637,7 @@ RSAKey.prototype.decrypt = RSADecrypt;
 // Return the PKCS#1 RSA encryption of "text" as an even-length hex string
 function RSASign(text, digestMethod) {
 	var digest = digestMethod(text); 
-	var m = pkcs1pad1(text,(this.n.bitLength()+7)>>3);
+	var m = pkcs1pad1(digest.toString(),(this.n.bitLength()+7)>>3);
 	console.log("RSASign: encryption block :- " + m.toString());
 	if(m == null) return null;
 	var c = m.modPow(this.d, this.n);
