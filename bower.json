@@ -1,0 +1,12 @@
+{
+  "name": "travist/jsencrypt",
+  "version": "2.0.0",
+  "main": "bin/jsencrypt.min.js",
+  "description": "Provides a simple wrapper around the fantastic work done by Tom Wu for RSA Encryption in JavaScript",
+  "license": "MIT",
+  "ignore": [],
+  "dependencies": {
+  },
+  "devDependencies": {
+  }
+}
