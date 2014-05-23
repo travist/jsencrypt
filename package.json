@@ -1,6 +1,20 @@
 {
   "name": "jsencrypt",
-  "version": "2.0.0",
+  "version": "2.1.0",
+  "description": "A Javascript library to perform OpenSSL RSA Encryption, Decryption, and Key Generation.",
+  "author": {
+    "name": "Travis Tidwell",
+    "email": "travist349@gmail.com",
+    "url": "http://github.com/travist"
+  },
+  "homepage": "http://www.travistidwell.com/jsencrypt",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/travist/jsencrypt.git"
+  },
+  "bugs": {
+    "url": "http://github.com/travist/jsencrypt/issues"
+  },
   "devDependencies": {
     "grunt": "~0.4.4",
     "grunt-contrib-jshint": "~0.10.0",
