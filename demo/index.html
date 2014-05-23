@@ -180,7 +180,7 @@
     var generateKeys = function () {
       var sKeySize = $('#key-size').attr('data-value');
       var keySize = parseInt(sKeySize);
-      crypt = new JSEncrypt({default_key_size: keySize});
+      var crypt = new JSEncrypt({default_key_size: keySize});
       var async = $('#async-ck').is(':checked');
       var dt = new Date();
       var time = -(dt.getTime());
