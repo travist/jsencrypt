@@ -2,12 +2,23 @@
 <html>
 <head>
   <title>JSEncrypt</title>
+  <base id="basetag" href="/jsencrypt/">
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-  <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.1/js/bootstrap.min.js"></script>
-  <script type="text/javascript" src="../bin/jsencrypt.js"></script>
-  <link href="http://netdna.bootstrapcdn.com/bootstrap/3.0.1/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+  <script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="bin/jsencrypt.js"></script>
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-450670-2']);
+    _gaq.push(['_trackPageview']);
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <link href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet" type="text/css">
   <style type="text/css">
     body {
       padding-top: 70px;
@@ -22,16 +33,16 @@
       <span class="icon-bar"></span>
       <span class="icon-bar"></span>
     </button>
-    <a class="navbar-brand" href="../index.html">JSEncrypt</a>
+    <a class="navbar-brand" href="index.html">JSEncrypt</a>
     <ul class="nav navbar-nav">
       <li>
-        <a href="../index.html">Home</a>
+        <a href="index.html">Home</a>
       </li>
       <li>
-        <a href="../demo/index.html">Demo</a>
+        <a href="demo/index.html">Demo</a>
       </li>
       <li>
-        <a href="../test/index.html">Test</a>
+        <a href="test/index.html">Test</a>
       </li>
       <li>
         <a href="https://github.com/travist/jsencrypt/archive/master.zip" role="button">Download</a>
@@ -43,18 +54,16 @@
   </div>
 </div>
 <div class="container">
-  <link href="mocha.css" rel="stylesheet" type="text/css">
-<div class="container">
-  <div id="mocha"></div>
-</div>
-<script type="text/javascript" src="expect.js"></script>
-<script type="text/javascript" src="mocha.js"></script>
+  <link href="test/mocha.css" rel="stylesheet" type="text/css">
+<div id="mocha"></div>
+<script type="text/javascript" src="test/expect.js"></script>
+<script type="text/javascript" src="test/mocha.js"></script>
 <script>mocha.setup('bdd')</script>
-<script type="text/javascript" src="test.rsa.js"></script>
+<script type="text/javascript" src="test/test.rsa.js"></script>
 <script>
-    mocha.checkLeaks();
-    mocha.globals(['jQuery']);
-    mocha.run();
+  mocha.checkLeaks();
+  mocha.globals(['jQuery']);
+  mocha.run();
 </script>
 
 </div>

@@ -2,11 +2,12 @@
 <html>
 <head>
   <title>JSEncrypt</title>
+  <base id="basetag" href="/jsencrypt/">
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-  <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.1/js/bootstrap.min.js"></script>
-  <script type="text/javascript" src="./bin/jsencrypt.js"></script>
+  <script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="bin/jsencrypt.js"></script>
   <script type="text/javascript">
     var _gaq = _gaq || [];
     _gaq.push(['_setAccount', 'UA-450670-2']);
@@ -17,7 +18,7 @@
       var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
     })();
   </script>
-  <link href="http://netdna.bootstrapcdn.com/bootstrap/3.0.1/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+  <link href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet" type="text/css">
   <style type="text/css">
     body {
       padding-top: 70px;
@@ -32,16 +33,16 @@
       <span class="icon-bar"></span>
       <span class="icon-bar"></span>
     </button>
-    <a class="navbar-brand" href="./index.html">JSEncrypt</a>
+    <a class="navbar-brand" href="index.html">JSEncrypt</a>
     <ul class="nav navbar-nav">
       <li>
-        <a href="./index.html">Home</a>
+        <a href="index.html">Home</a>
       </li>
       <li>
-        <a href="./demo/index.html">Demo</a>
+        <a href="demo/index.html">Demo</a>
       </li>
       <li>
-        <a href="./test/index.html">Test</a>
+        <a href="test/index.html">Test</a>
       </li>
       <li>
         <a href="https://github.com/travist/jsencrypt/archive/master.zip" role="button">Download</a>
@@ -53,24 +54,26 @@
   </div>
 </div>
 <div class="container">
-  <div class="starter-template"><h1>JSEncrypt</h1></div>
+  <div class="starter-template">
+  <h1>JSEncrypt</h1>
+</div>
 <div class="row">
   <div class="col-lg-12">
     <h3>Introduction</h3>
     <p>When browsing the internet looking for a good solution to RSA Javascript encryption, there is a whole slew of libraries that basically take the fantastic work done by Tom Wu @ <a href="http://www-cs-students.stanford.edu/~tjw/jsbn/">http://www-cs-students.stanford.edu/~tjw/jsbn/</a> and then modify that code to do what they want.</p>
     <p>What I couldn't find, however, was a simple wrapper around this library that basically uses the library <a href="https://github.com/travist/jsencrypt/pull/6">practically</a> untouched, but adds a wrapper to provide parsing of actual Private and Public key-pairs generated with OpenSSL.</p>
     <p>This library is the result of these efforts.</p>
-  <div class="row col-lg-12">
-  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<!-- frontpage banner -->
-<ins class="adsbygoogle"
-     style="display:inline-block;width:728px;height:90px"
-     data-ad-client="ca-pub-1902035200208763"
-     data-ad-slot="9043467163"></ins>
-<script>
-(adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-  </div>
+    <div class="row col-lg-12">
+      <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+      <!-- frontpage banner -->
+      <ins class="adsbygoogle"
+           style="display:inline-block;width:728px;height:90px"
+           data-ad-client="ca-pub-1902035200208763"
+           data-ad-slot="9043467163"></ins>
+      <script>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+      </script>
+    </div>
     <p>
       <a href="https://github.com/travist/jsencrypt/archive/master.zip" class="btn btn-primary btn-lg active" role="button">Download</a>
       <a href="https://github.com/travist/jsencrypt" class="btn btn-primary btn-lg active" role="button">Github Project</a>
@@ -82,25 +85,25 @@
     <h3>How to use this library.</h3><hr>
     <p>This library should work hand-in-hand with openssl.  With that said, here is how to use this library.</p>
     <ul>
-        <li>Within your terminal (Unix based OS) type the following:</li>
+      <li>Within your terminal (Unix based OS) type the following:</li>
     </ul>
     <pre><code>openssl genrsa -out rsa_1024_priv.pem 1024</code></pre>
     <ul>
-        <li>This generates a private key, which you can see by doing the following...</li>
+      <li>This generates a private key, which you can see by doing the following...</li>
     </ul>
     <pre><code>cat rsa_1024_priv.pem #if you are on mac you can | pbcopy to copy to the clipboard</code></pre>
     <ul>
-        <li>You can then copy and paste this in the Private Key section of the <a href="/jsencrypt/demo/">demo page</a>.</li>
-        <li>Next, you can then get the public key by executing the following command.</li>
+      <li>You can then copy and paste this in the Private Key section of the <a href="/jsencrypt/demo/">demo page</a>.</li>
+      <li>Next, you can then get the public key by executing the following command.</li>
     </ul>
     <pre><code>openssl rsa -pubout -in rsa_1024_priv.pem -out rsa_1024_pub.pem</code></pre>
     <ul>
-        <li>You can see the public key by typing...</li>
+      <li>You can see the public key by typing...</li>
     </ul>
     <pre><code>cat rsa_1024_pub.pem</code></pre>
     <ul>
-        <li>Now you can compare with the one generated in the <a href="/jsencrypt/demo/">demo page</a>..</li>
-        <li>Now you can then convert to and from encrypted text by doing the following in code.</li>
+      <li>Now you can compare with the one generated in the <a href="/jsencrypt/demo/">demo page</a>..</li>
+      <li>Now you can then convert to and from encrypted text by doing the following in code.</li>
     </ul>
     <pre><code>// Create the encryption object and set the key.
 var crypt = new JSEncrypt();
@@ -123,7 +126,7 @@ if (dec === text){
     alert('Something went wrong....');
 }
     </code></pre>
-    <ul><li>Look at the <a href="./demo/index.html">demo page</a> to get a better idea.</li></ul>
+    <ul><li>Look at the <a href="example.html">example page</a> to view this example in action.</li></ul>
   </div>
 </div>
 <div class="row">
