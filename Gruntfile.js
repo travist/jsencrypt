@@ -77,6 +77,13 @@ module.exports = function(grunt) {
           'bin/jsencrypt.min.js': files
         }
       }
+    },
+    jekyll: {
+      build: {
+        options: {
+          config: '_config.yml,_config.build.yml'
+        }
+      }
     }
   });
 
@@ -84,7 +91,8 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-jekyll');
 
   // Default task(s).
-  grunt.registerTask('default', ['jshint', 'concat', 'uglify']);
+  grunt.registerTask('default', ['jshint', 'concat', 'uglify', 'jekyll']);
 };

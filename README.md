@@ -115,7 +115,7 @@ gwQco1KRMDSmXSMkDwIDAQAB
 </html>
 ```
 
- - Look at how index.html works to get a better idea.
+ - Look at how http://www.travistidwell.com/jsencrypt/example.html works to get a better idea.
 
 Other Information
 ========================

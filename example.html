@@ -2,7 +2,15 @@
 <html>
 <head>
   <title>JSEncrypt Example</title>
-  <base id="basetag" href="/jsencrypt/">
+  <base id="basetag" href="/">
+  <!--[if IE]>
+  <script type='text/javascript'>
+    (function() {
+      var tag = document.getElementById('basetag');
+      tag.href = location.protocol + '//' + location.host + '/';
+    }());
+  </script>
+  <![endif]-->
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
