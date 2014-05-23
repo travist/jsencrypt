@@ -1,18 +1,18 @@
 module.exports = function(grunt) {
 
   var files = [
-    'jsbn/jsbn.js',
-    'jsbn/jsbn2.js',
-    'jsbn/prng4.js',
-    'jsbn/rng.js',
-    'jsbn/rsa.js',
-    'jsbn/rsa2.js',
-    'jsbn/rsa-async.js',
-    'jsbn/base64.js',
-    'jsrsasign/asn1-1.0.js',
-    'asn1js/hex.js',
-    'asn1js/base64.js',
-    'asn1js/asn1.js',
+    'lib/jsbn/jsbn.js',
+    'lib/jsbn/jsbn2.js',
+    'lib/jsbn/prng4.js',
+    'lib/jsbn/rng.js',
+    'lib/jsbn/rsa.js',
+    'lib/jsbn/rsa2.js',
+    'lib/jsbn/rsa-async.js',
+    'lib/jsbn/base64.js',
+    'lib/jsrsasign/asn1-1.0.js',
+    'lib/asn1js/hex.js',
+    'lib/asn1js/base64.js',
+    'lib/asn1js/asn1.js',
     'src/jsencrypt.js'
   ];
 
@@ -22,9 +22,9 @@ module.exports = function(grunt) {
 
   var licenses = [
     'src/LICENSE.txt',
-    'jsrsasign/LICENSE.txt',
-    'jsbn/LICENSE.txt',
-    'asn1js/LICENSE.txt'
+    'lib/jsrsasign/LICENSE.txt',
+    'lib/jsbn/LICENSE.txt',
+    'lib/asn1js/LICENSE.txt'
   ];
 
   // The code to wrap the generated files with.

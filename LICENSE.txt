@@ -20,7 +20,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-File: jsrsasign/LICENSE.txt
+File: lib/jsrsasign/LICENSE.txt
 
 
 CONTAINS CODE FROM YUI LIBRARY SEE LICENSE @ http://yuilibrary.com/license/
@@ -48,7 +48,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-File: jsbn/LICENSE.txt
+File: lib/jsbn/LICENSE.txt
 
 
 Licensing
@@ -93,7 +93,7 @@ Address all questions regarding this license to:
   tjw@cs.Stanford.EDU
 
 
-File: asn1js/LICENSE.txt
+File: lib/asn1js/LICENSE.txt
 
 
 ASN.1 JavaScript decoder
