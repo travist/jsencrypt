@@ -1,0 +1,3 @@
+[submodule "lib/jsbn"]
+	path = lib/jsbn
+	url = git@github.com:zoloft/jsencrypt-core-libs.git
