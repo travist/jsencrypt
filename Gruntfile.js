@@ -95,6 +95,13 @@ module.exports = function(grunt) {
           config: '_config.yml,_config.build.yml'
         }
       }
+    },
+    update_submodules: {
+      default: {
+        options: {
+          // default command line parameters will be used: --init --recursive
+        }
+      }
     }
   });
 
@@ -104,8 +111,9 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-jekyll');
   grunt.loadNpmTasks('grunt-contrib-watch');
-
+  grunt.loadNpmTasks('grunt-update-submodules');
 
   // Default task(s).
-  grunt.registerTask('default', ['jshint', 'concat', 'uglify', 'jekyll']);
+  grunt.registerTask('init', ['update_submodules:default']);
+  grunt.registerTask('default', ['init', 'jshint', 'concat', 'uglify', 'jekyll']);
 };
