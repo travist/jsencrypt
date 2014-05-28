@@ -2,11 +2,18 @@
   "name": "travist/jsencrypt",
   "version": "2.1.0",
   "main": "bin/jsencrypt.min.js",
+  "keywords" : ["rsa", "openssl", "encryption", "decryption", "key", "generation"],
   "description": "A Javascript library to perform OpenSSL RSA Encryption, Decryption, and Key Generation.",
   "license": "MIT",
   "ignore": [],
-  "dependencies": {
+  "authors": [
+    { "name": "Travis Tidwell", "email": "travist349@gmail.com", "homepage": ""},
+    { "name": "Antonio Egizio", "email": "antonio.egizio@me.com"}
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/travist/jsencrypt.git"
   },
-  "devDependencies": {
-  }
+  "dependencies": {},
+  "devDependencies": {}
 }

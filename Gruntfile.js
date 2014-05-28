@@ -7,6 +7,8 @@ module.exports = function(grunt) {
     'lib/jsbn/rng.js',
     'lib/jsbn/rsa.js',
     'lib/jsbn/rsa2.js',
+    'lib/jsbn/ec.js',
+    'lib/jsbn/sec.js',
     'lib/jsbn/rsa-async.js',
     'lib/jsbn/base64.js',
     'lib/jsrsasign/asn1-1.0.js',
@@ -78,6 +80,15 @@ module.exports = function(grunt) {
         }
       }
     },
+    watch: {
+      scripts: {
+        files: ['src/**/*.js', 'lib/**/*.js'],
+        tasks: ['jshint', 'concat', 'uglify'],
+        options: {
+          spawn: false,
+        },
+      },
+    },
     jekyll: {
       build: {
         options: {
@@ -92,6 +103,8 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-jekyll');
+  grunt.loadNpmTasks('grunt-contrib-watch');
+
 
   // Default task(s).
   grunt.registerTask('default', ['jshint', 'concat', 'uglify', 'jekyll']);
