@@ -102,6 +102,11 @@ module.exports = function(grunt) {
           // default command line parameters will be used: --init --recursive
         }
       }
+    },
+    karma: {
+      unit: {
+        configFile: 'karma.conf.js'
+      }
     }
   });
 
@@ -112,8 +117,10 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-jekyll');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-update-submodules');
+  grunt.loadNpmTasks('grunt-karma');
 
   // Default task(s).
   grunt.registerTask('init', ['update_submodules:default']);
-  grunt.registerTask('default', ['init', 'jshint', 'concat', 'uglify', 'jekyll']);
+  grunt.registerTask('test', ['karma:unit']);
+  grunt.registerTask('default', ['init', 'test', 'jshint', 'concat', 'uglify', 'jekyll']);
 };
