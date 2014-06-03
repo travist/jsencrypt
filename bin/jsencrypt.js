@@ -4545,9 +4545,9 @@ RSAKey.prototype.wordwrap = function (str, width) {
  * @public
  */
 RSAKey.prototype.getPrivateKey = function () {
-  var key = "-----BEGIN RSA PRIVATE KEY-----\n";
-  key += this.wordwrap(this.getPrivateBaseKeyB64()) + "\n";
-  key += "-----END RSA PRIVATE KEY-----";
+  var key = '-----BEGIN RSA PRIVATE KEY-----\n';
+  key += this.wordwrap(this.getPrivateBaseKeyB64()) + '\n';
+  key += '-----END RSA PRIVATE KEY-----';
   return key;
 };
 
@@ -4557,9 +4557,9 @@ RSAKey.prototype.getPrivateKey = function () {
  * @public
  */
 RSAKey.prototype.getPublicKey = function () {
-  var key = "-----BEGIN PUBLIC KEY-----\n";
-  key += this.wordwrap(this.getPublicBaseKeyB64()) + "\n";
-  key += "-----END PUBLIC KEY-----";
+  var key = '-----BEGIN PUBLIC KEY-----\n';
+  key += this.wordwrap(this.getPublicBaseKeyB64()) + '\n';
+  key += '-----END PUBLIC KEY-----';
   return key;
 };
 
@@ -4649,6 +4649,8 @@ var JSEncryptRSAKey = function (key) {
       this.parsePropertiesFrom(key);
     }
   }
+  this.worker = null;
+  this.blobUrl = null;
 };
 
 // Derive from RSAKey.
@@ -4657,6 +4659,59 @@ JSEncryptRSAKey.prototype = new RSAKey();
 // Reset the contructor.
 JSEncryptRSAKey.prototype.constructor = JSEncryptRSAKey;
 
+/**
+ * Description
+ * @private
+ */
+JSEncryptRSAKey.prototype.loadWorker = function (scriptPath) {
+  if (!scriptPath)
+    return;
+  if (typeof Worker === "undefined")
+    return;
+  this.terminateWorker();
+  //Yeah I know, this is a bit of a hack, but it's a reliable way to make a worker without 
+  //having to worry about the location of the two source files. Moreover this way we will
+  //have only one file to distribute instead of two.
+  var source = '!function(){\"use strict\";var a=\"@@source_file@@\";importScripts(a),addEventListener(\"message\",function(a){var b={};b.default_key_size=a.size,b.default_public_exponent=a.exp;var c=new JSEncrypt(b),d=c.getPrivateKey();console.log(d),self.postMessage({key:d})},!1)}();';
+  source = source.replace('@@source_file@@', scriptPath);
+  var blob = new Blob([source]);
+  this.blobUrl = URL.createObjectURL(blob);
+  this.worker = new Worker(this.blobUrl);
+};
+
+/**
+ * Description
+ * @public
+ */
+JSEncryptRSAKey.prototype.generateAsync2 = function(keySize, exponent, callback, scriptPath) {
+  this.loadWorker(scriptPath);
+  if (this.worker) {
+    var that = this;
+    this.worker.addEventListener('message', function(e) {
+      that.parseKey(e.key);
+      that.terminateWorker();
+      if (callback) {
+        callback();
+      }
+    }, false);
+    this.worker.postMessage({size:keySize, exp: exponent});
+  } else {
+    this.generateAsync(keySize, exponent, callback);
+  }
+};
+
+/**
+ * Description
+ * @private
+ */
+JSEncryptRSAKey.prototype.terminateWorker = function () {
+  if (this.worker) {
+    this.worker.terminate();
+    URL.revokeObjectURL(this.blobUrl);
+    this.blobUrl = null;
+    this.worker = null;
+  }
+};
 
 /**
  *
@@ -4674,6 +4729,14 @@ var JSEncrypt = function (options) {
   this.log = options.log || false;
   // The private and public key.
   this.key = null;
+  // Used to cache the string representations of the current key, created lazily
+  this.publicKey = null;
+  this.privateKey = null;
+  this.publicKeyB64 = null;
+  this.privateKeyB64 = null;
+
+  //A worker object that keeps a copy of the current object
+  this.scriptPath = options.script_path || null;
 };
 
 /**
@@ -4688,6 +4751,11 @@ JSEncrypt.prototype.setKey = function (key) {
     console.warn('A key was already set, overriding existing.');
   }
   this.key = new JSEncryptRSAKey(key);
+  // Reset caches
+  this.publicKey = null;
+  this.privateKey = null;
+  this.publicKeyB64 = null;
+  this.privateKeyB64 = null;
 };
 
 /**
@@ -4760,7 +4828,7 @@ JSEncrypt.prototype.getKey = function (cb) {
     // Get a new private key.
     this.key = new JSEncryptRSAKey();
     if (cb && {}.toString.call(cb) === '[object Function]') {
-      this.key.generateAsync(this.default_key_size, this.default_public_exponent, cb);
+      this.key.generateAsync2(this.default_key_size, this.default_public_exponent, cb, this.scriptPath);
       return;
     }
     // Generate the key.
@@ -4777,7 +4845,10 @@ JSEncrypt.prototype.getKey = function (cb) {
  */
 JSEncrypt.prototype.getPrivateKey = function () {
   // Return the private representation of this key.
-  return this.getKey().getPrivateKey();
+  if (!this.privateKey) {
+    this.privateKey = this.getKey().getPrivateKey();
+  }
+  return this.privateKey;
 };
 
 /**
@@ -4788,7 +4859,10 @@ JSEncrypt.prototype.getPrivateKey = function () {
  */
 JSEncrypt.prototype.getPrivateKeyB64 = function () {
   // Return the private representation of this key.
-  return this.getKey().getPrivateBaseKeyB64();
+  if (!this.privateKeyB64) {
+    this.privateKeyB64 = this.getKey().getPrivateBaseKeyB64();
+  }
+  return this.privateKeyB64;
 };
 
 
@@ -4800,7 +4874,10 @@ JSEncrypt.prototype.getPrivateKeyB64 = function () {
  */
 JSEncrypt.prototype.getPublicKey = function () {
   // Return the private representation of this key.
-  return this.getKey().getPublicKey();
+  if (!this.publicKey) {
+    this.publicKey = this.getKey().getPublicKey();
+  }
+  return this.publicKey;
 };
 
 /**
@@ -4811,8 +4888,13 @@ JSEncrypt.prototype.getPublicKey = function () {
  */
 JSEncrypt.prototype.getPublicKeyB64 = function () {
   // Return the private representation of this key.
-  return this.getKey().getPublicBaseKeyB64();
+  if (!this.publicKeyB64) {
+    this.publicKeyB64 = this.getKey().getPublicBaseKeyB64();
+  }
+  return this.publicKeyB64;
 };
+
+
 
 exports.JSEncrypt = JSEncrypt;
 })(JSEncryptExports);

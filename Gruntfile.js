@@ -30,12 +30,13 @@ module.exports = function(grunt) {
   ];
 
   // The code to wrap the generated files with.
-  var prefix = 'var JSEncryptExports = {};' + "\n";
-  prefix += '(function(exports) {' + "\n";
+  var prefix = 'var JSEncryptExports = {};' + '\n';
+  prefix += '(function(exports) {' + '\n';
 
-  var suffix = 'exports.JSEncrypt = JSEncrypt;' + "\n";
-  suffix += '})(JSEncryptExports);' + "\n";
-  suffix += 'var JSEncrypt = JSEncryptExports.JSEncrypt;' + "\n";
+  var suffix = 'exports.JSEncrypt = JSEncrypt;' + '\n';
+  suffix += '})(JSEncryptExports);' + '\n';
+  suffix += 'var JSEncrypt = JSEncryptExports.JSEncrypt;' + '\n';
+
 
   // Project configuration.
   grunt.initConfig({
@@ -46,10 +47,10 @@ module.exports = function(grunt) {
     concat: {
       license: {
         options: {
-          separator: "\n\n\n",
+          separator: '\n\n\n',
           process: function(src, filepath) {
             var output = 'File: ' + filepath;
-            output += "\n";
+            output += '\n';
             output += src;
             return output;
           }
@@ -62,7 +63,11 @@ module.exports = function(grunt) {
         options: {
           banner: prefix,
           separator: '',
-          footer: suffix
+          footer: suffix,
+          process: function(src, filepath) {
+            console.log(filepath);
+            return src;
+          }
         },
         files: {
           'bin/jsencrypt.js': files
@@ -78,12 +83,21 @@ module.exports = function(grunt) {
         files: {
           'bin/jsencrypt.min.js': files
         }
+      },
+      worker: {
+        options: {
+          banner:'',
+          footer:''
+        },
+        files: {
+          '.tmp/jsencrypt-worker.min.js': 'src/jsencrypt-worker.js'
+        }
       }
     },
     watch: {
       scripts: {
         files: ['src/**/*.js', 'lib/**/*.js'],
-        tasks: ['jshint', 'concat', 'uglify'],
+        tasks: ['jshint', 'concat', 'uglify', 'uglify:worker', 'replace', 'clean', 'test'],
         options: {
           spawn: false,
         },
@@ -97,9 +111,14 @@ module.exports = function(grunt) {
       }
     },
     update_submodules: {
-      default: {
+      init: {
         options: {
-          // default command line parameters will be used: --init --recursive
+          params: '--init --recursive --rebase'
+        }
+      },
+      update: {
+        options: {
+          params: '--recursive --rebase'
         }
       }
     },
@@ -107,20 +126,32 @@ module.exports = function(grunt) {
       unit: {
         configFile: 'karma.conf.js'
       }
-    }
+    },
+    replace: {
+      default: {
+        src: ['bin/jsencrypt.js', 'bin/jsencrypt.min.js'],
+        overwrite: true,                 // overwrite matched source files
+        replacements: [{
+          from: '@@jsencrypt_worker_source@@',
+          to: function(matched) {
+            return (grunt.file.read('.tmp/jsencrypt-worker.min.js')+'').replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0');
+          }
+        }]
+      }
+    },
+    clean: ['.tmp']
   });
 
-  // Load the plugin that provides the "uglify" task.
-  grunt.loadNpmTasks('grunt-contrib-jshint');
-  grunt.loadNpmTasks('grunt-contrib-concat');
-  grunt.loadNpmTasks('grunt-contrib-uglify');
-  grunt.loadNpmTasks('grunt-jekyll');
-  grunt.loadNpmTasks('grunt-contrib-watch');
-  grunt.loadNpmTasks('grunt-update-submodules');
-  grunt.loadNpmTasks('grunt-karma');
+  require('load-grunt-tasks')(grunt);
 
-  // Default task(s).
-  grunt.registerTask('init', ['update_submodules:default']);
+  grunt.registerTask('init', ['update_submodules:init', 'update_submodules:update']);
   grunt.registerTask('test', ['karma:unit']);
-  grunt.registerTask('default', ['init', 'test', 'jshint', 'concat', 'uglify', 'jekyll']);
+
+  var defaultTasks = ['init', 'jshint', 'concat', 'uglify', 'uglify:worker', 'replace', 'clean', 'test'];
+  var serveTasks = defaultTasks.slice(0);
+  defaultTasks.push('jekyll');
+  serveTasks.push('watch');
+
+  grunt.registerTask('default', defaultTasks);
+  grunt.registerTask('serve', serveTasks);
 };

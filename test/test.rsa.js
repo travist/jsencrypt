@@ -1,37 +1,37 @@
 var keySizes = [128, 256, 512, 1024];
 var pbkeys = [
-"-----BEGIN PUBLIC KEY-----\
+'-----BEGIN PUBLIC KEY-----\
 MCwwDQYJKoZIhvcNAQEBBQADGwAwGAIRAMJYzPtURyEUNRX7j6bQhg8CAwEAAQ==\
------END PUBLIC KEY-----",
-"-----BEGIN PUBLIC KEY-----\
+-----END PUBLIC KEY-----',
+'-----BEGIN PUBLIC KEY-----\
 MDwwDQYJKoZIhvcNAQEBBQADKwAwKAIhAKqSOLiJmFJZ9VaqAWbUGQLPK1dzkMUM\
 i/fTISSSdKxZAgMBAAE=\
------END PUBLIC KEY-----",
-"-----BEGIN PUBLIC KEY-----\
+-----END PUBLIC KEY-----',
+'-----BEGIN PUBLIC KEY-----\
 MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAOt7ZGR2Jb3aAe8xTWN/z9e5KL0MTn34\
 gtCweIbnCc9BE+0z6WJVhnXRBgukdmB7iidrQInZDcDNxiZGFjI8ubMCAwEAAQ==\
------END PUBLIC KEY-----",
-"-----BEGIN PUBLIC KEY-----\
+-----END PUBLIC KEY-----',
+'-----BEGIN PUBLIC KEY-----\
 MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCyuL7vgD69afw7jYLnJdbDPWr5\
 BIlt8lmt9IfzjOYJ/YJkTrAuk/ZEEOvuPA4TVflOCuwJtT6oZlb8E8HOh82j5LVM\
 XFDzkHpjzBfO9OaT66j7RPADdxRpsGUmk2pEHoLk/EXK0lTtsGv0i8OFDVSyxjuf\
 SCUGerkpV/+uafgJqwIDAQAB\
------END PUBLIC KEY-----"
+-----END PUBLIC KEY-----'
 ];
 
 var prkeys = [
-"-----BEGIN RSA PRIVATE KEY-----\
+'-----BEGIN RSA PRIVATE KEY-----\
 MGQCAQACEQDCWMz7VEchFDUV+4+m0IYPAgMBAAECEBRARpPF02eZ0fSeC7z1P4EC\
 CQDih/7h09mLQQIJANug/jPgzE1PAgkAxUrYa+pMT4ECCQCd460bin4VDQIJANdx\
 V5Pdim/H\
------END RSA PRIVATE KEY-----",
-"-----BEGIN RSA PRIVATE KEY-----\
+-----END RSA PRIVATE KEY-----',
+'-----BEGIN RSA PRIVATE KEY-----\
 MIGqAgEAAiEAqpI4uImYUln1VqoBZtQZAs8rV3OQxQyL99MhJJJ0rFkCAwEAAQIg\
 AMaNb3lgse8qyGwZeYg5XOIBGEstbBHGR4moDB7CfWkCEQDcWO73QkRCx4cgXyRo\
 8itzAhEAxit+llKWGIBOZBSpkBKuAwIRAJwZdNE95NXaPGQ2grjGNvkCEBuQmT8X\
 pcEqt7y8EwnzTzkCEEIIS4UUKS8ZDrxtOmYcgdA=\
------END RSA PRIVATE KEY-----",
-"-----BEGIN RSA PRIVATE KEY-----\
+-----END RSA PRIVATE KEY-----',
+'-----BEGIN RSA PRIVATE KEY-----\
 MIIBOgIBAAJBAOt7ZGR2Jb3aAe8xTWN/z9e5KL0MTn34gtCweIbnCc9BE+0z6WJV\
 hnXRBgukdmB7iidrQInZDcDNxiZGFjI8ubMCAwEAAQJAONQmfjglE5QxM1BqpMCL\
 oDwHINh/eNcoesSb0bKgI2vSpbehdxTfVZ6P+i+U1CVRy2xUryWBu5pyOotyEdtS\
@@ -39,8 +39,8 @@ QQIhAPldH+5H0G9klbwjJu2L85ZW1QbHWOLrtiLWK14rfwWdAiEA8b+xc/ATCSvw\
 vesWWP0GwW524zRqZh7VX+XU2Xpqw48CIHtLhEI41+J8BV0ktFa34BTxkhrr7hMl\
 IMVQx9ikAQYxAiEA3AWqvSlQOfW6+y8+PKm1f1FJdQpcmCsR6mDkczceenMCIApw\
 Y30Gma+YVSrIkkyd6lZMv+zxSNaBAblzm2o9Abfx\
------END RSA PRIVATE KEY-----",
-"-----BEGIN RSA PRIVATE KEY-----\
+-----END RSA PRIVATE KEY-----',
+'-----BEGIN RSA PRIVATE KEY-----\
 MIICWwIBAAKBgQCyuL7vgD69afw7jYLnJdbDPWr5BIlt8lmt9IfzjOYJ/YJkTrAu\
 k/ZEEOvuPA4TVflOCuwJtT6oZlb8E8HOh82j5LVMXFDzkHpjzBfO9OaT66j7RPAD\
 dxRpsGUmk2pEHoLk/EXK0lTtsGv0i8OFDVSyxjufSCUGerkpV/+uafgJqwIDAQAB\
@@ -54,19 +54,18 @@ EmmuEilIxfZbIqrKSqvcsOkXUk+54mgmwrMaUYzmhPy2Aa5agqSScG52RwJAGKK+\
 XSdYV0p1NVxrsiBQo6VnhEK3Zor6CTGlKqnioM4iSi5hO224SAdSSW5iIKLjuvnT\
 QFS35WU/gbvjs7nleQJAVSGtjX2HK4/yVU7dX+BCBiSrlReshr0So31l8fufydLw\
 ahh8P6K19o8ysVAvZEnUECUlIR2Afpq5yabOCIkpbA==\
------END RSA PRIVATE KEY-----"
+-----END RSA PRIVATE KEY-----'
 ];
 
 $.each(keySizes, function(index, keySize){
-    
-    var jse = new JSEncrypt({default_key_size:keySize});
+
     var openssl_public_key = pbkeys[index];
     var openssl_private_key = prkeys[index];
-    
+    var jse = new JSEncrypt({default_key_size:keySize});
+    jse.setPrivateKey(openssl_private_key); //Instead of generating the key, we load the cached to avoid tests timeout
+
     describe('JSEncrypt - '+keySize+' bit', function(){
-        
-        //this.timeout(0); //Timout for test cases, zero means infinite. Needed for key sizes > 1024
-        
+
         describe('#getKey()', function(){
             
             it('should be '+keySize+' bit long', function () {
@@ -79,6 +78,7 @@ $.each(keySizes, function(index, keySize){
             });
             
         });
+        
 
         describe('#encrypt() | #decrypt()', function(){
             

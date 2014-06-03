@@ -188,7 +188,10 @@
     var generateKeys = function () {
       var sKeySize = $('#key-size').attr('data-value');
       var keySize = parseInt(sKeySize);
-      var crypt = new JSEncrypt({default_key_size: keySize});
+      var crypt = new JSEncrypt({
+        default_key_size: keySize,
+        script_path: 'http://localhost:8000/bin/jsencrypt.js'
+      });
       var async = $('#async-ck').is(':checked');
       var dt = new Date();
       var time = -(dt.getTime());
@@ -197,7 +200,7 @@
         var load = setInterval(function () {
           var text = $('#time-report').text();
           $('#time-report').text(text + '.');
-        }, 500);
+        }, 1000);
         crypt.getKey(function () {
           clearInterval(load);
           dt = new Date();
