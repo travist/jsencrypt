@@ -1265,15 +1265,25 @@ var rng_state;
 var rng_pool;
 var rng_pptr;
 
+var windowDefined = typeof window != 'undefined';
+
 // Initialize the pool with junk if needed.
 if(rng_pool == null) {
   rng_pool = new Array();
   rng_pptr = 0;
   var t;
-  if(window.crypto && window.crypto.getRandomValues) {
+  var getRandomValuesFunction = null;
+  //We check for window existence because when loaded in a web worker we do not have access to the 'window' object
+  if (windowDefined && window.crypto && window.crypto.getRandomValues)
     // Extract entropy (2048 bits) from RNG if available
+    getRandomValuesFunction = window.crypto.getRandomValues;
+  } else if(crypto && crypto.getRandomValues) {
+    getRandomValuesFunction = crypto.getRandomValues;
+  }
+
+  if (getRandomValuesFunction !== null) {
     var z = new Uint32Array(256);
-    window.crypto.getRandomValues(z);
+    getRandomValuesFunction(z);
     for (t = 0; t < z.length; ++t)
       rng_pool[rng_pptr++] = z[t] & 255;
   }
@@ -1283,21 +1293,34 @@ if(rng_pool == null) {
   var onMouseMoveListener = function(ev) {
     this.count = this.count || 0;
     if (this.count >= 256 || rng_pptr >= rng_psize) {
-      if (window.removeEventListener)
-        window.removeEventListener("mousemove", onMouseMoveListener);
-      else if (window.detachEvent)
-        window.detachEvent("onmousemove", onMouseMoveListener);
+      if (windowDefined) {
+        if (window.removeEventListener)
+          window.removeEventListener("mousemove", onMouseMoveListener);
+        else if (window.detachEvent)
+          window.detachEvent("onmousemove", onMouseMoveListener);
+      } else {
+        if (removeEventListener)
+          removeEventListener("mousemove", onMouseMoveListener);
+        else if (detachEvent)
+          detachEvent("onmousemove", onMouseMoveListener);
+      }
       return;
     }
     this.count += 1;
     var mouseCoordinates = ev.x + ev.y;
     rng_pool[rng_pptr++] = mouseCoordinates & 255;
   };
-  if (window.addEventListener)
-    window.addEventListener("mousemove", onMouseMoveListener, false);
-  else if (window.attachEvent)
-    window.attachEvent("onmousemove", onMouseMoveListener);
-
+  if (windowDefined) {
+    if (window.addEventListener)
+      window.addEventListener("mousemove", onMouseMoveListener, false);
+    else if (window.attachEvent)
+      window.attachEvent("onmousemove", onMouseMoveListener);
+  } else {
+    if (addEventListener)
+      addEventListener("mousemove", onMouseMoveListener, false);
+    else if (attachEvent)
+      attachEvent("onmousemove", onMouseMoveListener);
+  }
 }
 
 function rng_get_byte() {
@@ -1354,7 +1377,9 @@ function byte2Hex(b) {
 // PKCS#1 (type 2, random) pad input string s to n bytes, and return a bigint
 function pkcs1pad2(s,n) {
   if(n < s.length + 11) { // TODO: fix for utf-8
-    console.error("Message too long for RSA");
+    if (!(typeof console == "undefined")) {
+      console.error("Message too long for RSA");
+    }
     return null;
   }
   var ba = new Array();
@@ -1405,8 +1430,11 @@ function RSASetPublic(N,E) {
     this.n = parseBigInt(N,16);
     this.e = parseInt(E,16);
   }
-  else
-    console.error("Invalid RSA public key");
+  else {
+    if (!(typeof console == "undefined")) {
+      console.error("Invalid RSA public key");
+    }
+  }
 }
 
 // Perform raw public operation on "x": return x^e (mod n)
@@ -2205,7 +2233,7 @@ var bnpFromNumberAsync = function (a,b,c,callback) {
         if(bnp.isProbablePrime(b)) {
             setTimeout(function(){callback()},0); // escape
         } else {
-            setTimeout(bnpfn1,0);
+            bnpfn1();
         }
       };
       setTimeout(bnpfn1,0);
@@ -2220,7 +2248,8 @@ var bnpFromNumberAsync = function (a,b,c,callback) {
 };
 BigInteger.prototype.fromNumberAsync = bnpFromNumberAsync;
 
-})();var b64map="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+})();
+var b64map="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 var b64pad="=";
 
 function hex2b64(h) {
@@ -4672,7 +4701,7 @@ JSEncryptRSAKey.prototype.loadWorker = function (scriptPath) {
   //Yeah I know, this is a bit of a hack, but it's a reliable way to make a worker without 
   //having to worry about the location of the two source files. Moreover this way we will
   //have only one file to distribute instead of two.
-  var source = '!function(){\"use strict\";var a=\"@@source_file@@\";importScripts(a),addEventListener(\"message\",function(a){var b={};b.default_key_size=a.size,b.default_public_exponent=a.exp;var c=new JSEncrypt(b),d=c.getPrivateKey();console.log(d),self.postMessage({key:d})},!1)}();';
+  var source = '@@jsencrypt_worker_source@@';
   source = source.replace('@@source_file@@', scriptPath);
   var blob = new Blob([source]);
   this.blobUrl = URL.createObjectURL(blob);
