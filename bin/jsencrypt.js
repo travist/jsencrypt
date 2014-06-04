@@ -1265,25 +1265,18 @@ var rng_state;
 var rng_pool;
 var rng_pptr;
 
-var windowDefined = typeof window != 'undefined';
+//We check for window existence because when loaded in a web worker we do not have access to the 'window' object
+var ctx = typeof window !== 'undefined' ? window : self;
 
 // Initialize the pool with junk if needed.
 if(rng_pool == null) {
   rng_pool = new Array();
   rng_pptr = 0;
   var t;
-  var getRandomValuesFunction = null;
-  //We check for window existence because when loaded in a web worker we do not have access to the 'window' object
-  if (windowDefined && window.crypto && window.crypto.getRandomValues)
-    // Extract entropy (2048 bits) from RNG if available
-    getRandomValuesFunction = window.crypto.getRandomValues;
-  } else if(crypto && crypto.getRandomValues) {
-    getRandomValuesFunction = crypto.getRandomValues;
-  }
-
-  if (getRandomValuesFunction !== null) {
+  // Extract entropy (2048 bits) from RNG if available
+  if (ctx.crypto && ctx.crypto.getRandomValues) {
     var z = new Uint32Array(256);
-    getRandomValuesFunction(z);
+    ctx.crypto.getRandomValues(z);
     for (t = 0; t < z.length; ++t)
       rng_pool[rng_pptr++] = z[t] & 255;
   }
@@ -1293,34 +1286,20 @@ if(rng_pool == null) {
   var onMouseMoveListener = function(ev) {
     this.count = this.count || 0;
     if (this.count >= 256 || rng_pptr >= rng_psize) {
-      if (windowDefined) {
-        if (window.removeEventListener)
-          window.removeEventListener("mousemove", onMouseMoveListener);
-        else if (window.detachEvent)
-          window.detachEvent("onmousemove", onMouseMoveListener);
-      } else {
-        if (removeEventListener)
-          removeEventListener("mousemove", onMouseMoveListener);
-        else if (detachEvent)
-          detachEvent("onmousemove", onMouseMoveListener);
-      }
+      if (ctx.removeEventListener)
+        ctx.removeEventListener("mousemove", onMouseMoveListener);
+      else if (ctx.detachEvent)
+        ctx.detachEvent("onmousemove", onMouseMoveListener);
       return;
     }
     this.count += 1;
     var mouseCoordinates = ev.x + ev.y;
     rng_pool[rng_pptr++] = mouseCoordinates & 255;
   };
-  if (windowDefined) {
-    if (window.addEventListener)
-      window.addEventListener("mousemove", onMouseMoveListener, false);
-    else if (window.attachEvent)
-      window.attachEvent("onmousemove", onMouseMoveListener);
-  } else {
-    if (addEventListener)
-      addEventListener("mousemove", onMouseMoveListener, false);
-    else if (attachEvent)
-      attachEvent("onmousemove", onMouseMoveListener);
-  }
+  if (ctx.addEventListener)
+    ctx.addEventListener("mousemove", onMouseMoveListener, false);
+  else if (ctx.attachEvent)
+    ctx.attachEvent("onmousemove", onMouseMoveListener);
 }
 
 function rng_get_byte() {
@@ -2327,7 +2306,7 @@ var JSX = JSX || {};
 JSX.env = JSX.env || {};
 
 var L = JSX, OP = Object.prototype, FUNCTION_TOSTRING = '[object Function]',ADD = ["toString", "valueOf"];
-
+var jsxctx = typeof window !== 'undefined' ? window : self;
 JSX.env.parseUA = function(agent) {
 
     var numberify = function(s) {
@@ -2359,7 +2338,7 @@ JSX.env.parseUA = function(agent) {
     },
 
     ua = agent || (navigator && navigator.userAgent),
-    loc = window && window.location,
+    loc = jsxctx && jsxctx.location,
     href = loc && loc.href,
     m;
 
@@ -3728,7 +3707,8 @@ Hex.decode = function(a) {
 };
 
 // export globals
-window.Hex = Hex;
+var ctx = typeof window !== 'undefined' ? window : self;
+ctx.Hex = Hex;
 })();// Base64 JavaScript decoder
 // Copyright (c) 2008-2013 Lapo Luchini <lapo@lapo.it>
 
@@ -3813,7 +3793,8 @@ Base64.unarmor = function (a) {
 };
 
 // export globals
-window.Base64 = Base64;
+var ctx = typeof window !== 'undefined' ? window : self;
+ctx.Base64 = Base64;
 })();// ASN.1 JavaScript decoder
 // Copyright (c) 2008-2013 Lapo Luchini <lapo@lapo.it>
 
@@ -4347,7 +4328,8 @@ ASN1.test = function () {
 };
 
 // export globals
-window.ASN1 = ASN1;
+var ctx = typeof window !== 'undefined' ? window : self;
+ctx.ASN1 = ASN1;
 })();/**
  * Retrieve the hexadecimal value (as a string) of the current ASN.1 element
  * @returns {string}
@@ -4701,7 +4683,7 @@ JSEncryptRSAKey.prototype.loadWorker = function (scriptPath) {
   //Yeah I know, this is a bit of a hack, but it's a reliable way to make a worker without 
   //having to worry about the location of the two source files. Moreover this way we will
   //have only one file to distribute instead of two.
-  var source = '@@jsencrypt_worker_source@@';
+  var source = '!function(){\"use strict\";var a=\"@@source_file@@\";importScripts(a),addEventListener(\"message\",function(a){var b={};b.default_key_size=a.size,b.default_public_exponent=a.exp;var c=new JSEncrypt(b),d=c.getPrivateKey();self.postMessage({key:d})},!1)}();';
   source = source.replace('@@source_file@@', scriptPath);
   var blob = new Blob([source]);
   this.blobUrl = URL.createObjectURL(blob);
@@ -4717,7 +4699,7 @@ JSEncryptRSAKey.prototype.generateAsync2 = function(keySize, exponent, callback,
   if (this.worker) {
     var that = this;
     this.worker.addEventListener('message', function(e) {
-      that.parseKey(e.key);
+      that.parseKey(e.data.key);
       that.terminateWorker();
       if (callback) {
         callback();

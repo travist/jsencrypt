@@ -367,7 +367,7 @@ JSEncryptRSAKey.prototype.generateAsync2 = function(keySize, exponent, callback,
   if (this.worker) {
     var that = this;
     this.worker.addEventListener('message', function(e) {
-      that.parseKey(e.key);
+      that.parseKey(e.data.key);
       that.terminateWorker();
       if (callback) {
         callback();

@@ -12,7 +12,6 @@
     options.default_public_exponent = e.exp;
     var jse = new JSEncrypt(options);
     var privateKey = jse.getPrivateKey();
-    console.log(privateKey);
     self.postMessage({key: privateKey});
   }, false);
   
