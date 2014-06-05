@@ -4683,7 +4683,7 @@ JSEncryptRSAKey.prototype.loadWorker = function (scriptPath) {
   //Yeah I know, this is a bit of a hack, but it's a reliable way to make a worker without 
   //having to worry about the location of the two source files. Moreover this way we will
   //have only one file to distribute instead of two.
-  var source = '!function(){\"use strict\";var a=\"@@source_file@@\";importScripts(a),addEventListener(\"message\",function(a){var b={};b.default_key_size=a.size,b.default_public_exponent=a.exp;var c=new JSEncrypt(b),d=c.getPrivateKey();self.postMessage({key:d})},!1)}();';
+  var source = '!function(){\"use strict\";var a=\"@@source_file@@\";importScripts(a),addEventListener(\"message\",function(a){var b={};b.default_key_size=a.data.size,b.default_public_exponent=a.data.exp;var c=new JSEncrypt(b),d=c.getPrivateKey();self.postMessage({key:d})},!1)}();';
   source = source.replace('@@source_file@@', scriptPath);
   var blob = new Blob([source]);
   this.blobUrl = URL.createObjectURL(blob);

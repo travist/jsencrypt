@@ -8,8 +8,8 @@
 
   addEventListener('message', function(e) {
     var options = {};
-    options.default_key_size = e.size;
-    options.default_public_exponent = e.exp;
+    options.default_key_size = e.data.size;
+    options.default_public_exponent = e.data.exp;
     var jse = new JSEncrypt(options);
     var privateKey = jse.getPrivateKey();
     self.postMessage({key: privateKey});

@@ -188,9 +188,10 @@
     var generateKeys = function () {
       var sKeySize = $('#key-size').attr('data-value');
       var keySize = parseInt(sKeySize);
+      var path = location.protocol + '//' + location.host + '/bin/jsencrypt.js';
       var crypt = new JSEncrypt({
         default_key_size: keySize,
-        script_path: 'http://localhost:8000/bin/jsencrypt.js'
+        script_path: path
       });
       var async = $('#async-ck').is(':checked');
       var dt = new Date();
