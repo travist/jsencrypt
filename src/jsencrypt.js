@@ -339,7 +339,9 @@ JSEncryptRSAKey.prototype = new RSAKey();
 JSEncryptRSAKey.prototype.constructor = JSEncryptRSAKey;
 
 /**
- * Description
+ * This function will be called only if the JSEncrypt object has been created with the script_path options. If worker are available in the current browser
+ * will try to create one to be used later.
+ * @param {string} scriptPath the network path reference or the absolute URI to the file containing the jsencrypt source code (e.g. "//example.com/js/jsencrypt.min.js")
  * @private
  */
 JSEncryptRSAKey.prototype.loadWorker = function (scriptPath) {
@@ -348,8 +350,7 @@ JSEncryptRSAKey.prototype.loadWorker = function (scriptPath) {
   if (typeof Worker === "undefined")
     return;
   this.terminateWorker();
-  //Yeah I know, this is a bit of a hack, but it's a reliable way to make a worker without 
-  //having to worry about the location of the two source files. Moreover this way we will
+  //Yeah I know, this is a bit of a hack, but this way we will
   //have only one file to distribute instead of two.
   var source = '@@jsencrypt_worker_source@@';
   source = source.replace('@@source_file@@', scriptPath);
@@ -359,7 +360,14 @@ JSEncryptRSAKey.prototype.loadWorker = function (scriptPath) {
 };
 
 /**
- * Description
+ * This function will check if a worker has been created by the loadWorker function (meaning that worker are available in the current browser
+ * and that the JSEncrypt object has been created with the script_path option), if so it will ask the worker to create an RSA key with the
+ * specified parameters (keySize and exponent) and will call the callback function when it's done. If instead worker are not available or the
+ * object has not been created with the script_path option this method will fallback on the old generateAsync method
+ * @param {number} [keySize]  default: 1024 the key size in bit
+ * @param {string} [exponent] default: '010001' the hexadecimal representation of the public exponent
+ * @param {callback} [cb] the callback to be called if we want the key to be generated in an async fashion
+ * @param {string} [scriptPath] the network path reference or the absolute URI to the file containing the jsencrypt source code (e.g. "//example.com/js/jsencrypt.min.js")
  * @public
  */
 JSEncryptRSAKey.prototype.generateAsync2 = function(keySize, exponent, callback, scriptPath) {
@@ -380,7 +388,7 @@ JSEncryptRSAKey.prototype.generateAsync2 = function(keySize, exponent, callback,
 };
 
 /**
- * Description
+ * Terminate a worker that was previously created, releasing the BLOB holding the current source file
  * @private
  */
 JSEncryptRSAKey.prototype.terminateWorker = function () {
@@ -399,6 +407,7 @@ JSEncryptRSAKey.prototype.terminateWorker = function () {
  * - default_key_size        {number}  default: 1024 the key size in bit
  * - default_public_exponent {string}  default: '010001' the hexadecimal representation of the public exponent
  * - log                     {boolean} default: false whether log warn/error or not
+ * - script_path             {string}  default: null a network path reference or an absolute URI to the file containing the jsencrypt source code (e.g. "//example.com/js/jsencrypt.min.js")
  * @constructor
  */
 var JSEncrypt = function (options) {
