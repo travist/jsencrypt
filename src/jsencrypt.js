@@ -583,4 +583,174 @@ JSEncrypt.prototype.getPublicKeyB64 = function () {
 };
 
 
+/**
+
+Reference: 
+http://www.ietf.org/rfc/rfc5480.txt
+http://tools.ietf.org/html/rfc5915
+
+Tom Wu's supported SEC key algorithms :
+
+secp160k1
+secp160r1
+secp192k1
+secp192r1
+secp224r1
+secp256r1
+
+
+SEC public key format:
+
+SubjectPublicKeyInfo  ::=  SEQUENCE  {
+  algorithm         AlgorithmIdentifier,
+  subjectPublicKey  BIT STRING
+}
+
+where 
+
+AlgorithmIdentifier  ::=  SEQUENCE  {
+  algorithm   OBJECT IDENTIFIER,
+  parameters  ANY DEFINED BY algorithm OPTIONAL
+}
+
+SEC private key format:
+
+ECPrivateKey ::= SEQUENCE {
+  version        INTEGER { ecPrivkeyVer1(1) } (ecPrivkeyVer1),
+  privateKey     OCTET STRING,
+  parameters [0] ECParameters {{ NamedCurve }} OPTIONAL,
+  publicKey  [1] BIT STRING OPTIONAL
+}
+
+Mind that althought parameters are indicated as OPTIONAL implementation that conforms to RFC 5480 and 5915 MUST ALWAYS include the parameters field
+
+generate keys:
+
+#!/bin/bash
+
+curves=("secp160k1" "secp160r1" "secp192k1" "secp192r1" "secp224r1" "secp256r1")
+
+for curve in ${curves[@]} 
+do
+  echo "Generating curve $curve..."
+  openssl ecparam -name "$curve" -genkey -noout -out "$curve-key.pem" 
+  openssl ec -in "$curve-key.pem" -pubout -out "$curve-key.pub.pem"
+  echo -e "\n\n$curve-key.pem" >> output
+  cat "$curve-key.pem" >> output
+  echo -e "\n$curve-key.pub.pem" >> output
+  cat "$curve-key.pub.pem" >> output
+done
+
+====================================================================================================================================
+
+secp160k1-key.pem
+-----BEGIN EC PRIVATE KEY-----
+MFACAQEEFG2KnYudKdPsl36Mm5/EHScUAaXboAcGBSuBBAAJoSwDKgAEornk9n3G
+R1GXUxaSWowH4i32eSDQSY2zFoQyFBjNuBGqwZAt4uomyA==
+-----END EC PRIVATE KEY-----
+
+SEQUENCE(4 elem)
+  INTEGER 1
+  OCTET STRING(20 byte) 6D8A9D8B9D29D3EC977E8C9B9FC41D271401A5DB
+  [0](1 elem)
+    OBJECT IDENTIFIER 1.3.132.0.9
+  [1](1 elem)
+    BIT STRING(328 bit) 0001001101100100010101110100011110110100000010011000001101010101100010…
+
+secp160k1-key.pub.pem
+-----BEGIN PUBLIC KEY-----
+MD4wEAYHKoZIzj0CAQYFK4EEAAkDKgAEornk9n3GR1GXUxaSWowH4i32eSDQSY2z
+FoQyFBjNuBGqwZAt4uomyA==
+-----END PUBLIC KEY-----
+
+SEQUENCE (2 elem)
+  SEQUENCE (2 elem)
+    OBJECT IDENTIFIER 1.2.840.10045.2.1
+    OBJECT IDENTIFIER 1.3.132.0.9
+  BIT STRING (328 bit) 0001001101100100010101110100011110110100000010011000001101010101100010…
+
+====================================================================================================================================
+
+secp160r1-key.pem
+-----BEGIN EC PRIVATE KEY-----
+MFACAQEEFH0rFivZZmIDljGa10r9xqS/rdkpoAcGBSuBBAAIoSwDKgAE9vjkoYyF
+qVGmgq+TgKPpDRfRx4R6EwQot2dsh362nLcpV4+CpUloRQ==
+-----END EC PRIVATE KEY-----
+
+SEQUENCE (4 elem)
+INTEGER 1
+  OCTET STRING (20 byte) 7D2B162BD966620396319AD74AFDC6A4BFADD929
+  [0](1 elem)
+    OBJECT IDENTIFIER 1.3.132.0.8
+  [1] (1 elem)
+    BIT STRING(328 bit) 1010001000010110100100101010010101000001111100011110101010010100111011…
+
+secp160r1-key.pub.pem
+-----BEGIN PUBLIC KEY-----
+MD4wEAYHKoZIzj0CAQYFK4EEAAgDKgAE9vjkoYyFqVGmgq+TgKPpDRfRx4R6EwQo
+t2dsh362nLcpV4+CpUloRQ==
+-----END PUBLIC KEY-----
+
+====================================================================================================================================
+
+secp192k1-key.pem
+-----BEGIN EC PRIVATE KEY-----
+MFwCAQEEGCcPzu2cfD/7yilD2NQV6gblCRkcYoVHc6AHBgUrgQQAH6E0AzIABBim
+ummr+v5+n5ZH9lYE+4zuHyxMWeJL4ZcXhMWApW5YsW1PUKQ9Fti2rcaYvLvjQQ==
+-----END EC PRIVATE KEY-----
+
+secp192k1-key.pub.pem
+-----BEGIN PUBLIC KEY-----
+MEYwEAYHKoZIzj0CAQYFK4EEAB8DMgAEGKa6aav6/n6flkf2VgT7jO4fLExZ4kvh
+lxeExYClblixbU9QpD0W2Latxpi8u+NB
+-----END PUBLIC KEY-----
+
+====================================================================================================================================
+
+secp192r1-key.pem
+-----BEGIN EC PRIVATE KEY-----
+MF8CAQEEGMPLTo1oAumyOlTyyq0yN7WSs31VcLuIa6AKBggqhkjOPQMBAaE0AzIA
+BEwsAYl/hqxkDWcurXhPyaQK1RzhdpyUFDduFXlhmeX2D0NJPcNSdBHn1nqWOPPS
+5A==
+-----END EC PRIVATE KEY-----
+
+secp192r1-key.pub.pem
+-----BEGIN PUBLIC KEY-----
+MEkwEwYHKoZIzj0CAQYIKoZIzj0DAQEDMgAETCwBiX+GrGQNZy6teE/JpArVHOF2
+nJQUN24VeWGZ5fYPQ0k9w1J0EefWepY489Lk
+-----END PUBLIC KEY-----
+
+====================================================================================================================================
+
+secp224r1-key.pem
+-----BEGIN EC PRIVATE KEY-----
+MGgCAQEEHLtZCwOBR2TjcKyugYcA6oMz64r10+QS9vpSK42gBwYFK4EEACGhPAM6
+AARBMstxa5L4zLl0+ENlBWtuDXkbRTX+6DBVwj62OpV3DSLXGEns7AHI8DSoSD1V
+yZ+/W2UEJhGStg==
+-----END EC PRIVATE KEY-----
+
+secp224r1-key.pub.pem
+-----BEGIN PUBLIC KEY-----
+ME4wEAYHKoZIzj0CAQYFK4EEACEDOgAEQTLLcWuS+My5dPhDZQVrbg15G0U1/ugw
+VcI+tjqVdw0i1xhJ7OwByPA0qEg9Vcmfv1tlBCYRkrY=
+-----END PUBLIC KEY-----
+
+====================================================================================================================================
+
+secp256r1-key.pem
+-----BEGIN EC PRIVATE KEY-----
+MHcCAQEEIHM8o0pJf654Brckx/IKqMMfxMr7HIYR93a/prP3ncqBoAoGCCqGSM49
+AwEHoUQDQgAElg2fQy0QbRvGbKKvQcH1vF+GcOYa4a//pL2Md6LBj1WkwXqdN8ei
+aq8sfK4MFZ5jUhujkJ+1566o1a80bIOGsQ==
+-----END EC PRIVATE KEY-----
+
+secp256r1-key.pub.pem
+-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAElg2fQy0QbRvGbKKvQcH1vF+GcOYa
+4a//pL2Md6LBj1WkwXqdN8eiaq8sfK4MFZ5jUhujkJ+1566o1a80bIOGsQ==
+-----END PUBLIC KEY-----
+
+====================================================================================================================================
+
+****/
 
