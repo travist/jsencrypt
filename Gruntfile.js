@@ -94,5 +94,5 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-jekyll');
 
   // Default task(s).
-  grunt.registerTask('default', ['jshint', 'concat', 'uglify', 'jekyll']);
+  grunt.registerTask('default', ['jshint', 'concat', 'uglify']);	//turning off jekyll, as it fails on my system, 'jekyll'
 };
