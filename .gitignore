@@ -3,3 +3,4 @@ node_modules
 project.properties
 project.xml
 /nbproject/private/
+.idea/

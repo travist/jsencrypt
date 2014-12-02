@@ -307,7 +307,7 @@ RSAKey.prototype.parsePropertiesFrom = function (obj) {
 /**
  * Create a new JSEncryptRSAKey that extends Tom Wu's RSA key object.
  * This object is just a decorator for parsing the key parameter
- * @param {string|Object} key - The key in string format, or an object containing
+ * @param {string|Object} [key] - The key in string format, or an object containing. If no key is provided, a new key is created
  * the parameters needed to build a RSAKey object.
  * @constructor
  */
@@ -394,7 +394,7 @@ JSEncrypt.prototype.setPublicKey = function (pubkey) {
  * components of the rsa key object. Note that if the object was not set will be created
  * on the fly (by the getKey method) using the parameters passed in the JSEncrypt constructor
  * @param {string} string base64 encoded crypted string to decrypt
- * @return {string} the decrypted string
+ * @return {string|boolean} the decrypted string
  * @public
  */
 JSEncrypt.prototype.decrypt = function (string) {
@@ -412,7 +412,7 @@ JSEncrypt.prototype.decrypt = function (string) {
  * components of the rsa key object. Note that if the object was not set will be created
  * on the fly (by the getKey method) using the parameters passed in the JSEncrypt constructor
  * @param {string} string the string to encrypt
- * @return {string} the encrypted string encoded in base64
+ * @return {string|boolean} the encrypted string encoded in base64
  * @public
  */
 JSEncrypt.prototype.encrypt = function (string) {
@@ -430,7 +430,7 @@ JSEncrypt.prototype.encrypt = function (string) {
  * will be created and returned
  * @param {callback} [cb] the callback to be called if we want the key to be generated
  * in an async fashion
- * @returns {JSEncryptRSAKey} the JSEncryptRSAKey object
+ * @returns {JSEncryptRSAKey|null} the JSEncryptRSAKey object
  * @public
  */
 JSEncrypt.prototype.getKey = function (cb) {
@@ -440,7 +440,7 @@ JSEncrypt.prototype.getKey = function (cb) {
     this.key = new JSEncryptRSAKey();
     if (cb && {}.toString.call(cb) === '[object Function]') {
       this.key.generateAsync(this.default_key_size, this.default_public_exponent, cb);
-      return;
+      return null;
     }
     // Generate the key.
     this.key.generate(this.default_key_size, this.default_public_exponent);
@@ -491,5 +491,37 @@ JSEncrypt.prototype.getPublicKey = function () {
 JSEncrypt.prototype.getPublicKeyB64 = function () {
   // Return the private representation of this key.
   return this.getKey().getPublicBaseKeyB64();
+};
+
+/**
+ * Signs the text using the private key & the supplied hash & pad methods. Returns a hex string of the signature.
+ * @param {string} text - the text to sign
+ * @param {Function} hashMethod - the method to use to hash the text
+ * @param {Function} padMethod - the method to use to pad the hash. must accept hash & length parameters
+ * @returns {string}
+ */
+JSEncrypt.prototype.sign = function(text, hashMethod, padMethod) {
+	try {
+		return this.getKey().sign(text, hashMethod, padMethod);
+	} catch(ex) {
+		return null;
+	}
+};
+
+/**
+ * Verifies a signature by decrypting the signature and comparing its hash with a newly-computed hash.
+ * @param {string} signature - the signature in hex
+ * @param {string} text - the text to check the signature of
+ * @param {Function} hashMethod - an equivalent function to that which was used when signing
+ * @param {Function} unPadMethod - a function to undo padding of the hash done on signing
+ * @returns {boolean}
+ */
+JSEncrypt.prototype.verify = function(signature, text, hashMethod, unPadMethod) {
+	// Return the decrypted 'digest' of the signature.
+	try {
+		return this.getKey().verify(signature, text, hashMethod, unPadMethod);
+	} catch(ex) {
+		return false;
+	}
 };
 
