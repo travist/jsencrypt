@@ -3866,6 +3866,11 @@ RSAKey.prototype.parseKey = function (pem) {
     var reHex = /^\s*(?:[0-9A-Fa-f][0-9A-Fa-f]\s*)+$/;
     var der = reHex.test(pem) ? Hex.decode(pem) : Base64.unarmor(pem);
     var asn1 = ASN1.decode(der);
+
+    //Fixes a bug with OpenSSL 1.0+ private keys
+    if(asn1.sub.length === 3){
+        asn1 = asn1.sub[2].sub[0];
+    }
     if (asn1.sub.length === 9) {
 
       // Parse the private key.
