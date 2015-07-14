@@ -1,7 +1,7 @@
 {
   "name": "travist/jsencrypt",
   "version": "2.1.0",
-  "main": "bin/jsencrypt.min.js",
+  "main": "bin/jsencrypt.js",
   "keywords" : ["rsa", "openssl", "encryption", "decryption", "key", "generation"],
   "description": "A Javascript library to perform OpenSSL RSA Encryption, Decryption, and Key Generation.",
   "license": "MIT",
