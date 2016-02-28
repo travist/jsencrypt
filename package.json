@@ -2,6 +2,7 @@
   "name": "jsencrypt",
   "version": "2.1.0",
   "description": "A Javascript library to perform OpenSSL RSA Encryption, Decryption, and Key Generation.",
+  "main": "bin/jsencrypt.js",
   "author": {
     "name": "Travis Tidwell",
     "email": "travist349@gmail.com",
