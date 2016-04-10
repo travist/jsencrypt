@@ -1,5 +1,5 @@
 {
-  "name": "travist/jsencrypt",
+  "name": "jsencrypt",
   "version": "2.1.0",
   "main": "bin/jsencrypt.min.js",
   "description": "A Javascript library to perform OpenSSL RSA Encryption, Decryption, and Key Generation.",
