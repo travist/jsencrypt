@@ -1,6 +1,6 @@
-File: src/LICENSE.txt
+File: /src/LICENSE.txt
 The MIT License (MIT)
-Copyright (c) 2013 AllPlayers.com
+Copyright (c) 2015 Form.io
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in the
@@ -19,8 +19,7 @@ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTIO
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-
-File: lib/jsrsasign/LICENSE.txt
+File: /lib/jsrsasign/LICENSE.txt
 
 
 CONTAINS CODE FROM YUI LIBRARY SEE LICENSE @ http://yuilibrary.com/license/
@@ -46,9 +45,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-
-
-File: lib/jsbn/LICENSE.txt
+File: /lib/jsbn/LICENSE.txt
 
 
 Licensing
@@ -91,9 +88,7 @@ Address all questions regarding this license to:
 
   Tom Wu
   tjw@cs.Stanford.EDU
-
-
-File: lib/asn1js/LICENSE.txt
+File: /lib/asn1js/LICENSE.txt
 
 
 ASN.1 JavaScript decoder

@@ -1,6 +1,7 @@
+/*! JSEncrypt v2.2.0 | https://npmcdn.com/jsencrypt@2.2.0/LICENSE.txt */
 var JSEncryptExports = {};
 (function(exports) {
-// Copyright (c) 2005  Tom Wu
+    // Copyright (c) 2005  Tom Wu
 // All Rights Reserved.
 // See "LICENSE" for details.
 
@@ -559,6 +560,7 @@ BigInteger.prototype.modPowInt = bnModPowInt;
 // "constants"
 BigInteger.ZERO = nbv(0);
 BigInteger.ONE = nbv(1);
+
 // Copyright (c) 2005-2009  Tom Wu
 // All Rights Reserved.
 // See "LICENSE" for details.
@@ -1215,6 +1217,7 @@ BigInteger.prototype.square = bnSquare;
 // int hashCode()
 // long longValue()
 // static BigInteger valueOf(long val)
+
 // prng4.js - uses Arcfour as a PRNG
 
 function Arcfour() {
@@ -1260,6 +1263,7 @@ function prng_newstate() {
 // Pool size must be a multiple of 4 and greater than 32.
 // An array of bytes the size of the pool will be passed to init()
 var rng_psize = 256;
+
 // Random number generator - requires a PRNG backend, e.g. prng4.js
 var rng_state;
 var rng_pool;
@@ -1329,6 +1333,7 @@ function rng_get_bytes(ba) {
 function SecureRandom() {}
 
 SecureRandom.prototype.nextBytes = rng_get_bytes;
+
 // Depends on jsbn.js and rng.js
 
 // Version 1.1: support utf-8 encoding in pkcs1pad2
@@ -1441,6 +1446,7 @@ RSAKey.prototype.doPublic = RSADoPublic;
 RSAKey.prototype.setPublic = RSASetPublic;
 RSAKey.prototype.encrypt = RSAEncrypt;
 //RSAKey.prototype.encrypt_b64 = RSAEncryptB64;
+
 // Depends on rsa.js and jsbn2.js
 
 // Version 1.1: support utf-8 decoding in pkcs1unpad2
@@ -1573,6 +1579,7 @@ RSAKey.prototype.setPrivateEx = RSASetPrivateEx;
 RSAKey.prototype.generate = RSAGenerate;
 RSAKey.prototype.decrypt = RSADecrypt;
 //RSAKey.prototype.b64_decrypt = RSAB64Decrypt;
+
 // Copyright (c) 2011  Kevin M Burns Jr.
 // All Rights Reserved.
 // See "LICENSE" for details.
@@ -1724,7 +1731,8 @@ var bnpFromNumberAsync = function (a,b,c,callback) {
 };
 BigInteger.prototype.fromNumberAsync = bnpFromNumberAsync;
 
-})();var b64map="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+})();
+var b64map="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 var b64pad="=";
 
 function hex2b64(h) {
@@ -1795,6 +1803,7 @@ function b64toBA(s) {
   }
   return a;
 }
+
 /*! asn1-1.0.2.js (c) 2013 Kenji Urushima | kjur.github.com/jsrsasign/license
  */
 
@@ -3140,7 +3149,8 @@ KJUR.asn1.DERTaggedObject = function(params) {
 	}
     }
 };
-JSX.extend(KJUR.asn1.DERTaggedObject, KJUR.asn1.ASN1Object);// Hex JavaScript decoder
+JSX.extend(KJUR.asn1.DERTaggedObject, KJUR.asn1.ASN1Object);
+// Hex JavaScript decoder
 // Copyright (c) 2008-2013 Lapo Luchini <lapo@lapo.it>
 
 // Permission to use, copy, modify, and/or distribute this software for any
@@ -3204,7 +3214,8 @@ Hex.decode = function(a) {
 
 // export globals
 window.Hex = Hex;
-})();// Base64 JavaScript decoder
+})();
+// Base64 JavaScript decoder
 // Copyright (c) 2008-2013 Lapo Luchini <lapo@lapo.it>
 
 // Permission to use, copy, modify, and/or distribute this software for any
@@ -3289,7 +3300,8 @@ Base64.unarmor = function (a) {
 
 // export globals
 window.Base64 = Base64;
-})();// ASN.1 JavaScript decoder
+})();
+// ASN.1 JavaScript decoder
 // Copyright (c) 2008-2013 Lapo Luchini <lapo@lapo.it>
 
 // Permission to use, copy, modify, and/or distribute this software for any
@@ -3823,7 +3835,8 @@ ASN1.test = function () {
 
 // export globals
 window.ASN1 = ASN1;
-})();/**
+})();
+/**
  * Retrieve the hexadecimal value (as a string) of the current ASN.1 element
  * @returns {string}
  * @public
@@ -4323,6 +4336,8 @@ JSEncrypt.prototype.getPublicKeyB64 = function () {
   return this.getKey().getPublicBaseKeyB64();
 };
 
+
+JSEncrypt.version = '2.2.0';
 exports.JSEncrypt = JSEncrypt;
 })(JSEncryptExports);
 (function (global, factory) {
