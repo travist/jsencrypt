@@ -1,4 +1,4 @@
-/*! JSEncrypt v2.2.0 | https://npmcdn.com/jsencrypt@2.2.0/LICENSE.txt */
+/*! JSEncrypt v2.3.0 | https://npmcdn.com/jsencrypt@2.3.0/LICENSE.txt */
 var JSEncryptExports = {};
 (function(exports) {
     // Copyright (c) 2005  Tom Wu
@@ -4337,7 +4337,7 @@ JSEncrypt.prototype.getPublicKeyB64 = function () {
 };
 
 
-JSEncrypt.version = '2.2.0';
+JSEncrypt.version = '2.3.0';
 exports.JSEncrypt = JSEncrypt;
 })(JSEncryptExports);
 (function (global, factory) {
