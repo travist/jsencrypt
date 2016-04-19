@@ -1,3 +1,6 @@
+_site
+.idea
+.DS_Store
 node_modules
 *.pem
 project.properties
