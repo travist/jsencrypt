@@ -1,0 +1,32 @@
+<nav class="navbar navbar-inverse" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#">JSEncrypt</a>
+    </div>
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+        <li {% if page.url=='/index.html' %}class="active"{% endif %}>
+          <a href="index.html">Home</a>
+        </li>
+        <li {% if page.url=='/demo/index.html' %}class="active"{% endif %}>
+          <a href="demo/index.html">Demo</a>
+        </li>
+        <li {% if page.url=='/test/index.html' %}class="active"{% endif %}>
+          <a href="test/index.html">Test</a>
+        </li>
+        <li>
+          <a href="https://github.com/travist/jsencrypt/archive/master.zip" role="button">Download</a>
+        </li>
+        <li>
+          <a href="https://github.com/travist/jsencrypt" role="button">GitHub Project</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>

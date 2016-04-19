@@ -1,69 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Testing JSEncrypt</title>
-  <base id="basetag" href="/">
-  <!--[if IE]>
-  <script type='text/javascript'>
-    (function() {
-      var tag = document.getElementById('basetag');
-      tag.href = location.protocol + '//' + location.host + '/';
-    }());
-  </script>
-  <![endif]-->
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-  <script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
-  <script type="text/javascript" src="bin/jsencrypt.js"></script>
-  <script type="text/javascript">
-    var _gaq = _gaq || [];
-    _gaq.push(['_setAccount', 'UA-450670-2']);
-    _gaq.push(['_trackPageview']);
-    (function() {
-      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-    })();
-  </script>
-  <link href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet" type="text/css">
-</head>
-<body>
-<nav class="navbar navbar-inverse" role="navigation">
-  <div class="container">
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <a class="navbar-brand" href="#">JSEncrypt</a>
-    </div>
-    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-      <ul class="nav navbar-nav">
-        <li >
-          <a href="index.html">Home</a>
-        </li>
-        <li >
-          <a href="demo/index.html">Demo</a>
-        </li>
-        <li >
-          <a href="test/index.html">Test</a>
-        </li>
-        <li>
-          <a href="https://github.com/travist/jsencrypt/archive/master.zip" role="button">Download</a>
-        </li>
-        <li>
-          <a href="https://github.com/travist/jsencrypt" role="button">GitHub Project</a>
-        </li>
-      </ul>
-    </div>
-  </div>
-</nav>
-
-<div class="container">
-  <link href="test/mocha.css" rel="stylesheet" type="text/css">
+---
+title: Testing JSEncrypt
+layout: default
+---
+<link href="test/mocha.css" rel="stylesheet" type="text/css">
 <div id="mocha"></div>
 <script type="text/javascript" src="test/expect.js"></script>
 <script type="text/javascript" src="test/mocha.js"></script>
@@ -74,7 +13,3 @@
   mocha.globals(['jQuery']);
   mocha.run();
 </script>
-
-</div>
-</body>
-</html>
