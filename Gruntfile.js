@@ -33,7 +33,15 @@ module.exports = function(grunt) {
 
   var suffix = 'exports.JSEncrypt = JSEncrypt;' + "\n";
   suffix += '})(JSEncryptExports);' + "\n";
-  suffix += 'var JSEncrypt = JSEncryptExports.JSEncrypt;' + "\n";
+  suffix += '(function (global, factory) {' + "\n";
+  suffix += '  if (typeof exports === \'object\' && typeof module !== \'undefined\') {' + "\n";
+  suffix += '    module.exports = factory;' + "\n";
+  suffix += '  } else if (typeof define === \'function\' && define.amd) {' + "\n";
+  suffix += '    define(factory);' + "\n";
+  suffix += '  } else {' + "\n";
+  suffix += '    global.JSEncrypt = factory;' + "\n";
+  suffix += '  }' + "\n";
+  suffix += '}(this, JSEncryptExports.JSEncrypt));' + "\n";
 
   // Project configuration.
   grunt.initConfig({
@@ -95,7 +103,7 @@ module.exports = function(grunt) {
 
   // Default task(s).
   grunt.registerTask('default', ['jshint', 'concat', 'uglify']);
-  
+
   // Only run jekyll on a grunt build.
   grunt.registerTask('build', ['jekyll']);
 };

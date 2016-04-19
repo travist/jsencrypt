@@ -1289,9 +1289,13 @@ if(rng_pool == null) {
         window.detachEvent("onmousemove", onMouseMoveListener);
       return;
     }
-    this.count += 1;
-    var mouseCoordinates = ev.x + ev.y;
-    rng_pool[rng_pptr++] = mouseCoordinates & 255;
+    try {
+      var mouseCoordinates = ev.x + ev.y;
+      rng_pool[rng_pptr++] = mouseCoordinates & 255;
+      this.count += 1;
+    } catch (e) {
+      // Sometimes Firefox will deny permission to access event properties for some reason. Ignore.
+    }
   };
   if (window.addEventListener)
     window.addEventListener("mousemove", onMouseMoveListener, false);
@@ -4321,10 +4325,12 @@ JSEncrypt.prototype.getPublicKeyB64 = function () {
 
 exports.JSEncrypt = JSEncrypt;
 })(JSEncryptExports);
-
-// module support
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory :
-		typeof define === 'function' && define.amd ? define(factory) :
-			(global.JSEncrypt = factory);
-}(this, JSEncryptExports.JSEncrypt))
+  if (typeof exports === 'object' && typeof module !== 'undefined') {
+    module.exports = factory;
+  } else if (typeof define === 'function' && define.amd) {
+    define(factory);
+  } else {
+    global.JSEncrypt = factory;
+  }
+}(this, JSEncryptExports.JSEncrypt));
