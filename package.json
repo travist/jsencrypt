@@ -3,6 +3,9 @@
   "version": "2.3.1",
   "description": "A Javascript library to perform OpenSSL RSA Encryption, Decryption, and Key Generation.",
   "main": "bin/jsencrypt.js",
+  "scripts": {
+    "prepublish": "node_modules/gulp/bin/gulp.js"
+  },
   "contributors": [
     {
       "name": "Travis Tidwell",
@@ -12,6 +15,10 @@
     {
       "name": "Antonio",
       "url": "https://github.com/zoloft"
+    },
+    {
+      "name": "Julio",
+      "url": "https://github.com/jmgaya"
     }
   ],
   "homepage": "http://www.travistidwell.com/jsencrypt",

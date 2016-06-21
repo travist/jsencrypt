@@ -1,0 +1,14 @@
+_includes
+_layouts
+demo
+lib
+src
+test
+_config.build.yml
+_config.yml
+.gitignore
+bower.json
+example.html
+gulpfile.js
+index.html
+jquery.js
