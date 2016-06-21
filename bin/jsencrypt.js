@@ -1,7 +1,16 @@
-/*! JSEncrypt v2.3.0 | https://npmcdn.com/jsencrypt@2.3.0/LICENSE.txt */
-var JSEncryptExports = {};
-(function(exports) {
-    // Copyright (c) 2005  Tom Wu
+/*! JSEncrypt v2.3.1 | https://npmcdn.com/jsencrypt@2.3.1/LICENSE.txt */
+(function (root, factory) {
+  if (typeof define === 'function' && define.amd) {
+    // AMD
+    define(['exports'], factory);
+  } else if (typeof exports === 'object' && typeof exports.nodeName !== 'string') {
+    // Node, CommonJS-like
+    factory(module.exports);
+  } else {
+    factory(root);
+  }
+})(this, function (exports) {
+  // Copyright (c) 2005  Tom Wu
 // All Rights Reserved.
 // See "LICENSE" for details.
 
@@ -4337,15 +4346,6 @@ JSEncrypt.prototype.getPublicKeyB64 = function () {
 };
 
 
-JSEncrypt.version = '2.3.0';
-exports.JSEncrypt = JSEncrypt;
-})(JSEncryptExports);
-(function (global, factory) {
-  if (typeof exports === 'object' && typeof module !== 'undefined') {
-    module.exports = factory;
-  } else if (typeof define === 'function' && define.amd) {
-    define(factory);
-  } else {
-    global.JSEncrypt = factory;
-  }
-}(this, JSEncryptExports.JSEncrypt));
+  JSEncrypt.version = '2.3.1';
+  exports.JSEncrypt = JSEncrypt;
+});

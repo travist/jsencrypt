@@ -1,16 +1,16 @@
 /*! JSEncrypt v<%= data.version %> | https://npmcdn.com/jsencrypt@<%= data.version %>/LICENSE.txt */
-var JSEncryptExports = {};
-(function(exports) {
-    <%= data.contents %>
-JSEncrypt.version = '<%= data.version %>';
-exports.JSEncrypt = JSEncrypt;
-})(JSEncryptExports);
-(function (global, factory) {
-  if (typeof exports === 'object' && typeof module !== 'undefined') {
-    module.exports = factory;
-  } else if (typeof define === 'function' && define.amd) {
-    define(factory);
+(function (root, factory) {
+  if (typeof define === 'function' && define.amd) {
+    // AMD
+    define(['exports'], factory);
+  } else if (typeof exports === 'object' && typeof exports.nodeName !== 'string') {
+    // Node, CommonJS-like
+    factory(module.exports);
   } else {
-    global.JSEncrypt = factory;
+    factory(root);
   }
-}(this, JSEncryptExports.JSEncrypt));
+})(this, function (exports) {
+  <%= data.contents %>
+  JSEncrypt.version = '<%= data.version %>';
+  exports.JSEncrypt = JSEncrypt;
+});
