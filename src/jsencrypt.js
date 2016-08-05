@@ -1,7 +1,7 @@
 import {ASN1} from "../lib/asn1js/asn1";
 import {RSAKey} from "../lib/jsbn/rsa2";
 import {Base64} from "../lib/asn1js/base64";
-import {Base64 as Hex} from "../lib/asn1js/base64";
+import {Hex} from "../lib/asn1js/hex";
 import {parseBigInt} from "../lib/jsbn/rsa";
 import {KJUR} from "../lib/jsrsasign/asn1-1.0";
 import {hex2b64} from "../lib/jsbn/base64";
