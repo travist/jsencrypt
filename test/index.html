@@ -2,12 +2,11 @@
 title: Testing JSEncrypt
 layout: default
 ---
-<link href="test/mocha.css" rel="stylesheet" type="text/css">
+<link href="mocha.css" rel="stylesheet" type="text/css">
 <div id="mocha"></div>
-<script type="text/javascript" src="test/expect.js"></script>
-<script type="text/javascript" src="test/mocha.js"></script>
+<script type="text/javascript" src="mocha.js"></script>
 <script>mocha.setup('bdd')</script>
-<script type="text/javascript" src="test/test.rsa.js"></script>
+<script type="text/javascript" src="test.rsa.bundle.js"></script>
 <script>
   mocha.checkLeaks();
   mocha.globals(['jQuery']);

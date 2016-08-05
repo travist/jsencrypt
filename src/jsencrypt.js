@@ -1,3 +1,11 @@
+import {ASN1} from "../lib/asn1js/asn1";
+import {RSAKey} from "../lib/jsbn/rsa2";
+import {Base64} from "../lib/asn1js/base64";
+import {Base64 as Hex} from "../lib/asn1js/base64";
+import {parseBigInt} from "../lib/jsbn/rsa";
+import {KJUR} from "../lib/jsrsasign/asn1-1.0";
+import {hex2b64} from "../lib/jsbn/base64";
+import {b64tohex} from "../lib/jsbn/base64";
 /**
  * Retrieve the hexadecimal value (as a string) of the current ASN.1 element
  * @returns {string}
@@ -316,31 +324,26 @@ RSAKey.prototype.parsePropertiesFrom = function (obj) {
  * the parameters needed to build a RSAKey object.
  * @constructor
  */
-var JSEncryptRSAKey = function (key) {
-  // Call the super constructor.
-  RSAKey.call(this);
-  // If a key key was provided.
-  if (key) {
-    // If this is a string...
-    if (typeof key === 'string') {
-      this.parseKey(key);
-    }
-    else if (
-      this.hasPrivateKeyProperty(key) ||
-      this.hasPublicKeyProperty(key)
-    ) {
-      // Set the values for the key.
-      this.parsePropertiesFrom(key);
+class JSEncryptRSAKey extends RSAKey {
+  constructor(key) {
+    // Call the super constructor.
+    super();
+    // If a key key was provided.
+    if (key) {
+      // If this is a string...
+      if (typeof key === 'string') {
+        this.parseKey(key);
+      }
+      else if (
+          this.hasPrivateKeyProperty(key) ||
+          this.hasPublicKeyProperty(key)
+      ) {
+        // Set the values for the key.
+        this.parsePropertiesFrom(key);
+      }
     }
   }
-};
-
-// Derive from RSAKey.
-JSEncryptRSAKey.prototype = new RSAKey();
-
-// Reset the contructor.
-JSEncryptRSAKey.prototype.constructor = JSEncryptRSAKey;
-
+}
 
 /**
  *
@@ -351,14 +354,16 @@ JSEncryptRSAKey.prototype.constructor = JSEncryptRSAKey;
  * - log                     {boolean} default: false whether log warn/error or not
  * @constructor
  */
-var JSEncrypt = function (options) {
-  options = options || {};
-  this.default_key_size = parseInt(options.default_key_size) || 1024;
-  this.default_public_exponent = options.default_public_exponent || '010001'; //65537 default openssl public exponent for rsa key type
-  this.log = options.log || false;
-  // The private and public key.
-  this.key = null;
-};
+export class JSEncrypt{
+  constructor (options) {
+    options = options || {};
+    this.default_key_size = parseInt(options.default_key_size) || 1024;
+    this.default_public_exponent = options.default_public_exponent || '010001'; //65537 default openssl public exponent for rsa key type
+    this.log = options.log || false;
+    // The private and public key.
+    this.key = null;
+  }
+}
 
 /**
  * Method to set the rsa key parameter (one method is enough to set both the public
