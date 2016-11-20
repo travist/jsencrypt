@@ -1,8 +1,6 @@
 _includes
 _layouts
 demo
-lib
-src
 test
 _config.build.yml
 _config.yml
