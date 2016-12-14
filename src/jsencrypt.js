@@ -51,7 +51,6 @@ RSAKey.prototype.parseKey = function (pem) {
         asn1 = asn1.sub[2].sub[0];
     }
     if (asn1.sub.length === 9) {
-
       // Parse the private key.
       modulus = asn1.sub[1].getHexStringValue(); //bigint
       this.n = parseBigInt(modulus, 16);
@@ -76,19 +75,23 @@ RSAKey.prototype.parseKey = function (pem) {
 
       var coefficient = asn1.sub[8].getHexStringValue(); //bigint
       this.coeff = parseBigInt(coefficient, 16);
-
     }
     else if (asn1.sub.length === 2) {
-
-      // Parse the public key.
-      var bit_string = asn1.sub[1];
-      var sequence = bit_string.sub[0];
+      var sequence;
+      if (asn1.sub[0].tag == 0x02) {
+        // Parse the public key, without object identifier, then asn1.sub is a sequence of integers.
+        sequence = asn1;
+      }
+      else {
+        // Parse the public key, with object identifier, then asn1.sub[0] and asn1.sub[1] are sequences.
+        // asn1.sub[0] is a sequence included object identifier info, asn1.sub[1] is a sequence of integers.
+        sequence = asn1.sub[1].sub[0];
+      }
 
       modulus = sequence.sub[0].getHexStringValue();
       this.n = parseBigInt(modulus, 16);
       public_exponent = sequence.sub[1].getHexStringValue();
       this.e = parseInt(public_exponent, 16);
-
     }
     else {
       return false;
