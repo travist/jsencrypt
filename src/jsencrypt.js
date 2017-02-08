@@ -1,8 +1,16 @@
+"use strict"
 /**
  * Retrieve the hexadecimal value (as a string) of the current ASN.1 element
  * @returns {string}
  * @public
  */
+// let ASN1 = {};
+// ASN1.prototype = {};
+//
+// function RSAKey() {
+//     this.constructor = RSAKey;
+// };
+
 ASN1.prototype.getHexStringValue = function () {
   var hexString = this.toHexString();
   var offset = this.header * 2;
@@ -408,6 +416,7 @@ JSEncrypt.prototype.decrypt = function (string) {
     return this.getKey().decrypt(b64tohex(string));
   }
   catch (ex) {
+    console.log(ex)
     return false;
   }
 };
@@ -497,4 +506,3 @@ JSEncrypt.prototype.getPublicKeyB64 = function () {
   // Return the private representation of this key.
   return this.getKey().getPublicBaseKeyB64();
 };
-

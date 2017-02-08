@@ -10,7 +10,8 @@
     factory(root);
   }
 })(this, function (exports) {
-  // Copyright (c) 2005  Tom Wu
+  "use strict";
+// Copyright (c) 2005  Tom Wu
 // All Rights Reserved.
 // See "LICENSE" for details.
 
@@ -18,7 +19,8 @@
 
 // Bits per digit
 var dbits;
-
+var window;
+var navigator;
 // JavaScript engine analysis
 var canary = 0xdeadbeefcafe;
 var j_lm = ((canary&0xffffff)==0xefcafe);
@@ -79,11 +81,11 @@ function am3(i,x,w,j,c,n) {
   }
   return c;
 }
-if(j_lm && (navigator.appName == "Microsoft Internet Explorer")) {
+if(j_lm && (navigator && navigator.appName == "Microsoft Internet Explorer")) {
   BigInteger.prototype.am = am2;
   dbits = 30;
 }
-else if(j_lm && (navigator.appName != "Netscape")) {
+else if(j_lm && (navigator && navigator.appName != "Netscape")) {
   BigInteger.prototype.am = am1;
   dbits = 26;
 }
@@ -1273,17 +1275,18 @@ function prng_newstate() {
 // An array of bytes the size of the pool will be passed to init()
 var rng_psize = 256;
 
+"use strict";
 // Random number generator - requires a PRNG backend, e.g. prng4.js
 var rng_state;
 var rng_pool;
 var rng_pptr;
-
+var window;
 // Initialize the pool with junk if needed.
 if(rng_pool == null) {
   rng_pool = new Array();
   rng_pptr = 0;
   var t;
-  if(window.crypto && window.crypto.getRandomValues) {
+  if(window && window.crypto && window.crypto.getRandomValues) {
     // Extract entropy (2048 bits) from RNG if available
     var z = new Uint32Array(256);
     window.crypto.getRandomValues(z);
@@ -1296,9 +1299,9 @@ if(rng_pool == null) {
   var onMouseMoveListener = function(ev) {
     this.count = this.count || 0;
     if (this.count >= 256 || rng_pptr >= rng_psize) {
-      if (window.removeEventListener)
+      if (window && window.removeEventListener)
         window.removeEventListener("mousemove", onMouseMoveListener, false);
-      else if (window.detachEvent)
+      else if (window && window.detachEvent)
         window.detachEvent("onmousemove", onMouseMoveListener);
       return;
     }
@@ -1310,9 +1313,9 @@ if(rng_pool == null) {
       // Sometimes Firefox will deny permission to access event properties for some reason. Ignore.
     }
   };
-  if (window.addEventListener)
+  if (window && window.addEventListener)
     window.addEventListener("mousemove", onMouseMoveListener, false);
-  else if (window.attachEvent)
+  else if (window && window.attachEvent)
     window.attachEvent("onmousemove", onMouseMoveListener);
 
 }
@@ -1770,6 +1773,7 @@ function b64tohex(s) {
   var i;
   var k = 0; // b64 state, 0-3
   var slop;
+  var v;
   for(i = 0; i < s.length; ++i) {
     if(s.charAt(i) == b64pad) break;
     v = b64map.indexOf(s.charAt(i));
@@ -1815,7 +1819,7 @@ function b64toBA(s) {
 
 /*! asn1-1.0.2.js (c) 2013 Kenji Urushima | kjur.github.com/jsrsasign/license
  */
-
+"use strict";
 var JSX = JSX || {};
 JSX.env = JSX.env || {};
 
@@ -1999,7 +2003,7 @@ JSX.extend = function(subc, superc, overrides) {
  * This software is licensed under the terms of the MIT License.
  * http://kjur.github.com/jsrsasign/license
  *
- * The above copyright and license notice shall be 
+ * The above copyright and license notice shall be
  * included in all copies or substantial portions of the Software.
  */
 
@@ -2012,29 +2016,30 @@ JSX.extend = function(subc, superc, overrides) {
  * @license <a href="http://kjur.github.io/jsrsasign/license/">MIT License</a>
  */
 
-/** 
+/**
  * kjur's class library name space
  * <p>
  * This name space provides following name spaces:
  * <ul>
  * <li>{@link KJUR.asn1} - ASN.1 primitive hexadecimal encoder</li>
  * <li>{@link KJUR.asn1.x509} - ASN.1 structure for X.509 certificate and CRL</li>
- * <li>{@link KJUR.crypto} - Java Cryptographic Extension(JCE) style MessageDigest/Signature 
+ * <li>{@link KJUR.crypto} - Java Cryptographic Extension(JCE) style MessageDigest/Signature
  * class and utilities</li>
  * </ul>
- * </p> 
+ * </p>
  * NOTE: Please ignore method summary and document of this namespace. This caused by a bug of jsdoc2.
   * @name KJUR
  * @namespace kjur's class library name space
  */
+var KJUR;
 if (typeof KJUR == "undefined" || !KJUR) KJUR = {};
 
 /**
  * kjur's ASN.1 class library name space
  * <p>
  * This is ITU-T X.690 ASN.1 DER encoder class library and
- * class structure and methods is very similar to 
- * org.bouncycastle.asn1 package of 
+ * class structure and methods is very similar to
+ * org.bouncycastle.asn1 package of
  * well known BouncyCaslte Cryptography Library.
  *
  * <h4>PROVIDING ASN.1 PRIMITIVES</h4>
@@ -2135,8 +2140,8 @@ KJUR.asn1.ASN1Util = new function() {
 	var dataB64 = CryptoJS.enc.Base64.stringify(dataWA);
 	var pemBody = dataB64.replace(/(.{64})/g, "$1\r\n");
         pemBody = pemBody.replace(/\r\n$/, '');
-	return "-----BEGIN " + pemHeader + "-----\r\n" + 
-               pemBody + 
+	return "-----BEGIN " + pemHeader + "-----\r\n" +
+               pemBody +
                "\r\n-----END " + pemHeader + "-----\r\n";
     };
 };
@@ -2551,7 +2556,7 @@ JSX.extend(KJUR.asn1.DERInteger, KJUR.asn1.ASN1Object);
  * @name KJUR.asn1.DERBitString
  * @class class for ASN.1 DER encoded BitString primitive
  * @extends KJUR.asn1.ASN1Object
- * @description 
+ * @description
  * <br/>
  * As for argument 'params' for constructor, you can specify one of
  * following properties:
@@ -2604,7 +2609,7 @@ KJUR.asn1.DERBitString = function(params) {
      * @function
      * @param {String} binaryString binary value string (i.e. '10111')
      * @description
-     * Its unused bits will be calculated automatically by length of 
+     * Its unused bits will be calculated automatically by length of
      * 'binaryValue'. <br/>
      * NOTE: Trailing zeros '0' will be ignored.
      */
@@ -2620,7 +2625,7 @@ KJUR.asn1.DERBitString = function(params) {
 	    var b = binaryString.substr(i, 8);
 	    var x = parseInt(b, 2).toString(16);
 	    if (x.length == 1) x = '0' + x;
-	    h += x;  
+	    h += x;
 	}
 	this.hTLV = null;
 	this.isModified = true;
@@ -3093,13 +3098,13 @@ JSX.extend(KJUR.asn1.DERSet, KJUR.asn1.DERAbstractStructured);
  * @description
  * <br/>
  * Parameter 'tagNoNex' is ASN.1 tag(T) value for this object.
- * For example, if you find '[1]' tag in a ASN.1 dump, 
+ * For example, if you find '[1]' tag in a ASN.1 dump,
  * 'tagNoHex' will be 'a1'.
  * <br/>
  * As for optional argument 'params' for constructor, you can specify *ANY* of
  * following properties:
  * <ul>
- * <li>explicit - specify true if this is explicit tag otherwise false 
+ * <li>explicit - specify true if this is explicit tag otherwise false
  *     (default is 'true').</li>
  * <li>tag - specify tag (default is 'a0' which means [0])</li>
  * <li>obj - specify ASN1Object which is tagged</li>
@@ -3159,13 +3164,14 @@ KJUR.asn1.DERTaggedObject = function(params) {
     }
 };
 JSX.extend(KJUR.asn1.DERTaggedObject, KJUR.asn1.ASN1Object);
+
 // Hex JavaScript decoder
 // Copyright (c) 2008-2013 Lapo Luchini <lapo@lapo.it>
 
 // Permission to use, copy, modify, and/or distribute this software for any
 // purpose with or without fee is hereby granted, provided that the above
 // copyright notice and this permission notice appear in all copies.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
 // WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
 // MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
@@ -3175,7 +3181,7 @@ JSX.extend(KJUR.asn1.DERTaggedObject, KJUR.asn1.ASN1Object);
 // OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 /*jshint browser: true, strict: true, immed: true, latedef: true, undef: true, regexdash: false */
-(function (undefined) {
+var Hex = (function (undefined) {
 "use strict";
 
 var Hex = {},
@@ -3222,15 +3228,17 @@ Hex.decode = function(a) {
 };
 
 // export globals
-window.Hex = Hex;
+return Hex;
 })();
+
+"use strict";
 // Base64 JavaScript decoder
 // Copyright (c) 2008-2013 Lapo Luchini <lapo@lapo.it>
 
 // Permission to use, copy, modify, and/or distribute this software for any
 // purpose with or without fee is hereby granted, provided that the above
 // copyright notice and this permission notice appear in all copies.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
 // WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
 // MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
@@ -3240,8 +3248,7 @@ window.Hex = Hex;
 // OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 /*jshint browser: true, strict: true, immed: true, latedef: true, undef: true, regexdash: false */
-(function (undefined) {
-"use strict";
+var Base64 = (function (undefined) {
 
 var Base64 = {},
     decoder;
@@ -3308,15 +3315,17 @@ Base64.unarmor = function (a) {
 };
 
 // export globals
-window.Base64 = Base64;
+return Base64;
 })();
+
+"use strict";
 // ASN.1 JavaScript decoder
 // Copyright (c) 2008-2013 Lapo Luchini <lapo@lapo.it>
 
 // Permission to use, copy, modify, and/or distribute this software for any
 // purpose with or without fee is hereby granted, provided that the above
 // copyright notice and this permission notice appear in all copies.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
 // WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
 // MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
@@ -3327,8 +3336,7 @@ window.Base64 = Base64;
 
 /*jshint browser: true, strict: true, immed: true, latedef: true, undef: true, regexdash: false */
 /*global oids */
-(function (undefined) {
-"use strict";
+var ASN1 = (function (undefined) {
 
 var hardLimit = 100,
     ellipsis = "\u2026",
@@ -3843,13 +3851,22 @@ ASN1.test = function () {
 };
 
 // export globals
-window.ASN1 = ASN1;
+return ASN1;
 })();
+
+"use strict"
 /**
  * Retrieve the hexadecimal value (as a string) of the current ASN.1 element
  * @returns {string}
  * @public
  */
+// let ASN1 = {};
+// ASN1.prototype = {};
+//
+// function RSAKey() {
+//     this.constructor = RSAKey;
+// };
+
 ASN1.prototype.getHexStringValue = function () {
   var hexString = this.toHexString();
   var offset = this.header * 2;
@@ -4255,6 +4272,7 @@ JSEncrypt.prototype.decrypt = function (string) {
     return this.getKey().decrypt(b64tohex(string));
   }
   catch (ex) {
+    console.log(ex)
     return false;
   }
 };
@@ -4344,7 +4362,6 @@ JSEncrypt.prototype.getPublicKeyB64 = function () {
   // Return the private representation of this key.
   return this.getKey().getPublicBaseKeyB64();
 };
-
 
   JSEncrypt.version = '2.3.1';
   exports.JSEncrypt = JSEncrypt;
