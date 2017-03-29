@@ -1434,12 +1434,14 @@ function RSADoPublic(x) {
 
 // Return the PKCS#1 RSA encryption of "text" as an even-length hex string
 function RSAEncrypt(text) {
-  var m = pkcs1pad2(text,(this.n.bitLength()+7)>>3);
-  if(m == null) return null;
+  var l = (this.n.bitLength()+7)>>3;
+  var m = pkcs1pad2(text,l);
+  if (m == null) return null;
   var c = this.doPublic(m);
-  if(c == null) return null;
+  if (c == null) return null;
   var h = c.toString(16);
-  if((h.length & 1) == 0) return h; else return "0" + h;
+  if ((h.length & l) == 0) return h;
+  return new Array((l - (h.length % l)) + 1).join('0') + h;
 }
 
 // Return the PKCS#1 RSA encryption of "text" as a Base64-encoded string
