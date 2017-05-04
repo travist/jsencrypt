@@ -52,10 +52,10 @@ gulp.task('license', function() {
 var packageJson = require('./package.json');
 gulp.task('scripts', function() {
   return gulp.src(files)
-    .pipe(concat('jsencrypt.js'))
+    .pipe(concat('jsencrypt-'+packageJson.version+'.js'))
     .pipe(wrap({src: 'src/template.txt'}, {version: packageJson.version}, {variable: 'data'}))
     .pipe(gulp.dest('bin/'))
-    .pipe(rename('jsencrypt.min.js'))
+    .pipe(rename('jsencrypt.min-'+packageJson.version+'.js'))
     .pipe(uglify({preserveComments: 'license'}))
     .pipe(gulp.dest('bin'));
 });
