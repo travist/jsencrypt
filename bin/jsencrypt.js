@@ -2,7 +2,7 @@
 (function (root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD
-    define(['exports'], factory);
+    define(['exports'], factory(root));
   } else if (typeof exports === 'object' && typeof exports.nodeName !== 'string') {
     // Node, CommonJS-like
     factory(module.exports);
