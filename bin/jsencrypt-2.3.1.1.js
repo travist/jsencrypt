@@ -1,4 +1,4 @@
-/*! JSEncrypt v2.3.1 | https://npmcdn.com/jsencrypt@2.3.1/LICENSE.txt */
+/*! JSEncrypt v2.3.1.1 | https://npmcdn.com/jsencrypt@2.3.1.1/LICENSE.txt */
 (function (root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD
@@ -4346,6 +4346,6 @@ JSEncrypt.prototype.getPublicKeyB64 = function () {
 };
 
 
-  JSEncrypt.version = '2.3.1';
+  JSEncrypt.version = '2.3.1.1';
   exports.JSEncrypt = JSEncrypt;
 });
