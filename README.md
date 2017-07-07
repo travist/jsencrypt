@@ -15,6 +15,7 @@ actual Private and Public key-pairs generated with OpenSSL.
 
 This library is the result of these efforts.
 
+**PS: It works well on Node.js & 微信小程序 enviroment. **(Which means If there is no `window` Object It still works.)
 How to use this library.
 =======================
 This library should work hand-in-hand with openssl.  With that said, here is how to use this library.
@@ -164,4 +165,3 @@ exponent1 => dmp1
 exponent2 => dmq1
 coefficient => coeff
 ```
-
