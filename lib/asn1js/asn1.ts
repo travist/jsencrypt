@@ -51,7 +51,7 @@ export class Stream {
         if (pos >= this.enc.length) {
             throw new Error(`Requesting byte offset ${pos} on a stream of length ${this.enc.length}`);
         }
-        return (typeof this.enc == "string") ? this.enc.charCodeAt(pos) : this.enc[pos];
+        return ("string" === typeof this.enc) ? this.enc.charCodeAt(pos) : this.enc[pos];
     }
 
     public hexDigits = "0123456789ABCDEF";
@@ -127,7 +127,7 @@ export class Stream {
 
     public parseTime(start:number, end:number, shortYear:boolean) {
         let s = this.parseStringISO(start, end);
-        const m = (shortYear ? reTimeS : reTimeL).exec(s);
+        const m:Array<number|string> = (shortYear ? reTimeS : reTimeL).exec(s);
         if (!m) {
             return "Unrecognized time: " + s;
         }
@@ -135,7 +135,7 @@ export class Stream {
             // to avoid querying the timer, use the fixed range [1970, 2069]
             // it will conform with ITU X.400 [-10, +40] sliding window until 2030
             m[1] = +m[1];
-            m[1] += (m[1] < 70) ? 2000 : 1900;
+            (m[1] as number) += (+m[1] < 70) ? 2000 : 1900;
         }
         s = m[1] + "-" + m[2] + "-" + m[3] + " " + m[4];
         if (m[5]) {
@@ -177,8 +177,8 @@ export class Stream {
         if (len > 4) {
             s = v;
             len <<= 3;
-            while (((s ^ pad) & 0x80) == 0) {
-                s <<= 1;
+            while (((+s ^ pad) & 0x80) == 0) {
+                s = +s << 1;
                 --len;
             }
             s = "(" + len + " bit)\n";
@@ -233,7 +233,7 @@ export class Stream {
 
     public parseOID(start:number, end:number, maxLength:number) {
         let s = "";
-        let n = new Int10();
+        let n:number|Int10 = new Int10();
         let bits = 0;
         for (let i = start; i < end; ++i) {
             const v = this.get(i);
@@ -489,13 +489,13 @@ export class ASN1 {
         const start = stream.pos;
         const header = start - streamStart.pos;
         let sub = null;
-        const getSub = function () {
-            sub = [];
+        const getSub:() => ASN1[] = function () {
+            const ret = [];
             if (len !== null) {
                 // definite length
                 const end = start + len;
                 while (stream.pos < end) {
-                    sub[sub.length] = ASN1.decode(stream);
+                    ret[ret.length] = ASN1.decode(stream);
                 }
                 if (stream.pos != end) {
                     throw new Error("Content size is not correct for container starting at offset " + start);
@@ -508,17 +508,19 @@ export class ASN1 {
                         if (s.tag.isEOC()) {
                             break;
                         }
-                        sub[sub.length] = s;
+                        ret[ret.length] = s;
                     }
                     len = start - stream.pos; // undefined lengths are represented as negative values
                 } catch (e) {
                     throw new Error("Exception while decoding undefined length content: " + e);
                 }
             }
+
+            return ret;
         };
         if (tag.tagConstructed) {
             // must have valid content
-            getSub();
+            sub = getSub();
         } else if (tag.isUniversal() && ((tag.tagNumber == 0x03) || (tag.tagNumber == 0x04))) {
             // sometimes BitString and OctetString are used to encapsulate ASN.1
             try {
@@ -527,7 +529,7 @@ export class ASN1 {
                         throw new Error("BIT STRINGs with unused bits cannot encapsulate.");
                     }
                 }
-                getSub();
+                sub = getSub();
                 for (let i = 0; i < sub.length; ++i) {
                     if (sub[i].tag.isEOC()) {
                         throw new Error("EOC is not supposed to be actual content.");

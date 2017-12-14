@@ -16,14 +16,24 @@ module.exports = {
 
   resolve: {
     // Add `.ts` and `.tsx` as a resolvable extension.
-    extensions: ['.js']
+    extensions: ['.ts', '.tsx', '.js']
   },
   module: {
     rules: [
       // all files with a `.ts` or `.tsx` extension will be handled by `ts-loader`
       {
-        test: /\.tsx?$/
+        test: /\.tsx?$/,
+        use: [
+          {
+            loader: 'ts-loader',
+            options: {
+              transpileOnly: false,
+              configFile: require.resolve("./tsconfig.json")
+            }
+          },
+        ]
       },
     ]
   },
+
 };
