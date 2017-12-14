@@ -1,5 +1,6 @@
 // ASN.1 JavaScript decoder
 // Copyright (c) 2008-2014 Lapo Luchini <lapo@lapo.it>
+
 // Permission to use, copy, modify, and/or distribute this software for any
 // purpose with or without fee is hereby granted, provided that the above
 // copyright notice and this permission notice appear in all copies.
@@ -11,46 +12,57 @@
 // WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 // ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 // OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
 /*jshint browser: true, strict: true, immed: true, latedef: true, undef: true, regexdash: false */
 /*global oids */
-import { Int10 } from "./int10";
-var ellipsis = "\u2026";
-var reTimeS = /^(\d\d)(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])([01]\d|2[0-3])(?:([0-5]\d)(?:([0-5]\d)(?:[.,](\d{1,3}))?)?)?(Z|[-+](?:[0]\d|1[0-2])([0-5]\d)?)?$/;
-var reTimeL = /^(\d\d\d\d)(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])([01]\d|2[0-3])(?:([0-5]\d)(?:([0-5]\d)(?:[.,](\d{1,3}))?)?)?(Z|[-+](?:[0]\d|1[0-2])([0-5]\d)?)?$/;
-function stringCut(str, len) {
+
+import {Int10} from "./int10";
+
+const ellipsis = "\u2026";
+const reTimeS =     /^(\d\d)(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])([01]\d|2[0-3])(?:([0-5]\d)(?:([0-5]\d)(?:[.,](\d{1,3}))?)?)?(Z|[-+](?:[0]\d|1[0-2])([0-5]\d)?)?$/;
+const reTimeL = /^(\d\d\d\d)(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])([01]\d|2[0-3])(?:([0-5]\d)(?:([0-5]\d)(?:[.,](\d{1,3}))?)?)?(Z|[-+](?:[0]\d|1[0-2])([0-5]\d)?)?$/;
+
+function stringCut(str:string, len:number) {
     if (str.length > len) {
         str = str.substring(0, len) + ellipsis;
     }
     return str;
 }
-var Stream = /** @class */ (function () {
-    function Stream(enc, pos) {
-        this.hexDigits = "0123456789ABCDEF";
+
+export class Stream {
+    constructor(enc:Stream, pos?:number) {
         if (enc instanceof Stream) {
             this.enc = enc.enc;
             this.pos = enc.pos;
-        }
-        else {
+        } else {
             // enc should be an array or a binary string
             this.enc = enc;
             this.pos = pos;
         }
     }
-    Stream.prototype.get = function (pos) {
+
+    private enc:string;
+    public pos:number;
+
+    public get(pos?:number) {
         if (pos === undefined) {
             pos = this.pos++;
         }
         if (pos >= this.enc.length) {
-            throw new Error("Requesting byte offset " + pos + " on a stream of length " + this.enc.length);
+            throw new Error(`Requesting byte offset ${pos} on a stream of length ${this.enc.length}`);
         }
         return (typeof this.enc == "string") ? this.enc.charCodeAt(pos) : this.enc[pos];
-    };
-    Stream.prototype.hexByte = function (b) {
+    }
+
+    public hexDigits = "0123456789ABCDEF";
+
+    public hexByte(b:number) {
         return this.hexDigits.charAt((b >> 4) & 0xF) + this.hexDigits.charAt(b & 0xF);
-    };
-    Stream.prototype.hexDump = function (start, end, raw) {
-        var s = "";
-        for (var i = start; i < end; ++i) {
+    }
+
+    public hexDump(start:number, end:number, raw:boolean) {
+        let s = "";
+        for (let i = start; i < end; ++i) {
             s += this.hexByte(this.get(i));
             if (raw !== true) {
                 switch (i & 0xF) {
@@ -66,53 +78,56 @@ var Stream = /** @class */ (function () {
             }
         }
         return s;
-    };
-    Stream.prototype.isASCII = function (start, end) {
-        for (var i = start; i < end; ++i) {
-            var c = this.get(i);
+    }
+
+    public isASCII(start:number, end:number) {
+        for (let i = start; i < end; ++i) {
+            const c = this.get(i);
             if (c < 32 || c > 176) {
                 return false;
             }
         }
         return true;
-    };
-    Stream.prototype.parseStringISO = function (start, end) {
-        var s = "";
-        for (var i = start; i < end; ++i) {
+    }
+
+    public parseStringISO(start:number, end:number) {
+        let s = "";
+        for (let i = start; i < end; ++i) {
             s += String.fromCharCode(this.get(i));
         }
         return s;
-    };
-    Stream.prototype.parseStringUTF = function (start, end) {
-        var s = "";
-        for (var i = start; i < end;) {
-            var c = this.get(i++);
+    }
+
+    public parseStringUTF(start:number, end:number) {
+        let s = "";
+        for (let i = start; i < end;) {
+            const c = this.get(i++);
             if (c < 128) {
                 s += String.fromCharCode(c);
-            }
-            else if ((c > 191) && (c < 224)) {
+            } else if ((c > 191) && (c < 224)) {
                 s += String.fromCharCode(((c & 0x1F) << 6) | (this.get(i++) & 0x3F));
-            }
-            else {
+            } else {
                 s += String.fromCharCode(((c & 0x0F) << 12) | ((this.get(i++) & 0x3F) << 6) | (this.get(i++) & 0x3F));
             }
         }
         return s;
-    };
-    Stream.prototype.parseStringBMP = function (start, end) {
-        var str = "";
-        var hi;
-        var lo;
-        for (var i = start; i < end;) {
+    }
+
+    public parseStringBMP(start:number, end:number) {
+        let str = "";
+        let hi;
+        let lo;
+        for (let i = start; i < end;) {
             hi = this.get(i++);
             lo = this.get(i++);
             str += String.fromCharCode((hi << 8) | lo);
         }
         return str;
-    };
-    Stream.prototype.parseTime = function (start, end, shortYear) {
-        var s = this.parseStringISO(start, end);
-        var m = (shortYear ? reTimeS : reTimeL).exec(s);
+    }
+
+    public parseTime(start:number, end:number, shortYear:boolean) {
+        let s = this.parseStringISO(start, end);
+        const m = (shortYear ? reTimeS : reTimeL).exec(s);
         if (!m) {
             return "Unrecognized time: " + s;
         }
@@ -142,13 +157,14 @@ var Stream = /** @class */ (function () {
             }
         }
         return s;
-    };
-    Stream.prototype.parseInteger = function (start, end) {
-        var v = this.get(start);
-        var neg = (v > 127);
-        var pad = neg ? 255 : 0;
-        var len;
-        var s = "";
+    }
+
+    public parseInteger(start:number, end:number) {
+        let v = this.get(start);
+        const neg = (v > 127);
+        const pad = neg ? 255 : 0;
+        let len;
+        let s:string | number = "";
         // skip unuseful bits (not allowed in DER)
         while (v == pad && ++start < end) {
             v = this.get(start);
@@ -171,21 +187,22 @@ var Stream = /** @class */ (function () {
         if (neg) {
             v = v - 256;
         }
-        var n = new Int10(v);
-        for (var i = start + 1; i < end; ++i) {
+        const n = new Int10(v);
+        for (let i = start + 1; i < end; ++i) {
             n.mulAdd(256, this.get(i));
         }
         return s + n.toString();
-    };
-    Stream.prototype.parseBitString = function (start, end, maxLength) {
-        var unusedBit = this.get(start);
-        var lenBit = ((end - start - 1) << 3) - unusedBit;
-        var intro = "(" + lenBit + " bit)\n";
-        var s = "";
-        for (var i = start + 1; i < end; ++i) {
-            var b = this.get(i);
-            var skip = (i == end - 1) ? unusedBit : 0;
-            for (var j = 7; j >= skip; --j) {
+    }
+
+    public parseBitString(start:number, end:number, maxLength:number) {
+        const unusedBit = this.get(start);
+        const lenBit = ((end - start - 1) << 3) - unusedBit;
+        const intro = "(" + lenBit + " bit)\n";
+        let s = "";
+        for (let i = start + 1; i < end; ++i) {
+            const b = this.get(i);
+            const skip = (i == end - 1) ? unusedBit : 0;
+            for (let j = 7; j >= skip; --j) {
                 s += (b >> j) & 1 ? "1" : "0";
             }
             if (s.length > maxLength) {
@@ -193,46 +210,46 @@ var Stream = /** @class */ (function () {
             }
         }
         return intro + s;
-    };
-    Stream.prototype.parseOctetString = function (start, end, maxLength) {
+    }
+
+    public parseOctetString(start:number, end:number, maxLength:number) {
         if (this.isASCII(start, end)) {
             return stringCut(this.parseStringISO(start, end), maxLength);
         }
-        var len = end - start;
-        var s = "(" + len + " byte)\n";
+        const len = end - start;
+        let s = "(" + len + " byte)\n";
         maxLength /= 2; // we work in bytes
         if (len > maxLength) {
             end = start + maxLength;
         }
-        for (var i = start; i < end; ++i) {
+        for (let i = start; i < end; ++i) {
             s += this.hexByte(this.get(i));
         }
         if (len > maxLength) {
             s += ellipsis;
         }
         return s;
-    };
-    Stream.prototype.parseOID = function (start, end, maxLength) {
-        var s = "";
-        var n = new Int10();
-        var bits = 0;
-        for (var i = start; i < end; ++i) {
-            var v = this.get(i);
+    }
+
+    public parseOID(start:number, end:number, maxLength:number) {
+        let s = "";
+        let n = new Int10();
+        let bits = 0;
+        for (let i = start; i < end; ++i) {
+            const v = this.get(i);
             n.mulAdd(128, v & 0x7F);
             bits += 7;
-            if (!(v & 0x80)) {
+            if (!(v & 0x80)) { // finished
                 if (s === "") {
                     n = n.simplify();
                     if (n instanceof Int10) {
                         n.sub(80);
                         s = "2." + n.toString();
-                    }
-                    else {
-                        var m = n < 80 ? n < 40 ? 0 : 1 : 2;
+                    } else {
+                        const m = n < 80 ? n < 40 ? 0 : 1 : 2;
                         s = m + "." + (n - m * 40);
                     }
-                }
-                else {
+                } else {
                     s += "." + n.toString();
                 }
                 if (s.length > maxLength) {
@@ -246,12 +263,10 @@ var Stream = /** @class */ (function () {
             s += ".incomplete";
         }
         return s;
-    };
-    return Stream;
-}());
-export { Stream };
-var ASN1 = /** @class */ (function () {
-    function ASN1(stream, header, length, tag, sub) {
+    }
+}
+export class ASN1 {
+    constructor(stream:Stream, header:number, length:number, tag:ASN1Tag, sub:ASN1[]) {
         if (!(tag instanceof ASN1Tag)) {
             throw new Error("Invalid tag value.");
         }
@@ -261,9 +276,16 @@ var ASN1 = /** @class */ (function () {
         this.tag = tag;
         this.sub = sub;
     }
-    ASN1.prototype.typeName = function () {
+
+    private stream:Stream;
+    private header:number;
+    private length:number;
+    private tag:ASN1Tag;
+    private sub:ASN1[];
+
+    public typeName() {
         switch (this.tag.tagClass) {
-            case 0:// universal
+            case 0: // universal
                 switch (this.tag.tagNumber) {
                     case 0x00:
                         return "EOC";
@@ -328,16 +350,17 @@ var ASN1 = /** @class */ (function () {
             case 3:
                 return "Private_" + this.tag.tagNumber.toString();
         }
-    };
-    ASN1.prototype.content = function (maxLength) {
+    }
+
+    public content(maxLength:number) { // a preview of the content (intended for humans)
         if (this.tag === undefined) {
             return null;
         }
         if (maxLength === undefined) {
             maxLength = Infinity;
         }
-        var content = this.posContent();
-        var len = Math.abs(this.length);
+        const content = this.posContent();
+        const len = Math.abs(this.length);
         if (!this.tag.isUniversal()) {
             if (this.sub !== null) {
                 return "(" + this.sub.length + " elem)";
@@ -345,18 +368,18 @@ var ASN1 = /** @class */ (function () {
             return this.stream.parseOctetString(content, content + len, maxLength);
         }
         switch (this.tag.tagNumber) {
-            case 0x01:// BOOLEAN
+            case 0x01: // BOOLEAN
                 return (this.stream.get(content) === 0) ? "false" : "true";
-            case 0x02:// INTEGER
+            case 0x02: // INTEGER
                 return this.stream.parseInteger(content, content + len);
-            case 0x03:// BIT_STRING
+            case 0x03: // BIT_STRING
                 return this.sub ? "(" + this.sub.length + " elem)" :
                     this.stream.parseBitString(content, content + len, maxLength);
-            case 0x04:// OCTET_STRING
+            case 0x04: // OCTET_STRING
                 return this.sub ? "(" + this.sub.length + " elem)" :
                     this.stream.parseOctetString(content, content + len, maxLength);
             // case 0x05: // NULL
-            case 0x06:// OBJECT_IDENTIFIER
+            case 0x06: // OBJECT_IDENTIFIER
                 return this.stream.parseOID(content, content + len, maxLength);
             // case 0x07: // ObjectDescriptor
             // case 0x08: // EXTERNAL
@@ -364,14 +387,13 @@ var ASN1 = /** @class */ (function () {
             // case 0x0A: // ENUMERATED
             // case 0x0B: // EMBEDDED_PDV
             case 0x10: // SEQUENCE
-            case 0x11:// SET
+            case 0x11: // SET
                 if (this.sub !== null) {
                     return "(" + this.sub.length + " elem)";
-                }
-                else {
+                } else {
                     return "(no elem)";
                 }
-            case 0x0C:// UTF8String
+            case 0x0C: // UTF8String
                 return stringCut(this.stream.parseStringUTF(content, content + len), maxLength);
             case 0x12: // NumericString
             case 0x13: // PrintableString
@@ -379,63 +401,70 @@ var ASN1 = /** @class */ (function () {
             case 0x15: // VideotexString
             case 0x16: // IA5String
             // case 0x19: // GraphicString
-            case 0x1A:// VisibleString
+            case 0x1A: // VisibleString
                 // case 0x1B: // GeneralString
                 // case 0x1C: // UniversalString
                 return stringCut(this.stream.parseStringISO(content, content + len), maxLength);
-            case 0x1E:// BMPString
+            case 0x1E: // BMPString
                 return stringCut(this.stream.parseStringBMP(content, content + len), maxLength);
             case 0x17: // UTCTime
-            case 0x18:// GeneralizedTime
+            case 0x18: // GeneralizedTime
                 return this.stream.parseTime(content, content + len, (this.tag.tagNumber == 0x17));
         }
         return null;
-    };
-    ASN1.prototype.toString = function () {
+    }
+
+    public toString() {
         return this.typeName() + "@" + this.stream.pos + "[header:" + this.header + ",length:" + this.length + ",sub:" + ((this.sub === null) ? "null" : this.sub.length) + "]";
-    };
-    ASN1.prototype.toPrettyString = function (indent) {
+    }
+
+    public toPrettyString(indent:string) {
         if (indent === undefined) {
             indent = "";
         }
-        var s = indent + this.typeName() + " @" + this.stream.pos;
+        let s = indent + this.typeName() + " @" + this.stream.pos;
         if (this.length >= 0) {
             s += "+";
         }
         s += this.length;
         if (this.tag.tagConstructed) {
             s += " (constructed)";
-        }
-        else if ((this.tag.isUniversal() && ((this.tag.tagNumber == 0x03) || (this.tag.tagNumber == 0x04))) && (this.sub !== null)) {
+        } else if ((this.tag.isUniversal() && ((this.tag.tagNumber == 0x03) || (this.tag.tagNumber == 0x04))) && (this.sub !== null)) {
             s += " (encapsulates)";
         }
         s += "\n";
         if (this.sub !== null) {
             indent += "  ";
-            for (var i = 0, max = this.sub.length; i < max; ++i) {
+            for (let i = 0, max = this.sub.length; i < max; ++i) {
                 s += this.sub[i].toPrettyString(indent);
             }
         }
         return s;
-    };
-    ASN1.prototype.posStart = function () {
+    }
+
+    public posStart() {
         return this.stream.pos;
-    };
-    ASN1.prototype.posContent = function () {
+    }
+
+    public posContent() {
         return this.stream.pos + this.header;
-    };
-    ASN1.prototype.posEnd = function () {
+    }
+
+    public posEnd() {
         return this.stream.pos + this.header + Math.abs(this.length);
-    };
-    ASN1.prototype.toHexString = function () {
+    }
+
+    public toHexString() {
         return this.stream.hexDump(this.posStart(), this.posEnd(), true);
-    };
-    ASN1.decodeLength = function (stream) {
-        var buf = stream.get();
-        var len = buf & 0x7F;
+    }
+
+    public static decodeLength(stream:Stream):number {
+        let buf = stream.get();
+        const len = buf & 0x7F;
         if (len == buf) {
             return len;
         }
+
         // no reason to use Int10, as it would be a huge buffer anyways
         if (len > 6) {
             throw new Error("Length over 48 bits not supported at position " + (stream.pos - 1));
@@ -444,46 +473,45 @@ var ASN1 = /** @class */ (function () {
             return null;
         } // undefined
         buf = 0;
-        for (var i = 0; i < len; ++i) {
+        for (let i = 0; i < len; ++i) {
             buf = (buf * 256) + stream.get();
         }
         return buf;
-    };
-    ASN1.decode = function (stream) {
+    }
+
+    public static decode(stream:Stream) {
         if (!(stream instanceof Stream)) {
             stream = new Stream(stream, 0);
         }
-        var streamStart = new Stream(stream);
-        var tag = new ASN1Tag(stream);
-        var len = ASN1.decodeLength(stream);
-        var start = stream.pos;
-        var header = start - streamStart.pos;
-        var sub = null;
-        var getSub = function () {
+        const streamStart = new Stream(stream);
+        const tag = new ASN1Tag(stream);
+        let len = ASN1.decodeLength(stream);
+        const start = stream.pos;
+        const header = start - streamStart.pos;
+        let sub = null;
+        const getSub = function () {
             sub = [];
             if (len !== null) {
                 // definite length
-                var end = start + len;
+                const end = start + len;
                 while (stream.pos < end) {
                     sub[sub.length] = ASN1.decode(stream);
                 }
                 if (stream.pos != end) {
                     throw new Error("Content size is not correct for container starting at offset " + start);
                 }
-            }
-            else {
+            } else {
                 // undefined length
                 try {
-                    for (;;) {
-                        var s = ASN1.decode(stream);
+                    for (; ;) {
+                        const s = ASN1.decode(stream);
                         if (s.tag.isEOC()) {
                             break;
                         }
                         sub[sub.length] = s;
                     }
                     len = start - stream.pos; // undefined lengths are represented as negative values
-                }
-                catch (e) {
+                } catch (e) {
                     throw new Error("Exception while decoding undefined length content: " + e);
                 }
             }
@@ -491,8 +519,7 @@ var ASN1 = /** @class */ (function () {
         if (tag.tagConstructed) {
             // must have valid content
             getSub();
-        }
-        else if (tag.isUniversal() && ((tag.tagNumber == 0x03) || (tag.tagNumber == 0x04))) {
+        } else if (tag.isUniversal() && ((tag.tagNumber == 0x03) || (tag.tagNumber == 0x04))) {
             // sometimes BitString and OctetString are used to encapsulate ASN.1
             try {
                 if (tag.tagNumber == 0x03) {
@@ -501,13 +528,12 @@ var ASN1 = /** @class */ (function () {
                     }
                 }
                 getSub();
-                for (var i = 0; i < sub.length; ++i) {
+                for (let i = 0; i < sub.length; ++i) {
                     if (sub[i].tag.isEOC()) {
                         throw new Error("EOC is not supposed to be actual content.");
                     }
                 }
-            }
-            catch (e) {
+            } catch (e) {
                 // but silently ignore when they don't
                 sub = null;
             }
@@ -519,18 +545,18 @@ var ASN1 = /** @class */ (function () {
             stream.pos = start + Math.abs(len);
         }
         return new ASN1(streamStart, header, len, tag, sub);
-    };
-    return ASN1;
-}());
-export { ASN1 };
-var ASN1Tag = /** @class */ (function () {
-    function ASN1Tag(stream) {
-        var buf = stream.get();
+    }
+}
+
+
+class ASN1Tag {
+    constructor(stream:Stream) {
+        let buf = stream.get();
         this.tagClass = buf >> 6;
         this.tagConstructed = ((buf & 0x20) !== 0);
         this.tagNumber = buf & 0x1F;
-        if (this.tagNumber == 0x1F) {
-            var n = new Int10();
+        if (this.tagNumber == 0x1F) { // long tag
+            const n = new Int10();
             do {
                 buf = stream.get();
                 n.mulAdd(128, buf & 0x7F);
@@ -538,12 +564,16 @@ var ASN1Tag = /** @class */ (function () {
             this.tagNumber = n.simplify();
         }
     }
-    ASN1Tag.prototype.isUniversal = function () {
+
+    public tagClass:number;
+    public tagConstructed:boolean;
+    public tagNumber:number | Int10;
+
+    public isUniversal() {
         return this.tagClass === 0x00;
-    };
-    ASN1Tag.prototype.isEOC = function () {
+    }
+
+    public isEOC() {
         return this.tagClass === 0x00 && this.tagNumber === 0x00;
-    };
-    return ASN1Tag;
-}());
-//# sourceMappingURL=asn1.js.map
+    }
+}

@@ -1,5 +1,6 @@
 // Big integer base-10 printing library
 // Copyright (c) 2014 Lapo Luchini <lapo@lapo.it>
+
 // Permission to use, copy, modify, and/or distribute this software for any
 // purpose with or without fee is hereby granted, provided that the above
 // copyright notice and this permission notice appear in all copies.
@@ -11,24 +12,29 @@
 // WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 // ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 // OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
 /*jshint browser: true, strict: true, immed: true, latedef: true, undef: true, regexdash: false */
-var max = 10000000000000; // biggest integer that can still fit 2^53 when multiplied by 256
-var Int10 = /** @class */ (function () {
-    function Int10(value) {
+
+
+const max = 10000000000000; // biggest integer that can still fit 2^53 when multiplied by 256
+
+export class Int10 {
+    constructor(value?:string | number) {
         this.buf = [+value || 0];
     }
-    Int10.prototype.mulAdd = function (m, c) {
+
+
+    public mulAdd(m:number, c:number) {
         // assert(m <= 256)
-        var b = this.buf;
-        var l = b.length;
-        var i;
-        var t;
+        const b = this.buf;
+        const l = b.length;
+        let i;
+        let t;
         for (i = 0; i < l; ++i) {
             t = b[i] * m + c;
             if (t < max) {
                 c = 0;
-            }
-            else {
+            } else {
                 c = 0 | (t / max);
                 t -= c * max;
             }
@@ -37,20 +43,20 @@ var Int10 = /** @class */ (function () {
         if (c > 0) {
             b[i] = c;
         }
-    };
-    Int10.prototype.sub = function (c) {
+    }
+
+    public sub(c:number) {
         // assert(m <= 256)
-        var b = this.buf;
-        var l = b.length;
-        var i;
-        var t;
+        const b = this.buf;
+        const l = b.length;
+        let i;
+        let t;
         for (i = 0; i < l; ++i) {
             t = b[i] - c;
             if (t < 0) {
                 t += max;
                 c = 1;
-            }
-            else {
+            } else {
                 c = 0;
             }
             b[i] = t;
@@ -58,31 +64,34 @@ var Int10 = /** @class */ (function () {
         while (b[b.length - 1] === 0) {
             b.pop();
         }
-    };
-    Int10.prototype.toString = function (base) {
+    }
+
+    public toString(base?:number) {
         if ((base || 10) != 10) {
             throw new Error("only base 10 is supported");
         }
-        var b = this.buf;
-        var s = b[b.length - 1].toString();
-        for (var i = b.length - 2; i >= 0; --i) {
+        const b = this.buf;
+        let s = b[b.length - 1].toString();
+        for (let i = b.length - 2; i >= 0; --i) {
             s += (max + b[i]).toString().substring(1);
         }
         return s;
-    };
-    Int10.prototype.valueOf = function () {
-        var b = this.buf;
-        var v = 0;
-        for (var i = b.length - 1; i >= 0; --i) {
+    }
+
+    public valueOf() {
+        const b = this.buf;
+        let v = 0;
+        for (let i = b.length - 1; i >= 0; --i) {
             v = v * max + b[i];
         }
         return v;
-    };
-    Int10.prototype.simplify = function () {
-        var b = this.buf;
+    }
+
+    public simplify() {
+        const b = this.buf;
         return (b.length == 1) ? b[0] : this;
-    };
-    return Int10;
-}());
-export { Int10 };
-//# sourceMappingURL=int10.js.map
+    }
+
+    private buf:number[];
+}
+
