@@ -57,7 +57,7 @@ ahh8P6K19o8ysVAvZEnUECUlIR2Afpq5yabOCIkpbA==\
 -----END RSA PRIVATE KEY-----"
 ];
 
-$.each(keySizes, function(index, keySize){
+keySizes.forEach(function(index, keySize){
     
     var jse = new JSEncrypt({default_key_size:keySize});
     var openssl_public_key = pbkeys[index];
@@ -209,7 +209,7 @@ $.each(keySizes, function(index, keySize){
                 var params = ['n', 'e', 'd', 'p', 'q', 'dmp1', 'dmq1', 'coeff'];
                 expect(tmp.key).to.be.ok();
                 expect(tmp.key).to.have.keys(params);
-                $.each(params, function(index,value){
+                params.forEach(function(index,value){
                     expect(tmp.key[value]).to.be.ok();
                 });
                 
@@ -238,10 +238,10 @@ $.each(keySizes, function(index, keySize){
                 var priv_params = ['d', 'p', 'q', 'dmp1', 'dmq1', 'coeff'];
                 expect(tmp.key).to.be.ok();
                 expect(tmp.key).to.have.keys(pub_params);
-                $.each(pub_params, function(index,value){
+                pub_params.forEach(function(index,value){
                     expect(tmp.key[value]).to.be.ok();
                 });
-                $.each(priv_params, function(index,value){
+                priv_params.forEach(function(index,value){
                     expect(tmp.key[value]).to.not.be.ok();
                 });
                 
