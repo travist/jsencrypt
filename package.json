@@ -41,6 +41,8 @@
     "gulp-wrap": "^0.11.0",
     "mocha": "^4.0.1",
     "rollup": "^0.52.1",
+    "tslint": "^5.8.0",
+    "typescript": "^2.6.2",
     "webpack": "^3.10.0"
   },
   "dependencies": {}
