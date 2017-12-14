@@ -1,5 +1,6 @@
 // Hex JavaScript decoder
 // Copyright (c) 2008-2013 Lapo Luchini <lapo@lapo.it>
+
 // Permission to use, copy, modify, and/or distribute this software for any
 // purpose with or without fee is hereby granted, provided that the above
 // copyright notice and this permission notice appear in all copies.
@@ -11,14 +12,16 @@
 // WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 // ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 // OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
 /*jshint browser: true, strict: true, immed: true, latedef: true, undef: true, regexdash: false */
-var decoder;
-export var Hex = {
-    decode: function (a) {
-        var i;
+
+let decoder:{ [index:string]:number };
+export const Hex = {
+    decode(a:string) {
+        let i;
         if (decoder === undefined) {
-            var hex = "0123456789ABCDEF";
-            var ignore = " \f\n\r\t\u00A0\u2028\u2029";
+            let hex = "0123456789ABCDEF";
+            const ignore = " \f\n\r\t\u00A0\u2028\u2029";
             decoder = {};
             for (i = 0; i < 16; ++i) {
                 decoder[hex.charAt(i)] = i;
@@ -31,11 +34,11 @@ export var Hex = {
                 decoder[ignore.charAt(i)] = -1;
             }
         }
-        var out = [];
-        var bits = 0;
-        var char_count = 0;
+        const out = [];
+        let bits = 0;
+        let char_count = 0;
         for (i = 0; i < a.length; ++i) {
-            var c = a.charAt(i);
+            let c:number|string = a.charAt(i);
             if (c == "=") {
                 break;
             }
@@ -51,8 +54,7 @@ export var Hex = {
                 out[out.length] = bits;
                 bits = 0;
                 char_count = 0;
-            }
-            else {
+            } else {
                 bits <<= 4;
             }
         }
@@ -62,4 +64,3 @@ export var Hex = {
         return out;
     }
 };
-//# sourceMappingURL=hex.js.map
