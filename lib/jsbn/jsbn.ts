@@ -106,7 +106,7 @@ export class BigInteger {
 
     // BigInteger.prototype.modPowInt = bnModPowInt;
     // (public) this^e % m, 0 <= e < 2^32
-    protected modPowInt(e,m) {
+    public modPowInt(e,m) {
         var z;
         if(e < 256 || m.isEven()) z = new Classic(m); else z = new Montgomery(m);
         return this.exp(e,z);
@@ -153,7 +153,7 @@ export class BigInteger {
 
     // BigInteger.prototype.toByteArray = bnToByteArray;
     // (public) convert to bigendian byte array
-    protected toByteArray() {
+    public toByteArray() {
         var i = this.t, r = new Array();
         r[0] = this.s;
         var p = this.DB-(i*this.DB)%8, d, k = 0;
@@ -376,7 +376,7 @@ export class BigInteger {
 
     // BigInteger.prototype.modInverse = bnModInverse;
     // (public) 1/this % m (HAC 14.61)
-    protected modInverse(m) {
+    public modInverse(m) {
         var ac = m.isEven();
         if((this.isEven() && ac) || m.signum() == 0) return BigInteger.ZERO;
         var u = m.clone(), v = this.clone();

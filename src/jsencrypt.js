@@ -1,5 +1,5 @@
 import {ASN1} from "../lib/asn1js/asn1";
-import {RSAKey} from "../lib/jsbn/rsa2";
+import {RSAKey} from "../lib/jsbn/rsa";
 import {Base64} from "../lib/asn1js/base64";
 import {Hex} from "../lib/asn1js/hex";
 import {parseBigInt} from "../lib/jsbn/jsbn";
