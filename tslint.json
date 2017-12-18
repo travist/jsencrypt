@@ -9,6 +9,7 @@
     "no-bitwise": false,
     "triple-equals": false,
     "no-empty": false,
+    "no-console": false,
     "typedef-whitespace": {
       "options": [
         {

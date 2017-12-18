@@ -7,12 +7,15 @@ export class Arcfour {
         this.S = [];
     }
 
-    //Arcfour.prototype.init = ARC4init;
+    // Arcfour.prototype.init = ARC4init;
     // Initialize arcfour context from key, an array of ints, each from [0..255]
-    public init(key: number[]) {
-        var i, j, t;
-        for (i = 0; i < 256; ++i)
+    public init(key:number[]) {
+        let i;
+        let j;
+        let t;
+        for (i = 0; i < 256; ++i) {
             this.S[i] = i;
+        }
         j = 0;
         for (i = 0; i < 256; ++i) {
             j = (j + this.S[i] + key[i % key.length]) & 255;
@@ -35,9 +38,9 @@ export class Arcfour {
         return this.S[(t + this.S[this.i]) & 255];
     }
 
-    private i: number;
-    private j: number;
-    private S: number[];
+    private i:number;
+    private j:number;
+    private S:number[];
 }
 
 
@@ -48,4 +51,4 @@ export function prng_newstate() {
 
 // Pool size must be a multiple of 4 and greater than 32.
 // An array of bytes the size of the pool will be passed to init()
-export var rng_psize = 256;
+export let rng_psize = 256;

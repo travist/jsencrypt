@@ -4,7 +4,7 @@
 // Permission to use, copy, modify, and/or distribute this software for any
 // purpose with or without fee is hereby granted, provided that the above
 // copyright notice and this permission notice appear in all copies.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
 // WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
 // MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
@@ -14,31 +14,37 @@
 // OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 /*jshint browser: true, strict: true, immed: true, latedef: true, undef: true, regexdash: false */
-let decoder;
+let decoder:{ [index:string]:number | string };
 export const Base64 = {
-    decode: function (a) {
-        var i;
+    decode(a:string) {
+        let i;
         if (decoder === undefined) {
-            var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",
-                ignore = "= \f\n\r\t\u00A0\u2028\u2029";
-            decoder = [];
-            for (i = 0; i < 64; ++i)
+            const b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+            const ignore = "= \f\n\r\t\u00A0\u2028\u2029";
+            decoder = Object.create(null);
+            for (i = 0; i < 64; ++i) {
                 decoder[b64.charAt(i)] = i;
-            for (i = 0; i < ignore.length; ++i)
+            }
+            for (i = 0; i < ignore.length; ++i) {
                 decoder[ignore.charAt(i)] = -1;
+            }
         }
-        var out = [];
-        var bits = 0, char_count = 0;
+        const out = [];
+        let bits = 0;
+        let char_count = 0;
         for (i = 0; i < a.length; ++i) {
-            var c = a.charAt(i);
-            if (c == '=')
+            let c:string|number = a.charAt(i);
+            if (c == "=") {
                 break;
+            }
             c = decoder[c];
-            if (c == -1)
+            if (c == -1) {
                 continue;
-            if (c === undefined)
-                throw 'Illegal character at offset ' + i;
-            bits |= c;
+            }
+            if (c === undefined) {
+                throw new Error("Illegal character at offset " + i);
+            }
+            bits |= c as number;
             if (++char_count >= 4) {
                 out[out.length] = (bits >> 16);
                 out[out.length] = (bits >> 8) & 0xFF;
@@ -51,7 +57,7 @@ export const Base64 = {
         }
         switch (char_count) {
             case 1:
-                throw "Base64 encoding incomplete: at least 2 bits missing";
+                throw new Error("Base64 encoding incomplete: at least 2 bits missing");
             case 2:
                 out[out.length] = (bits >> 10);
                 break;
@@ -63,15 +69,16 @@ export const Base64 = {
         return out;
     },
     re: /-----BEGIN [^-]+-----([A-Za-z0-9+\/=\s]+)-----END [^-]+-----|begin-base64[^\n]+\n([A-Za-z0-9+\/=\s]+)====/,
-    unarmor: function (a) {
-        var m = Base64.re.exec(a);
+    unarmor(a:string) {
+        const m = Base64.re.exec(a);
         if (m) {
-            if (m[1])
+            if (m[1]) {
                 a = m[1];
-            else if (m[2])
+            } else if (m[2]) {
                 a = m[2];
-            else
-                throw "RegExp out of sync";
+            } else {
+                throw new Error("RegExp out of sync");
+            }
         }
         return Base64.decode(a);
     }

@@ -6,172 +6,248 @@
 
 import {cbit, int2char, lbit, op_and, op_andnot, op_or, op_xor} from "./util";
 // Bits per digit
-var dbits;
+let dbits;
 
 // JavaScript engine analysis
-var canary = 0xdeadbeefcafe;
-var j_lm = ((canary&0xffffff)==0xefcafe);
+const canary = 0xdeadbeefcafe;
+const j_lm = ((canary & 0xffffff) == 0xefcafe);
 
 
 //#region
-const lowprimes = [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,103,107,109,113,127,131,137,139,149,151,157,163,167,173,179,181,191,193,197,199,211,223,227,229,233,239,241,251,257,263,269,271,277,281,283,293,307,311,313,317,331,337,347,349,353,359,367,373,379,383,389,397,401,409,419,421,431,433,439,443,449,457,461,463,467,479,487,491,499,503,509,521,523,541,547,557,563,569,571,577,587,593,599,601,607,613,617,619,631,641,643,647,653,659,661,673,677,683,691,701,709,719,727,733,739,743,751,757,761,769,773,787,797,809,811,821,823,827,829,839,853,857,859,863,877,881,883,887,907,911,919,929,937,941,947,953,967,971,977,983,991,997];
-const lplim = (1<<26)/lowprimes[lowprimes.length-1];
+const lowprimes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211, 223, 227, 229, 233, 239, 241, 251, 257, 263, 269, 271, 277, 281, 283, 293, 307, 311, 313, 317, 331, 337, 347, 349, 353, 359, 367, 373, 379, 383, 389, 397, 401, 409, 419, 421, 431, 433, 439, 443, 449, 457, 461, 463, 467, 479, 487, 491, 499, 503, 509, 521, 523, 541, 547, 557, 563, 569, 571, 577, 587, 593, 599, 601, 607, 613, 617, 619, 631, 641, 643, 647, 653, 659, 661, 673, 677, 683, 691, 701, 709, 719, 727, 733, 739, 743, 751, 757, 761, 769, 773, 787, 797, 809, 811, 821, 823, 827, 829, 839, 853, 857, 859, 863, 877, 881, 883, 887, 907, 911, 919, 929, 937, 941, 947, 953, 967, 971, 977, 983, 991, 997];
+const lplim = (1 << 26) / lowprimes[lowprimes.length - 1];
 //#endregion
 
 // (public) Constructor
 export class BigInteger {
-  constructor(a, b?, c?) {
-    if (a != null)
-      if ("number" == typeof a) this.fromNumber(a, b, c);
-      else if (b == null && "string" != typeof a) this.fromString(a, 256);
-      else this.fromString(a, b);
-  }
+    constructor(a, b?, c?) {
+        if (a != null) {
+            if ("number" == typeof a) {
+                this.fromNumber(a, b, c);
+            } else if (b == null && "string" != typeof a) {
+                this.fromString(a, 256);
+            } else {
+                this.fromString(a, b);
+            }
+        }
+    }
 
   //#region PUBLIC
 
     // BigInteger.prototype.toString = bnToString;
     // (public) return string representation in given radix
-    public toString(b) {
-        if(this.s < 0) {
+    public toString(b:number):string {
+        if (this.s < 0) {
             return "-" + this.negate().toString(b);
         }
-        var k;
-        if(b == 16) k = 4;
-        else if(b == 8) k = 3;
-        else if(b == 2) k = 1;
-        else if(b == 32) k = 5;
-        else if(b == 4) k = 2;
-        else return this.toRadix(b);
-        var km = (1<<k)-1, d, m = false, r = "", i = this.t;
-        var p = this.DB-(i*this.DB)%k;
-        if(i-- > 0) {
-            if(p < this.DB && (d = this[i]>>p) > 0) { m = true; r = int2char(d); }
-            while(i >= 0) {
-                if(p < k) {
-                    d = (this[i]&((1<<p)-1))<<(k-p);
-                    d |= this[--i]>>(p+=this.DB-k);
+        let k;
+        if (b == 16) {
+            k = 4;
+        } else if (b == 8) {
+            k = 3;
+        } else if (b == 2) {
+            k = 1;
+        } else if (b == 32) {
+            k = 5;
+        } else if (b == 4) {
+            k = 2;
+        } else {
+            return this.toRadix(b);
+        }
+        const km = (1 << k) - 1;
+        let d;
+        let m = false;
+        let r = "";
+        let i = this.t;
+        let p = this.DB - (i * this.DB) % k;
+        if (i-- > 0) {
+            if (p < this.DB && (d = this[i] >> p) > 0) {
+                m = true;
+                r = int2char(d);
+            }
+            while (i >= 0) {
+                if (p < k) {
+                    d = (this[i] & ((1 << p) - 1)) << (k - p);
+                    d |= this[--i] >> (p += this.DB - k);
+                } else {
+                    d = (this[i] >> (p -= k)) & km;
+                    if (p <= 0) {
+                        p += this.DB;
+                        --i;
+                    }
                 }
-                else {
-                    d = (this[i]>>(p-=k))&km;
-                    if(p <= 0) { p += this.DB; --i; }
+                if (d > 0) {
+                    m = true;
                 }
-                if(d > 0) m = true;
-                if(m) r += int2char(d);
+                if (m) {
+                    r += int2char(d);
+                }
             }
         }
-        return m?r:"0";
+        return m ? r : "0";
     }
 
 
     // BigInteger.prototype.negate = bnNegate;
     // (public) -this
-    protected negate() { var r = nbi(); BigInteger.ZERO.subTo(this,r); return r; }
+    protected negate():BigInteger {
+        const r = nbi();
+        BigInteger.ZERO.subTo(this, r);
+        return r;
+    }
 
 
     // BigInteger.prototype.abs = bnAbs;
     // (public) |this|
-    protected abs() { return (this.s<0)?this.negate():this; }
+    protected abs() {
+        return (this.s < 0) ? this.negate() : this;
+    }
 
 
     // BigInteger.prototype.compareTo = bnCompareTo;
     // (public) return + if this > a, - if this < a, 0 if equal
     public compareTo(a) {
-        var r = this.s-a.s;
-        if(r != 0) return r;
-        var i = this.t;
-        r = i-a.t;
-        if(r != 0) return (this.s<0)?-r:r;
-        while(--i >= 0) if((r=this[i]-a[i]) != 0) return r;
+        let r = this.s - a.s;
+        if (r != 0) {
+            return r;
+        }
+        let i = this.t;
+        r = i - a.t;
+        if (r != 0) {
+            return (this.s < 0) ? -r : r;
+        }
+        while (--i >= 0) {
+            if ((r = this[i] - a[i]) != 0) {
+                return r;
+            }
+        }
         return 0;
     }
 
 
     // BigInteger.prototype.bitLength = bnBitLength;
     // (public) return the number of bits in "this"
-    protected bitLength() {
-        if(this.t <= 0) return 0;
-        return this.DB*(this.t-1)+nbits(this[this.t-1]^(this.s&this.DM));
+    public bitLength() {
+        if (this.t <= 0) {
+            return 0;
+        }
+        return this.DB * (this.t - 1) + nbits(this[this.t - 1] ^ (this.s & this.DM));
     }
 
 
     // BigInteger.prototype.mod = bnMod;
     // (public) this mod a
-    public mod(a) {
-        var r = nbi();
-        this.abs().divRemTo(a,null,r);
-        if(this.s < 0 && r.compareTo(BigInteger.ZERO) > 0) a.subTo(r,r);
+    public mod(a:BigInteger):BigInteger {
+        const r = nbi();
+        this.abs().divRemTo(a, null, r);
+        if (this.s < 0 && r.compareTo(BigInteger.ZERO) > 0) {
+            a.subTo(r, r);
+        }
         return r;
     }
 
 
     // BigInteger.prototype.modPowInt = bnModPowInt;
     // (public) this^e % m, 0 <= e < 2^32
-    public modPowInt(e,m) {
-        var z;
-        if(e < 256 || m.isEven()) z = new Classic(m); else z = new Montgomery(m);
-        return this.exp(e,z);
+    public modPowInt(e:number, m:BigInteger):BigInteger {
+        let z;
+        if (e < 256 || m.isEven()) {
+            z = new Classic(m);
+        } else {
+            z = new Montgomery(m);
+        }
+        return this.exp(e, z);
     }
 
 
     // BigInteger.prototype.clone = bnClone;
     // (public)
-    protected clone() { var r = nbi(); this.copyTo(r); return r; }
+    protected clone():BigInteger {
+        const r = nbi();
+        this.copyTo(r);
+        return r;
+    }
 
 
     // BigInteger.prototype.intValue = bnIntValue;
     // (public) return value as integer
     protected intValue() {
-        if(this.s < 0) {
-            if(this.t == 1) return this[0]-this.DV;
-            else if(this.t == 0) return -1;
+        if (this.s < 0) {
+            if (this.t == 1) {
+                return this[0] - this.DV;
+            } else if (this.t == 0) {
+                return -1;
+            }
+        } else if (this.t == 1) {
+            return this[0];
+        } else if (this.t == 0) {
+            return 0;
         }
-        else if(this.t == 1) return this[0];
-        else if(this.t == 0) return 0;
         // assumes 16 < DB < 32
-        return ((this[1]&((1<<(32-this.DB))-1))<<this.DB)|this[0];
+        return ((this[1] & ((1 << (32 - this.DB)) - 1)) << this.DB) | this[0];
     }
 
 
     // BigInteger.prototype.byteValue = bnByteValue;
     // (public) return value as byte
-    protected byteValue() { return (this.t==0)?this.s:(this[0]<<24)>>24; }
+    protected byteValue() {
+        return (this.t == 0) ? this.s : (this[0] << 24) >> 24;
+    }
 
 
     // BigInteger.prototype.shortValue = bnShortValue;
     // (public) return value as short (assumes DB>=16)
-    protected shortValue() { return (this.t==0)?this.s:(this[0]<<16)>>16; }
+    protected shortValue() {
+        return (this.t == 0) ? this.s : (this[0] << 16) >> 16;
+    }
 
 
     // BigInteger.prototype.signum = bnSigNum;
     // (public) 0 if this == 0, 1 if this > 0
     protected signum() {
-        if(this.s < 0) return -1;
-        else if(this.t <= 0 || (this.t == 1 && this[0] <= 0)) return 0;
-        else return 1;
+        if (this.s < 0) {
+            return -1;
+        } else if (this.t <= 0 || (this.t == 1 && this[0] <= 0)) {
+            return 0;
+        } else {
+            return 1;
+        }
     }
 
 
     // BigInteger.prototype.toByteArray = bnToByteArray;
     // (public) convert to bigendian byte array
-    public toByteArray() {
-        var i = this.t, r = new Array();
+    public toByteArray():number[] {
+        let i = this.t;
+        const r = [];
         r[0] = this.s;
-        var p = this.DB-(i*this.DB)%8, d, k = 0;
-        if(i-- > 0) {
-            if(p < this.DB && (d = this[i]>>p) != (this.s&this.DM)>>p)
-                r[k++] = d|(this.s<<(this.DB-p));
-            while(i >= 0) {
-                if(p < 8) {
-                    d = (this[i]&((1<<p)-1))<<(8-p);
-                    d |= this[--i]>>(p+=this.DB-8);
+        let p = this.DB - (i * this.DB) % 8;
+        let d;
+        let k = 0;
+        if (i-- > 0) {
+            if (p < this.DB && (d = this[i] >> p) != (this.s & this.DM) >> p) {
+                r[k++] = d | (this.s << (this.DB - p));
+            }
+            while (i >= 0) {
+                if (p < 8) {
+                    d = (this[i] & ((1 << p) - 1)) << (8 - p);
+                    d |= this[--i] >> (p += this.DB - 8);
+                } else {
+                    d = (this[i] >> (p -= 8)) & 0xff;
+                    if (p <= 0) {
+                        p += this.DB;
+                        --i;
+                    }
                 }
-                else {
-                    d = (this[i]>>(p-=8))&0xff;
-                    if(p <= 0) { p += this.DB; --i; }
+                if ((d & 0x80) != 0) {
+                    d |= -256;
                 }
-                if((d&0x80) != 0) d |= -256;
-                if(k == 0 && (this.s&0x80) != (d&0x80)) ++k;
-                if(k > 0 || d != this.s) r[k++] = d;
+                if (k == 0 && (this.s & 0x80) != (d & 0x80)) {
+                    ++k;
+                }
+                if (k > 0 || d != this.s) {
+                    r[k++] = d;
+                }
             }
         }
         return r;
@@ -179,39 +255,62 @@ export class BigInteger {
 
 
     // BigInteger.prototype.equals = bnEquals;
-    protected equals(a) { return(this.compareTo(a)==0); }
+    protected equals(a) {
+        return (this.compareTo(a) == 0);
+    }
 
 
     // BigInteger.prototype.min = bnMin;
-    protected min(a) { return(this.compareTo(a)<0)?this:a; }
+    protected min(a) {
+        return (this.compareTo(a) < 0) ? this : a;
+    }
 
 
     // BigInteger.prototype.max = bnMax;
-    protected max(a) { return(this.compareTo(a)>0)?this:a; }
+    protected max(a) {
+        return (this.compareTo(a) > 0) ? this : a;
+    }
 
 
     // BigInteger.prototype.and = bnAnd;
-    protected and(a) { var r = nbi(); this.bitwiseTo(a,op_and,r); return r; }
+    protected and(a) {
+        const r = nbi();
+        this.bitwiseTo(a, op_and, r);
+        return r;
+    }
 
 
     // BigInteger.prototype.or = bnOr;
-    protected or(a) { var r = nbi(); this.bitwiseTo(a,op_or,r); return r; }
+    protected or(a) {
+        const r = nbi();
+        this.bitwiseTo(a, op_or, r);
+        return r;
+    }
 
 
     // BigInteger.prototype.xor = bnXor;
-    protected xor(a) { var r = nbi(); this.bitwiseTo(a,op_xor,r); return r; }
+    protected xor(a) {
+        const r = nbi();
+        this.bitwiseTo(a, op_xor, r);
+        return r;
+    }
 
 
     // BigInteger.prototype.andNot = bnAndNot;
-    protected andNot(a) { var r = nbi(); this.bitwiseTo(a,op_andnot,r); return r; }
-
+    protected andNot(a) {
+        const r = nbi();
+        this.bitwiseTo(a, op_andnot, r);
+        return r;
+    }
 
 
     // BigInteger.prototype.not = bnNot;
-// (public) ~this
+    // (public) ~this
     protected not() {
-        var r = nbi();
-        for(var i = 0; i < this.t; ++i) r[i] = this.DM&~this[i];
+        const r = nbi();
+        for (let i = 0; i < this.t; ++i) {
+            r[i] = this.DM & ~this[i];
+        }
         r.t = this.t;
         r.s = ~this.s;
         return r;
@@ -220,18 +319,26 @@ export class BigInteger {
 
     // BigInteger.prototype.shiftLeft = bnShiftLeft;
     // (public) this << n
-    protected shiftLeft(n) {
-        var r = nbi();
-        if(n < 0) this.rShiftTo(-n,r); else this.lShiftTo(n,r);
+    protected shiftLeft(n:number) {
+        const r = nbi();
+        if (n < 0) {
+            this.rShiftTo(-n, r);
+        } else {
+            this.lShiftTo(n, r);
+        }
         return r;
     }
 
 
     // BigInteger.prototype.shiftRight = bnShiftRight;
     // (public) this >> n
-    protected shiftRight(n) {
-        var r = nbi();
-        if(n < 0) this.lShiftTo(-n,r); else this.rShiftTo(n,r);
+    protected shiftRight(n:number) {
+        const r = nbi();
+        if (n < 0) {
+            this.lShiftTo(-n, r);
+        } else {
+            this.rShiftTo(n, r);
+        }
         return r;
     }
 
@@ -239,9 +346,14 @@ export class BigInteger {
     // BigInteger.prototype.getLowestSetBit = bnGetLowestSetBit;
     // (public) returns index of lowest 1-bit (or -1 if none)
     protected getLowestSetBit() {
-        for(var i = 0; i < this.t; ++i)
-            if(this[i] != 0) return i*this.DB+lbit(this[i]);
-        if(this.s < 0) return this.t*this.DB;
+        for (let i = 0; i < this.t; ++i) {
+            if (this[i] != 0) {
+                return i * this.DB + lbit(this[i]);
+            }
+        }
+        if (this.s < 0) {
+            return this.t * this.DB;
+        }
         return -1;
     }
 
@@ -249,49 +361,72 @@ export class BigInteger {
     // BigInteger.prototype.bitCount = bnBitCount;
     // (public) return number of set bits
     protected bitCount() {
-        var r = 0, x = this.s&this.DM;
-        for(var i = 0; i < this.t; ++i) r += cbit(this[i]^x);
+        let r = 0;
+        const x = this.s & this.DM;
+        for (let i = 0; i < this.t; ++i) {
+            r += cbit(this[i] ^ x);
+        }
         return r;
     }
 
 
     // BigInteger.prototype.testBit = bnTestBit;
     // (public) true iff nth bit is set
-    protected testBit(n) {
-        var j = Math.floor(n/this.DB);
-        if(j >= this.t) return(this.s!=0);
-        return((this[j]&(1<<(n%this.DB)))!=0);
+    protected testBit(n:number) {
+        const j = Math.floor(n / this.DB);
+        if (j >= this.t) {
+            return (this.s != 0);
+        }
+        return ((this[j] & (1 << (n % this.DB))) != 0);
     }
 
 
     // BigInteger.prototype.setBit = bnSetBit;
     // (public) this | (1<<n)
-    protected setBit(n) { return this.changeBit(n,op_or); }
+    protected setBit(n) {
+        return this.changeBit(n, op_or);
+    }
 
 
     // BigInteger.prototype.clearBit = bnClearBit;
     // (public) this & ~(1<<n)
-    protected clearBit(n) { return this.changeBit(n,op_andnot); }
+    protected clearBit(n) {
+        return this.changeBit(n, op_andnot);
+    }
 
 
     // BigInteger.prototype.flipBit = bnFlipBit;
     // (public) this ^ (1<<n)
-    protected flipBit(n) { return this.changeBit(n,op_xor); }
+    protected flipBit(n) {
+        return this.changeBit(n, op_xor);
+    }
 
 
     // BigInteger.prototype.add = bnAdd;
     // (public) this + a
-    protected add(a) { var r = nbi(); this.addTo(a,r); return r; }
+    protected add(a) {
+        var r = nbi();
+        this.addTo(a, r);
+        return r;
+    }
 
 
     // BigInteger.prototype.subtract = bnSubtract;
     // (public) this - a
-    protected subtract(a) { var r = nbi(); this.subTo(a,r); return r; }
+    public subtract(a) {
+        var r = nbi();
+        this.subTo(a, r);
+        return r;
+    }
 
 
     // BigInteger.prototype.multiply = bnMultiply;
     // (public) this * a
-    protected multiply(a) { var r = nbi(); this.multiplyTo(a,r); return r; }
+    public multiply(a) {
+        var r = nbi();
+        this.multiplyTo(a, r);
+        return r;
+    }
 
 
     // BigInteger.prototype.divide = bnDivide;
@@ -315,59 +450,101 @@ export class BigInteger {
 
     // BigInteger.prototype.modPow = bnModPow;
     // (public) this^e % m (HAC 14.85)
-    protected modPow(e,m) {
-        var i = e.bitLength(), k, r = nbv(1), z;
-        if(i <= 0) return r;
-        else if(i < 18) k = 1;
-        else if(i < 48) k = 3;
-        else if(i < 144) k = 4;
-        else if(i < 768) k = 5;
-        else k = 6;
-        if(i < 8)
+    public modPow(e:BigInteger, m:BigInteger) {
+        let i = e.bitLength();
+        let k;
+        let r = nbv(1);
+        let z:IReduction;
+        if (i <= 0) {
+            return r;
+        } else if (i < 18) {
+            k = 1;
+        } else if (i < 48) {
+            k = 3;
+        } else if (i < 144) {
+            k = 4;
+        } else if (i < 768) {
+            k = 5;
+        } else {
+            k = 6;
+        }
+        if (i < 8) {
             z = new Classic(m);
-        else if(m.isEven())
+        } else if (m.isEven()) {
             z = new Barrett(m);
-        else
+        } else {
             z = new Montgomery(m);
+        }
 
         // precomputation
-        var g = new Array(), n = 3, k1 = k-1, km = (1<<k)-1;
+        const g = [];
+        let n = 3;
+        const k1 = k - 1;
+        const km = (1 << k) - 1;
         g[1] = z.convert(this);
-        if(k > 1) {
-            var g2 = nbi();
-            z.sqrTo(g[1],g2);
-            while(n <= km) {
+        if (k > 1) {
+            const g2 = nbi();
+            z.sqrTo(g[1], g2);
+            while (n <= km) {
                 g[n] = nbi();
-                z.mulTo(g2,g[n-2],g[n]);
+                z.mulTo(g2, g[n - 2], g[n]);
                 n += 2;
             }
         }
 
-        var j = e.t-1, w, is1 = true, r2 = nbi(), t;
-        i = nbits(e[j])-1;
-        while(j >= 0) {
-            if(i >= k1) w = (e[j]>>(i-k1))&km;
-            else {
-                w = (e[j]&((1<<(i+1))-1))<<(k1-i);
-                if(j > 0) w |= e[j-1]>>(this.DB+i-k1);
+        let j = e.t - 1;
+        let w;
+        let is1 = true;
+        let r2 = nbi();
+        let t;
+        i = nbits(e[j]) - 1;
+        while (j >= 0) {
+            if (i >= k1) {
+                w = (e[j] >> (i - k1)) & km;
+            } else {
+                w = (e[j] & ((1 << (i + 1)) - 1)) << (k1 - i);
+                if (j > 0) {
+                    w |= e[j - 1] >> (this.DB + i - k1);
+                }
             }
 
             n = k;
-            while((w&1) == 0) { w >>= 1; --n; }
-            if((i -= n) < 0) { i += this.DB; --j; }
-            if(is1) {	// ret == 1, don't bother squaring or multiplying it
+            while ((w & 1) == 0) {
+                w >>= 1;
+                --n;
+            }
+            if ((i -= n) < 0) {
+                i += this.DB;
+                --j;
+            }
+            if (is1) {	// ret == 1, don't bother squaring or multiplying it
                 g[w].copyTo(r);
                 is1 = false;
-            }
-            else {
-                while(n > 1) { z.sqrTo(r,r2); z.sqrTo(r2,r); n -= 2; }
-                if(n > 0) z.sqrTo(r,r2); else { t = r; r = r2; r2 = t; }
-                z.mulTo(r2,g[w],r);
+            } else {
+                while (n > 1) {
+                    z.sqrTo(r, r2);
+                    z.sqrTo(r2, r);
+                    n -= 2;
+                }
+                if (n > 0) {
+                    z.sqrTo(r, r2);
+                } else {
+                    t = r;
+                    r = r2;
+                    r2 = t;
+                }
+                z.mulTo(r2, g[w], r);
             }
 
-            while(j >= 0 && (e[j]&(1<<i)) == 0) {
-                z.sqrTo(r,r2); t = r; r = r2; r2 = t;
-                if(--i < 0) { i = this.DB-1; --j; }
+            while (j >= 0 && (e[j] & (1 << i)) == 0) {
+                z.sqrTo(r, r2);
+                t = r;
+                r = r2;
+                r2 = t;
+                if (--i < 0) {
+                    i = this.DB - 1;
+                    --j;
+                }
             }
         }
         return z.revert(r);
@@ -425,50 +602,62 @@ export class BigInteger {
 
     // BigInteger.prototype.gcd = bnGCD;
     // (public) gcd(this,a) (HAC 14.54)
-    protected gcd(a) {
+    public gcd(a) {
         var x = (this.s<0)?this.negate():this.clone();
         var y = (a.s<0)?a.negate():a.clone();
         if(x.compareTo(y) < 0) { var t = x; x = y; y = t; }
         var i = x.getLowestSetBit(), g = y.getLowestSetBit();
-        if(g < 0) return x;
-        if(i < g) g = i;
+        if(g < 0) { return x; }
+        if(i < g) { g = i; }
         if(g > 0) {
             x.rShiftTo(g,x);
             y.rShiftTo(g,y);
         }
         while(x.signum() > 0) {
-            if((i = x.getLowestSetBit()) > 0) x.rShiftTo(i,x);
-            if((i = y.getLowestSetBit()) > 0) y.rShiftTo(i,y);
+            if((i = x.getLowestSetBit()) > 0) { x.rShiftTo(i,x); }
+            if((i = y.getLowestSetBit()) > 0) { y.rShiftTo(i,y); }
             if(x.compareTo(y) >= 0) {
                 x.subTo(y,x);
                 x.rShiftTo(1,x);
-            }
-            else {
+            } else {
                 y.subTo(x,y);
                 y.rShiftTo(1,y);
             }
         }
-        if(g > 0) y.lShiftTo(g,y);
+        if(g > 0) { y.lShiftTo(g,y); }
         return y;
     }
 
 
     // BigInteger.prototype.isProbablePrime = bnIsProbablePrime;
     // (public) test primality with certainty >= 1-.5^t
-    protected isProbablePrime(t) {
-        var i, x = this.abs();
-        if(x.t == 1 && x[0] <= lowprimes[lowprimes.length-1]) {
-            for(i = 0; i < lowprimes.length; ++i)
-                if(x[0] == lowprimes[i]) return true;
+    public isProbablePrime(t:number) {
+        let i;
+        const x = this.abs();
+        if (x.t == 1 && x[0] <= lowprimes[lowprimes.length - 1]) {
+            for (i = 0; i < lowprimes.length; ++i) {
+                if (x[0] == lowprimes[i]) {
+                    return true;
+                }
+            }
             return false;
         }
-        if(x.isEven()) return false;
+        if (x.isEven()) {
+            return false;
+        }
         i = 1;
-        while(i < lowprimes.length) {
-            var m = lowprimes[i], j = i+1;
-            while(j < lowprimes.length && m < lplim) m *= lowprimes[j++];
+        while (i < lowprimes.length) {
+            let m = lowprimes[i];
+            let j = i + 1;
+            while (j < lowprimes.length && m < lplim) {
+                m *= lowprimes[j++];
+            }
             m = x.modInt(m);
-            while(i < j) if(m%lowprimes[i++] == 0) return false;
+            while (i < j) {
+                if (m % lowprimes[i++] == 0) {
+                    return false;
+                }
+            }
         }
         return x.millerRabin(t);
     }
@@ -855,29 +1044,36 @@ export class BigInteger {
 
     // BigInteger.prototype.bitwiseTo = bnpBitwiseTo;
     // (protected) r = this op a (bitwise)
-    protected bitwiseTo(a,op,r) {
-        var i, f, m = Math.min(a.t,this.t);
-        for(i = 0; i < m; ++i) r[i] = op(this[i],a[i]);
-        if(a.t < this.t) {
-            f = a.s&this.DM;
-            for(i = m; i < this.t; ++i) r[i] = op(this[i],f);
-            r.t = this.t;
+    protected bitwiseTo(a:BigInteger, op:(a:number, b:number) => number, r) {
+        let i;
+        let f;
+        const m = Math.min(a.t, this.t);
+        for (i = 0; i < m; ++i) {
+            r[i] = op(this[i], a[i]);
         }
-        else {
-            f = this.s&this.DM;
-            for(i = m; i < a.t; ++i) r[i] = op(f,a[i]);
+        if (a.t < this.t) {
+            f = a.s & this.DM;
+            for (i = m; i < this.t; ++i) {
+                r[i] = op(this[i], f);
+            }
+            r.t = this.t;
+        } else {
+            f = this.s & this.DM;
+            for (i = m; i < a.t; ++i) {
+                r[i] = op(f, a[i]);
+            }
             r.t = a.t;
         }
-        r.s = op(this.s,a.s);
+        r.s = op(this.s, a.s);
         r.clamp();
     }
 
 
     // BigInteger.prototype.changeBit = bnpChangeBit;
     // (protected) this op (1<<n)
-    protected changeBit(n,op) {
-        var r = BigInteger.ONE.shiftLeft(n);
-        this.bitwiseTo(r,op,r);
+    protected changeBit(n, op:(a:number, b:number) => number) {
+        const r = BigInteger.ONE.shiftLeft(n);
+        this.bitwiseTo(r, op, r);
         return r;
     }
 
@@ -1247,7 +1443,7 @@ class Barrett implements IReduction {
 // return new, unset BigInteger
 export function nbi() { return new BigInteger(null); }
 
-export function parseBigInt(str,r) {
+export function parseBigInt(str:string, r:number) {
     return new BigInteger(str,r);
 }
 
