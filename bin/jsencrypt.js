@@ -16,6 +16,7 @@
 
 // Basic JavaScript BN library - subset useful for RSA encryption.
 
+import {int2char} from "./util";
 // Bits per digit
 var dbits;
 
@@ -24,15 +25,17 @@ var canary = 0xdeadbeefcafe;
 var j_lm = ((canary&0xffffff)==0xefcafe);
 
 // (public) Constructor
-function BigInteger(a,b,c) {
-  if(a != null)
-    if("number" == typeof a) this.fromNumber(a,b,c);
-    else if(b == null && "string" != typeof a) this.fromString(a,256);
-    else this.fromString(a,b);
+export class BigInteger {
+  constructor(a, b, c) {
+    if (a != null)
+      if ("number" == typeof a) this.fromNumber(a, b, c);
+      else if (b == null && "string" != typeof a) this.fromString(a, 256);
+      else this.fromString(a, b);
+  }
 }
 
 // return new, unset BigInteger
-function nbi() { return new BigInteger(null); }
+export function nbi() { return new BigInteger(null); }
 
 // am: Compute w_j += (x*this_i), propagate carries,
 // c is initial carry, returns final carry.
@@ -102,7 +105,6 @@ BigInteger.prototype.F1 = BI_FP-dbits;
 BigInteger.prototype.F2 = 2*dbits-BI_FP;
 
 // Digit conversions
-var BI_RM = "0123456789abcdefghijklmnopqrstuvwxyz";
 var BI_RC = new Array();
 var rr,vv;
 rr = "0".charCodeAt(0);
@@ -112,8 +114,8 @@ for(vv = 10; vv < 36; ++vv) BI_RC[rr++] = vv;
 rr = "A".charCodeAt(0);
 for(vv = 10; vv < 36; ++vv) BI_RC[rr++] = vv;
 
-function int2char(n) { return BI_RM.charAt(n); }
-function intAt(s,i) {
+
+export function intAt(s,i) {
   var c = BI_RC[s.charCodeAt(i)];
   return (c==null)?-1:c;
 }
@@ -135,7 +137,7 @@ function bnpFromInt(x) {
 }
 
 // return bigint initialized to value
-function nbv(i) { var r = nbi(); r.fromInt(i); return r; }
+export function nbv(i) { var r = nbi(); r.fromInt(i); return r; }
 
 // (protected) set from string and radix
 function bnpFromString(s,b) {
@@ -230,7 +232,7 @@ function bnCompareTo(a) {
 }
 
 // returns bit length of the integer x
-function nbits(x) {
+export function nbits(x) {
   var r = 1, t;
   if((t=x>>>16) != 0) { x = t; r += 16; }
   if((t=x>>8) != 0) { x = t; r += 8; }
@@ -418,7 +420,11 @@ function bnMod(a) {
 }
 
 // Modular reduction using "classic" algorithm
-function Classic(m) { this.m = m; }
+export class Classic {
+  constructor(m) {
+    this.m = m;
+  }
+}
 function cConvert(x) {
   if(x.s < 0 || x.compareTo(this.m) >= 0) return x.mod(this.m);
   else return x;
@@ -460,13 +466,15 @@ function bnpInvDigit() {
 }
 
 // Montgomery reduction
-function Montgomery(m) {
-  this.m = m;
-  this.mp = m.invDigit();
-  this.mpl = this.mp&0x7fff;
-  this.mph = this.mp>>15;
-  this.um = (1<<(m.DB-15))-1;
-  this.mt2 = 2*m.t;
+export class Montgomery {
+  constructor(m) {
+    this.m = m;
+    this.mp = m.invDigit();
+    this.mpl = this.mp & 0x7fff;
+    this.mph = this.mp >> 15;
+    this.um = (1 << (m.DB - 15)) - 1;
+    this.mt2 = 2 * m.t;
+  }
 }
 
 // xR mod m
@@ -578,6 +586,13 @@ BigInteger.ONE = nbv(1);
 
 // Version 1.1: new BigInteger("0", 10) returns "proper" zero
 // Version 1.2: square() API, isProbablePrime fix
+
+import {BigInteger, nbi, nbv, nbits, intAt, Classic, Montgomery} from "./jsbn";
+export {BigInteger} from "./jsbn";
+
+export function parseBigInt(str,r) {
+  return new BigInteger(str,r);
+}
 
 // (public)
 function bnClone() { var r = nbi(); this.copyTo(r); return r; }
@@ -1227,130 +1242,15 @@ BigInteger.prototype.square = bnSquare;
 // long longValue()
 // static BigInteger valueOf(long val)
 
-// prng4.js - uses Arcfour as a PRNG
-
-function Arcfour() {
-  this.i = 0;
-  this.j = 0;
-  this.S = new Array();
-}
-
-// Initialize arcfour context from key, an array of ints, each from [0..255]
-function ARC4init(key) {
-  var i, j, t;
-  for(i = 0; i < 256; ++i)
-    this.S[i] = i;
-  j = 0;
-  for(i = 0; i < 256; ++i) {
-    j = (j + this.S[i] + key[i % key.length]) & 255;
-    t = this.S[i];
-    this.S[i] = this.S[j];
-    this.S[j] = t;
-  }
-  this.i = 0;
-  this.j = 0;
-}
-
-function ARC4next() {
-  var t;
-  this.i = (this.i + 1) & 255;
-  this.j = (this.j + this.S[this.i]) & 255;
-  t = this.S[this.i];
-  this.S[this.i] = this.S[this.j];
-  this.S[this.j] = t;
-  return this.S[(t + this.S[this.i]) & 255];
-}
-
-Arcfour.prototype.init = ARC4init;
-Arcfour.prototype.next = ARC4next;
-
-// Plug in your RNG constructor here
-function prng_newstate() {
-  return new Arcfour();
-}
-
-// Pool size must be a multiple of 4 and greater than 32.
-// An array of bytes the size of the pool will be passed to init()
-var rng_psize = 256;
-
-// Random number generator - requires a PRNG backend, e.g. prng4.js
-var rng_state;
-var rng_pool;
-var rng_pptr;
-
-// Initialize the pool with junk if needed.
-if(rng_pool == null) {
-  rng_pool = new Array();
-  rng_pptr = 0;
-  var t;
-  if(window.crypto && window.crypto.getRandomValues) {
-    // Extract entropy (2048 bits) from RNG if available
-    var z = new Uint32Array(256);
-    window.crypto.getRandomValues(z);
-    for (t = 0; t < z.length; ++t)
-      rng_pool[rng_pptr++] = z[t] & 255;
-  }
-
-  // Use mouse events for entropy, if we do not have enough entropy by the time
-  // we need it, entropy will be generated by Math.random.
-  var onMouseMoveListener = function(ev) {
-    this.count = this.count || 0;
-    if (this.count >= 256 || rng_pptr >= rng_psize) {
-      if (window.removeEventListener)
-        window.removeEventListener("mousemove", onMouseMoveListener, false);
-      else if (window.detachEvent)
-        window.detachEvent("onmousemove", onMouseMoveListener);
-      return;
-    }
-    try {
-      var mouseCoordinates = ev.x + ev.y;
-      rng_pool[rng_pptr++] = mouseCoordinates & 255;
-      this.count += 1;
-    } catch (e) {
-      // Sometimes Firefox will deny permission to access event properties for some reason. Ignore.
-    }
-  };
-  if (window.addEventListener)
-    window.addEventListener("mousemove", onMouseMoveListener, false);
-  else if (window.attachEvent)
-    window.attachEvent("onmousemove", onMouseMoveListener);
-
-}
-
-function rng_get_byte() {
-  if(rng_state == null) {
-    rng_state = prng_newstate();
-    // At this point, we may not have collected enough entropy.  If not, fall back to Math.random
-    while (rng_pptr < rng_psize) {
-      var random = Math.floor(65536 * Math.random());
-      rng_pool[rng_pptr++] = random & 255;
-    }
-    rng_state.init(rng_pool);
-    for(rng_pptr = 0; rng_pptr < rng_pool.length; ++rng_pptr)
-      rng_pool[rng_pptr] = 0;
-    rng_pptr = 0;
-  }
-  // TODO: allow reseeding after first request
-  return rng_state.next();
-}
-
-function rng_get_bytes(ba) {
-  var i;
-  for(i = 0; i < ba.length; ++i) ba[i] = rng_get_byte();
-}
-
-function SecureRandom() {}
-
-SecureRandom.prototype.nextBytes = rng_get_bytes;
-
 // Depends on jsbn.js and rng.js
 
 // Version 1.1: support utf-8 encoding in pkcs1pad2
 
 // convert a (hex) string to a bignum object
-function parseBigInt(str,r) {
-  return new BigInteger(str,r);
-}
+
+import {BigInteger, parseBigInt} from "./jsbn2";
+import {SecureRandom} from "./rng";
+
 
 function linebrk(s,n) {
   var ret = "";
@@ -1372,6 +1272,7 @@ function byte2Hex(b) {
 // PKCS#1 (type 2, random) pad input string s to n bytes, and return a bigint
 function pkcs1pad2(s,n) {
   if(n < s.length + 11) { // TODO: fix for utf-8
+
     console.error("Message too long for RSA");
     return null;
   }
@@ -1406,15 +1307,17 @@ function pkcs1pad2(s,n) {
 }
 
 // "empty" RSA key constructor
-function RSAKey() {
-  this.n = null;
-  this.e = 0;
-  this.d = null;
-  this.p = null;
-  this.q = null;
-  this.dmp1 = null;
-  this.dmq1 = null;
-  this.coeff = null;
+export class RSAKey {
+  constructor() {
+        this.n = null;
+        this.e = 0;
+        this.d = null;
+        this.p = null;
+        this.q = null;
+        this.dmp1 = null;
+        this.dmq1 = null;
+        this.coeff = null;
+    }
 }
 
 // Set the public key fields N and e from hex strings
@@ -1435,6 +1338,7 @@ function RSADoPublic(x) {
 // Return the PKCS#1 RSA encryption of "text" as an even-length hex string
 function RSAEncrypt(text) {
   var m = pkcs1pad2(text,(this.n.bitLength()+7)>>3);
+
   if(m == null) return null;
   var c = this.doPublic(m);
   if(c == null) return null;
@@ -1455,6 +1359,12 @@ RSAKey.prototype.doPublic = RSADoPublic;
 RSAKey.prototype.setPublic = RSASetPublic;
 RSAKey.prototype.encrypt = RSAEncrypt;
 //RSAKey.prototype.encrypt_b64 = RSAEncryptB64;
+
+import {SecureRandom} from "./rng";
+import {BigInteger} from "./jsbn2";
+import {parseBigInt} from "./jsbn2";
+import {RSAKey} from "./rsa";
+export {RSAKey} from "./rsa";
 
 // Depends on rsa.js and jsbn2.js
 
@@ -1600,7 +1510,11 @@ RSAKey.prototype.decrypt = RSADecrypt;
 //
 // ---
 
-(function(){
+import {SecureRandom} from "./rng";
+import {BigInteger} from "./jsbn";
+import {RSAKey} from "./rsa";
+
+
 
 // Generate a new random private key B bits long, using public expt E
 var RSAGenerateAsync = function (B, E, callback) {
@@ -1739,12 +1653,12 @@ var bnpFromNumberAsync = function (a,b,c,callback) {
   }
 };
 BigInteger.prototype.fromNumberAsync = bnpFromNumberAsync;
+import {int2char} from "./util";
 
-})();
 var b64map="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 var b64pad="=";
 
-function hex2b64(h) {
+export function hex2b64(h) {
   var i;
   var c;
   var ret = "";
@@ -1765,14 +1679,14 @@ function hex2b64(h) {
 }
 
 // convert a base64 string to hex
-function b64tohex(s) {
+export function b64tohex(s) {
   var ret = ""
   var i;
   var k = 0; // b64 state, 0-3
   var slop;
   for(i = 0; i < s.length; ++i) {
     if(s.charAt(i) == b64pad) break;
-    v = b64map.indexOf(s.charAt(i));
+    let v = b64map.indexOf(s.charAt(i));
     if(v < 0) continue;
     if(k == 0) {
       ret += int2char(v >> 2);
@@ -1802,7 +1716,7 @@ function b64tohex(s) {
 }
 
 // convert a base64 string to a byte/number array
-function b64toBA(s) {
+export function b64toBA(s) {
   //piggyback on b64tohex for now, optimize later
   var h = b64tohex(s);
   var i;
@@ -1816,10 +1730,11 @@ function b64toBA(s) {
 /*! asn1-1.0.2.js (c) 2013 Kenji Urushima | kjur.github.com/jsrsasign/license
  */
 
-var JSX = JSX || {};
+import {BigInteger} from "../jsbn/jsbn2";
+export const JSX = {};
 JSX.env = JSX.env || {};
 
-var L = JSX, OP = Object.prototype, FUNCTION_TOSTRING = '[object Function]',ADD = ["toString", "valueOf"];
+const L = JSX, OP = Object.prototype, FUNCTION_TOSTRING = '[object Function]',ADD = ["toString", "valueOf"];
 
 JSX.env.parseUA = function(agent) {
 
@@ -2027,7 +1942,8 @@ JSX.extend = function(subc, superc, overrides) {
   * @name KJUR
  * @namespace kjur's class library name space
  */
-if (typeof KJUR == "undefined" || !KJUR) KJUR = {};
+// if (typeof KJUR == "undefined" || !KJUR) KJUR = {};
+export const KJUR = {};
 
 /**
  * kjur's ASN.1 class library name space
@@ -3159,71 +3075,6 @@ KJUR.asn1.DERTaggedObject = function(params) {
     }
 };
 JSX.extend(KJUR.asn1.DERTaggedObject, KJUR.asn1.ASN1Object);
-// Hex JavaScript decoder
-// Copyright (c) 2008-2013 Lapo Luchini <lapo@lapo.it>
-
-// Permission to use, copy, modify, and/or distribute this software for any
-// purpose with or without fee is hereby granted, provided that the above
-// copyright notice and this permission notice appear in all copies.
-// 
-// THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-// WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-// MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-// ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-// WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
-// ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-// OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-/*jshint browser: true, strict: true, immed: true, latedef: true, undef: true, regexdash: false */
-(function (undefined) {
-"use strict";
-
-var Hex = {},
-    decoder;
-
-Hex.decode = function(a) {
-    var i;
-    if (decoder === undefined) {
-        var hex = "0123456789ABCDEF",
-            ignore = " \f\n\r\t\u00A0\u2028\u2029";
-        decoder = [];
-        for (i = 0; i < 16; ++i)
-            decoder[hex.charAt(i)] = i;
-        hex = hex.toLowerCase();
-        for (i = 10; i < 16; ++i)
-            decoder[hex.charAt(i)] = i;
-        for (i = 0; i < ignore.length; ++i)
-            decoder[ignore.charAt(i)] = -1;
-    }
-    var out = [],
-        bits = 0,
-        char_count = 0;
-    for (i = 0; i < a.length; ++i) {
-        var c = a.charAt(i);
-        if (c == '=')
-            break;
-        c = decoder[c];
-        if (c == -1)
-            continue;
-        if (c === undefined)
-            throw 'Illegal character at offset ' + i;
-        bits |= c;
-        if (++char_count >= 2) {
-            out[out.length] = bits;
-            bits = 0;
-            char_count = 0;
-        } else {
-            bits <<= 4;
-        }
-    }
-    if (char_count)
-        throw "Hex encoding incomplete: 4 bits missing";
-    return out;
-};
-
-// export globals
-window.Hex = Hex;
-})();
 // Base64 JavaScript decoder
 // Copyright (c) 2008-2013 Lapo Luchini <lapo@lapo.it>
 
@@ -3240,11 +3091,9 @@ window.Hex = Hex;
 // OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 /*jshint browser: true, strict: true, immed: true, latedef: true, undef: true, regexdash: false */
-(function (undefined) {
-"use strict";
 
-var Base64 = {},
-    decoder;
+export const Base64 = {};
+let decoder;
 
 Base64.decode = function (a) {
     var i;
@@ -3305,546 +3154,16 @@ Base64.unarmor = function (a) {
             throw "RegExp out of sync";
     }
     return Base64.decode(a);
-};
-
-// export globals
-window.Base64 = Base64;
-})();
-// ASN.1 JavaScript decoder
-// Copyright (c) 2008-2013 Lapo Luchini <lapo@lapo.it>
-
-// Permission to use, copy, modify, and/or distribute this software for any
-// purpose with or without fee is hereby granted, provided that the above
-// copyright notice and this permission notice appear in all copies.
-// 
-// THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-// WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-// MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-// ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-// WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
-// ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-// OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-/*jshint browser: true, strict: true, immed: true, latedef: true, undef: true, regexdash: false */
-/*global oids */
-(function (undefined) {
-"use strict";
-
-var hardLimit = 100,
-    ellipsis = "\u2026",
-    DOM = {
-        tag: function (tagName, className) {
-            var t = document.createElement(tagName);
-            t.className = className;
-            return t;
-        },
-        text: function (str) {
-            return document.createTextNode(str);
-        }
-    };
-
-function Stream(enc, pos) {
-    if (enc instanceof Stream) {
-        this.enc = enc.enc;
-        this.pos = enc.pos;
-    } else {
-        this.enc = enc;
-        this.pos = pos;
-    }
 }
-Stream.prototype.get = function (pos) {
-    if (pos === undefined)
-        pos = this.pos++;
-    if (pos >= this.enc.length)
-        throw 'Requesting byte offset ' + pos + ' on a stream of length ' + this.enc.length;
-    return this.enc[pos];
-};
-Stream.prototype.hexDigits = "0123456789ABCDEF";
-Stream.prototype.hexByte = function (b) {
-    return this.hexDigits.charAt((b >> 4) & 0xF) + this.hexDigits.charAt(b & 0xF);
-};
-Stream.prototype.hexDump = function (start, end, raw) {
-    var s = "";
-    for (var i = start; i < end; ++i) {
-        s += this.hexByte(this.get(i));
-        if (raw !== true)
-            switch (i & 0xF) {
-            case 0x7: s += "  "; break;
-            case 0xF: s += "\n"; break;
-            default:  s += " ";
-            }
-    }
-    return s;
-};
-Stream.prototype.parseStringISO = function (start, end) {
-    var s = "";
-    for (var i = start; i < end; ++i)
-        s += String.fromCharCode(this.get(i));
-    return s;
-};
-Stream.prototype.parseStringUTF = function (start, end) {
-    var s = "";
-    for (var i = start; i < end; ) {
-        var c = this.get(i++);
-        if (c < 128)
-            s += String.fromCharCode(c);
-        else if ((c > 191) && (c < 224))
-            s += String.fromCharCode(((c & 0x1F) << 6) | (this.get(i++) & 0x3F));
-        else
-            s += String.fromCharCode(((c & 0x0F) << 12) | ((this.get(i++) & 0x3F) << 6) | (this.get(i++) & 0x3F));
-    }
-    return s;
-};
-Stream.prototype.parseStringBMP = function (start, end) {
-    var str = ""
-    for (var i = start; i < end; i += 2) {
-        var high_byte = this.get(i);
-        var low_byte = this.get(i + 1);
-        str += String.fromCharCode( (high_byte << 8) + low_byte );
-    }
+import {ASN1} from "../lib/asn1js/asn1";
+import {RSAKey} from "../lib/jsbn/rsa2";
+import {Base64} from "../lib/asn1js/base64";
+import {Hex} from "../lib/asn1js/hex";
+import {parseBigInt} from "../lib/jsbn/jsbn2";
+import {KJUR} from "../lib/jsrsasign/asn1-1.0";
+import {hex2b64} from "../lib/jsbn/base64";
+import {b64tohex} from "../lib/jsbn/base64";
 
-    return str;
-};
-Stream.prototype.reTime = /^((?:1[89]|2\d)?\d\d)(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])([01]\d|2[0-3])(?:([0-5]\d)(?:([0-5]\d)(?:[.,](\d{1,3}))?)?)?(Z|[-+](?:[0]\d|1[0-2])([0-5]\d)?)?$/;
-Stream.prototype.parseTime = function (start, end) {
-    var s = this.parseStringISO(start, end),
-        m = this.reTime.exec(s);
-    if (!m)
-        return "Unrecognized time: " + s;
-    s = m[1] + "-" + m[2] + "-" + m[3] + " " + m[4];
-    if (m[5]) {
-        s += ":" + m[5];
-        if (m[6]) {
-            s += ":" + m[6];
-            if (m[7])
-                s += "." + m[7];
-        }
-    }
-    if (m[8]) {
-        s += " UTC";
-        if (m[8] != 'Z') {
-            s += m[8];
-            if (m[9])
-                s += ":" + m[9];
-        }
-    }
-    return s;
-};
-Stream.prototype.parseInteger = function (start, end) {
-    //TODO support negative numbers
-    var len = end - start;
-    if (len > 4) {
-        len <<= 3;
-        var s = this.get(start);
-        if (s === 0)
-            len -= 8;
-        else
-            while (s < 128) {
-                s <<= 1;
-                --len;
-            }
-        return "(" + len + " bit)";
-    }
-    var n = 0;
-    for (var i = start; i < end; ++i)
-        n = (n << 8) | this.get(i);
-    return n;
-};
-Stream.prototype.parseBitString = function (start, end) {
-    var unusedBit = this.get(start),
-        lenBit = ((end - start - 1) << 3) - unusedBit,
-        s = "(" + lenBit + " bit)";
-    if (lenBit <= 20) {
-        var skip = unusedBit;
-        s += " ";
-        for (var i = end - 1; i > start; --i) {
-            var b = this.get(i);
-            for (var j = skip; j < 8; ++j)
-                s += (b >> j) & 1 ? "1" : "0";
-            skip = 0;
-        }
-    }
-    return s;
-};
-Stream.prototype.parseOctetString = function (start, end) {
-    var len = end - start,
-        s = "(" + len + " byte) ";
-    if (len > hardLimit)
-        end = start + hardLimit;
-    for (var i = start; i < end; ++i)
-        s += this.hexByte(this.get(i)); //TODO: also try Latin1?
-    if (len > hardLimit)
-        s += ellipsis;
-    return s;
-};
-Stream.prototype.parseOID = function (start, end) {
-    var s = '',
-        n = 0,
-        bits = 0;
-    for (var i = start; i < end; ++i) {
-        var v = this.get(i);
-        n = (n << 7) | (v & 0x7F);
-        bits += 7;
-        if (!(v & 0x80)) { // finished
-            if (s === '') {
-                var m = n < 80 ? n < 40 ? 0 : 1 : 2;
-                s = m + "." + (n - m * 40);
-            } else
-                s += "." + ((bits >= 31) ? "bigint" : n);
-            n = bits = 0;
-        }
-    }
-    return s;
-};
-
-function ASN1(stream, header, length, tag, sub) {
-    this.stream = stream;
-    this.header = header;
-    this.length = length;
-    this.tag = tag;
-    this.sub = sub;
-}
-ASN1.prototype.typeName = function () {
-    if (this.tag === undefined)
-        return "unknown";
-    var tagClass = this.tag >> 6,
-        tagConstructed = (this.tag >> 5) & 1,
-        tagNumber = this.tag & 0x1F;
-    switch (tagClass) {
-    case 0: // universal
-        switch (tagNumber) {
-        case 0x00: return "EOC";
-        case 0x01: return "BOOLEAN";
-        case 0x02: return "INTEGER";
-        case 0x03: return "BIT_STRING";
-        case 0x04: return "OCTET_STRING";
-        case 0x05: return "NULL";
-        case 0x06: return "OBJECT_IDENTIFIER";
-        case 0x07: return "ObjectDescriptor";
-        case 0x08: return "EXTERNAL";
-        case 0x09: return "REAL";
-        case 0x0A: return "ENUMERATED";
-        case 0x0B: return "EMBEDDED_PDV";
-        case 0x0C: return "UTF8String";
-        case 0x10: return "SEQUENCE";
-        case 0x11: return "SET";
-        case 0x12: return "NumericString";
-        case 0x13: return "PrintableString"; // ASCII subset
-        case 0x14: return "TeletexString"; // aka T61String
-        case 0x15: return "VideotexString";
-        case 0x16: return "IA5String"; // ASCII
-        case 0x17: return "UTCTime";
-        case 0x18: return "GeneralizedTime";
-        case 0x19: return "GraphicString";
-        case 0x1A: return "VisibleString"; // ASCII subset
-        case 0x1B: return "GeneralString";
-        case 0x1C: return "UniversalString";
-        case 0x1E: return "BMPString";
-        default:   return "Universal_" + tagNumber.toString(16);
-        }
-    case 1: return "Application_" + tagNumber.toString(16);
-    case 2: return "[" + tagNumber + "]"; // Context
-    case 3: return "Private_" + tagNumber.toString(16);
-    }
-};
-ASN1.prototype.reSeemsASCII = /^[ -~]+$/;
-ASN1.prototype.content = function () {
-    if (this.tag === undefined)
-        return null;
-    var tagClass = this.tag >> 6,
-        tagNumber = this.tag & 0x1F,
-        content = this.posContent(),
-        len = Math.abs(this.length);
-    if (tagClass !== 0) { // universal
-        if (this.sub !== null)
-            return "(" + this.sub.length + " elem)";
-        //TODO: TRY TO PARSE ASCII STRING
-        var s = this.stream.parseStringISO(content, content + Math.min(len, hardLimit));
-        if (this.reSeemsASCII.test(s))
-            return s.substring(0, 2 * hardLimit) + ((s.length > 2 * hardLimit) ? ellipsis : "");
-        else
-            return this.stream.parseOctetString(content, content + len);
-    }
-    switch (tagNumber) {
-    case 0x01: // BOOLEAN
-        return (this.stream.get(content) === 0) ? "false" : "true";
-    case 0x02: // INTEGER
-        return this.stream.parseInteger(content, content + len);
-    case 0x03: // BIT_STRING
-        return this.sub ? "(" + this.sub.length + " elem)" :
-            this.stream.parseBitString(content, content + len);
-    case 0x04: // OCTET_STRING
-        return this.sub ? "(" + this.sub.length + " elem)" :
-            this.stream.parseOctetString(content, content + len);
-    //case 0x05: // NULL
-    case 0x06: // OBJECT_IDENTIFIER
-        return this.stream.parseOID(content, content + len);
-    //case 0x07: // ObjectDescriptor
-    //case 0x08: // EXTERNAL
-    //case 0x09: // REAL
-    //case 0x0A: // ENUMERATED
-    //case 0x0B: // EMBEDDED_PDV
-    case 0x10: // SEQUENCE
-    case 0x11: // SET
-        return "(" + this.sub.length + " elem)";
-    case 0x0C: // UTF8String
-        return this.stream.parseStringUTF(content, content + len);
-    case 0x12: // NumericString
-    case 0x13: // PrintableString
-    case 0x14: // TeletexString
-    case 0x15: // VideotexString
-    case 0x16: // IA5String
-    //case 0x19: // GraphicString
-    case 0x1A: // VisibleString
-    //case 0x1B: // GeneralString
-    //case 0x1C: // UniversalString
-        return this.stream.parseStringISO(content, content + len);
-    case 0x1E: // BMPString
-        return this.stream.parseStringBMP(content, content + len);
-    case 0x17: // UTCTime
-    case 0x18: // GeneralizedTime
-        return this.stream.parseTime(content, content + len);
-    }
-    return null;
-};
-ASN1.prototype.toString = function () {
-    return this.typeName() + "@" + this.stream.pos + "[header:" + this.header + ",length:" + this.length + ",sub:" + ((this.sub === null) ? 'null' : this.sub.length) + "]";
-};
-ASN1.prototype.print = function (indent) {
-    if (indent === undefined) indent = '';
-    document.writeln(indent + this);
-    if (this.sub !== null) {
-        indent += '  ';
-        for (var i = 0, max = this.sub.length; i < max; ++i)
-            this.sub[i].print(indent);
-    }
-};
-ASN1.prototype.toPrettyString = function (indent) {
-    if (indent === undefined) indent = '';
-    var s = indent + this.typeName() + " @" + this.stream.pos;
-    if (this.length >= 0)
-        s += "+";
-    s += this.length;
-    if (this.tag & 0x20)
-        s += " (constructed)";
-    else if (((this.tag == 0x03) || (this.tag == 0x04)) && (this.sub !== null))
-        s += " (encapsulates)";
-    s += "\n";
-    if (this.sub !== null) {
-        indent += '  ';
-        for (var i = 0, max = this.sub.length; i < max; ++i)
-            s += this.sub[i].toPrettyString(indent);
-    }
-    return s;
-};
-ASN1.prototype.toDOM = function () {
-    var node = DOM.tag("div", "node");
-    node.asn1 = this;
-    var head = DOM.tag("div", "head");
-    var s = this.typeName().replace(/_/g, " ");
-    head.innerHTML = s;
-    var content = this.content();
-    if (content !== null) {
-        content = String(content).replace(/</g, "&lt;");
-        var preview = DOM.tag("span", "preview");
-        preview.appendChild(DOM.text(content));
-        head.appendChild(preview);
-    }
-    node.appendChild(head);
-    this.node = node;
-    this.head = head;
-    var value = DOM.tag("div", "value");
-    s = "Offset: " + this.stream.pos + "<br/>";
-    s += "Length: " + this.header + "+";
-    if (this.length >= 0)
-        s += this.length;
-    else
-        s += (-this.length) + " (undefined)";
-    if (this.tag & 0x20)
-        s += "<br/>(constructed)";
-    else if (((this.tag == 0x03) || (this.tag == 0x04)) && (this.sub !== null))
-        s += "<br/>(encapsulates)";
-    //TODO if (this.tag == 0x03) s += "Unused bits: "
-    if (content !== null) {
-        s += "<br/>Value:<br/><b>" + content + "</b>";
-        if ((typeof oids === 'object') && (this.tag == 0x06)) {
-            var oid = oids[content];
-            if (oid) {
-                if (oid.d) s += "<br/>" + oid.d;
-                if (oid.c) s += "<br/>" + oid.c;
-                if (oid.w) s += "<br/>(warning!)";
-            }
-        }
-    }
-    value.innerHTML = s;
-    node.appendChild(value);
-    var sub = DOM.tag("div", "sub");
-    if (this.sub !== null) {
-        for (var i = 0, max = this.sub.length; i < max; ++i)
-            sub.appendChild(this.sub[i].toDOM());
-    }
-    node.appendChild(sub);
-    head.onclick = function () {
-        node.className = (node.className == "node collapsed") ? "node" : "node collapsed";
-    };
-    return node;
-};
-ASN1.prototype.posStart = function () {
-    return this.stream.pos;
-};
-ASN1.prototype.posContent = function () {
-    return this.stream.pos + this.header;
-};
-ASN1.prototype.posEnd = function () {
-    return this.stream.pos + this.header + Math.abs(this.length);
-};
-ASN1.prototype.fakeHover = function (current) {
-    this.node.className += " hover";
-    if (current)
-        this.head.className += " hover";
-};
-ASN1.prototype.fakeOut = function (current) {
-    var re = / ?hover/;
-    this.node.className = this.node.className.replace(re, "");
-    if (current)
-        this.head.className = this.head.className.replace(re, "");
-};
-ASN1.prototype.toHexDOM_sub = function (node, className, stream, start, end) {
-    if (start >= end)
-        return;
-    var sub = DOM.tag("span", className);
-    sub.appendChild(DOM.text(
-        stream.hexDump(start, end)));
-    node.appendChild(sub);
-};
-ASN1.prototype.toHexDOM = function (root) {
-    var node = DOM.tag("span", "hex");
-    if (root === undefined) root = node;
-    this.head.hexNode = node;
-    this.head.onmouseover = function () { this.hexNode.className = "hexCurrent"; };
-    this.head.onmouseout  = function () { this.hexNode.className = "hex"; };
-    node.asn1 = this;
-    node.onmouseover = function () {
-        var current = !root.selected;
-        if (current) {
-            root.selected = this.asn1;
-            this.className = "hexCurrent";
-        }
-        this.asn1.fakeHover(current);
-    };
-    node.onmouseout  = function () {
-        var current = (root.selected == this.asn1);
-        this.asn1.fakeOut(current);
-        if (current) {
-            root.selected = null;
-            this.className = "hex";
-        }
-    };
-    this.toHexDOM_sub(node, "tag", this.stream, this.posStart(), this.posStart() + 1);
-    this.toHexDOM_sub(node, (this.length >= 0) ? "dlen" : "ulen", this.stream, this.posStart() + 1, this.posContent());
-    if (this.sub === null)
-        node.appendChild(DOM.text(
-            this.stream.hexDump(this.posContent(), this.posEnd())));
-    else if (this.sub.length > 0) {
-        var first = this.sub[0];
-        var last = this.sub[this.sub.length - 1];
-        this.toHexDOM_sub(node, "intro", this.stream, this.posContent(), first.posStart());
-        for (var i = 0, max = this.sub.length; i < max; ++i)
-            node.appendChild(this.sub[i].toHexDOM(root));
-        this.toHexDOM_sub(node, "outro", this.stream, last.posEnd(), this.posEnd());
-    }
-    return node;
-};
-ASN1.prototype.toHexString = function (root) {
-    return this.stream.hexDump(this.posStart(), this.posEnd(), true);
-};
-ASN1.decodeLength = function (stream) {
-    var buf = stream.get(),
-        len = buf & 0x7F;
-    if (len == buf)
-        return len;
-    if (len > 3)
-        throw "Length over 24 bits not supported at position " + (stream.pos - 1);
-    if (len === 0)
-        return -1; // undefined
-    buf = 0;
-    for (var i = 0; i < len; ++i)
-        buf = (buf << 8) | stream.get();
-    return buf;
-};
-ASN1.hasContent = function (tag, len, stream) {
-    if (tag & 0x20) // constructed
-        return true;
-    if ((tag < 0x03) || (tag > 0x04))
-        return false;
-    var p = new Stream(stream);
-    if (tag == 0x03) p.get(); // BitString unused bits, must be in [0, 7]
-    var subTag = p.get();
-    if ((subTag >> 6) & 0x01) // not (universal or context)
-        return false;
-    try {
-        var subLength = ASN1.decodeLength(p);
-        return ((p.pos - stream.pos) + subLength == len);
-    } catch (exception) {
-        return false;
-    }
-};
-ASN1.decode = function (stream) {
-    if (!(stream instanceof Stream))
-        stream = new Stream(stream, 0);
-    var streamStart = new Stream(stream),
-        tag = stream.get(),
-        len = ASN1.decodeLength(stream),
-        header = stream.pos - streamStart.pos,
-        sub = null;
-    if (ASN1.hasContent(tag, len, stream)) {
-        // it has content, so we decode it
-        var start = stream.pos;
-        if (tag == 0x03) stream.get(); // skip BitString unused bits, must be in [0, 7]
-        sub = [];
-        if (len >= 0) {
-            // definite length
-            var end = start + len;
-            while (stream.pos < end)
-                sub[sub.length] = ASN1.decode(stream);
-            if (stream.pos != end)
-                throw "Content size is not correct for container starting at offset " + start;
-        } else {
-            // undefined length
-            try {
-                for (;;) {
-                    var s = ASN1.decode(stream);
-                    if (s.tag === 0)
-                        break;
-                    sub[sub.length] = s;
-                }
-                len = start - stream.pos;
-            } catch (e) {
-                throw "Exception while decoding undefined length content: " + e;
-            }
-        }
-    } else
-        stream.pos += len; // skip content
-    return new ASN1(streamStart, header, len, tag, sub);
-};
-ASN1.test = function () {
-    var test = [
-        { value: [0x27],                   expected: 0x27     },
-        { value: [0x81, 0xC9],             expected: 0xC9     },
-        { value: [0x83, 0xFE, 0xDC, 0xBA], expected: 0xFEDCBA }
-    ];
-    for (var i = 0, max = test.length; i < max; ++i) {
-        var pos = 0,
-            stream = new Stream(test[i].value, 0),
-            res = ASN1.decodeLength(stream);
-        if (res != test[i].expected)
-            document.write("In test[" + i + "] expected " + test[i].expected + " got " + res + "\n");
-    }
-};
-
-// export globals
-window.ASN1 = ASN1;
-})();
 /**
  * Retrieve the hexadecimal value (as a string) of the current ASN.1 element
  * @returns {string}
@@ -4163,30 +3482,33 @@ RSAKey.prototype.parsePropertiesFrom = function (obj) {
  * the parameters needed to build a RSAKey object.
  * @constructor
  */
-var JSEncryptRSAKey = function (key) {
-  // Call the super constructor.
-  RSAKey.call(this);
-  // If a key key was provided.
-  if (key) {
-    // If this is a string...
-    if (typeof key === 'string') {
-      this.parseKey(key);
-    }
-    else if (
-      this.hasPrivateKeyProperty(key) ||
-      this.hasPublicKeyProperty(key)
-    ) {
-      // Set the values for the key.
-      this.parsePropertiesFrom(key);
+class JSEncryptRSAKey extends RSAKey {
+  constructor(key) {
+    super();
+    // Call the super constructor.
+    //  RSAKey.call(this);
+    // If a key key was provided.
+    if (key) {
+      // If this is a string...
+      if (typeof key === 'string') {
+        this.parseKey(key);
+      }
+      else if (
+        this.hasPrivateKeyProperty(key) ||
+        this.hasPublicKeyProperty(key)
+      ) {
+        // Set the values for the key.
+        this.parsePropertiesFrom(key);
+      }
     }
   }
-};
+}
 
 // Derive from RSAKey.
-JSEncryptRSAKey.prototype = new RSAKey();
+// JSEncryptRSAKey.prototype = new RSAKey();
 
 // Reset the contructor.
-JSEncryptRSAKey.prototype.constructor = JSEncryptRSAKey;
+// JSEncryptRSAKey.prototype.constructor = JSEncryptRSAKey;
 
 
 /**
@@ -4198,14 +3520,16 @@ JSEncryptRSAKey.prototype.constructor = JSEncryptRSAKey;
  * - log                     {boolean} default: false whether log warn/error or not
  * @constructor
  */
-var JSEncrypt = function (options) {
-  options = options || {};
-  this.default_key_size = parseInt(options.default_key_size) || 1024;
-  this.default_public_exponent = options.default_public_exponent || '010001'; //65537 default openssl public exponent for rsa key type
-  this.log = options.log || false;
-  // The private and public key.
-  this.key = null;
-};
+export class JSEncrypt {
+  constructor(options) {
+        options = options || {};
+        this.default_key_size = parseInt(options.default_key_size) || 1024;
+        this.default_public_exponent = options.default_public_exponent || '010001'; //65537 default openssl public exponent for rsa key type
+        this.log = options.log || false;
+        // The private and public key.
+        this.key = null;
+    };
+}
 
 /**
  * Method to set the rsa key parameter (one method is enough to set both the public
