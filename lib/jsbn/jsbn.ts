@@ -1252,24 +1252,16 @@ class Barrett implements IReduction {
     public sqrTo(x,r) { x.squareTo(r); this.reduce(r); }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
 //#endregion
 
 //#endregion REDUCERS
 
 // return new, unset BigInteger
 export function nbi() { return new BigInteger(null); }
+
+export function parseBigInt(str,r) {
+    return new BigInteger(str,r);
+}
 
 // am: Compute w_j += (x*this_i), propagate carries,
 // c is initial carry, returns final carry.
