@@ -1,10 +1,12 @@
 "use strict";
 const path = require('path');
 const rollup = require('rollup');
+const resolve = require('rollup-plugin-node-resolve');
+
 
 
 const entries = {
-    'src/jsencrypt': {file: 'bin/jsencrypt.bundle', name: 'jsencrypt'},
+    'src/JSEncrypt': {file: 'bin/jsencrypt.bundle', name: 'jsencrypt'},
     'test/test.rsa': {file: 'test/test.rsa.bundle', name: 'rsaTest'}
 };
 for (let entry in entries) {
