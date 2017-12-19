@@ -41,7 +41,7 @@ export class Stream {
         }
     }
 
-    private enc:string;
+    private enc:string|number[];
     public pos:number;
 
     public get(pos?:number) {

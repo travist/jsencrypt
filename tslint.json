@@ -10,6 +10,7 @@
     "triple-equals": false,
     "no-empty": false,
     "no-console": false,
+    "no-conditional-assignment": false,
     "typedef-whitespace": {
       "options": [
         {
