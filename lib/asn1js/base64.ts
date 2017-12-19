@@ -69,7 +69,7 @@ export const Base64 = {
         return out;
     },
     re: /-----BEGIN [^-]+-----([A-Za-z0-9+\/=\s]+)-----END [^-]+-----|begin-base64[^\n]+\n([A-Za-z0-9+\/=\s]+)====/,
-    unarmor(a:string) {
+    unarmor(a:string):number[] {
         const m = Base64.re.exec(a);
         if (m) {
             if (m[1]) {

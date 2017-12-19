@@ -17,7 +17,7 @@
 
 let decoder:{ [index:string]:number };
 export const Hex = {
-    decode(a:string) {
+    decode(a:string):number[] {
         let i;
         if (decoder === undefined) {
             let hex = "0123456789ABCDEF";

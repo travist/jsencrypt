@@ -30,7 +30,7 @@ function stringCut(str:string, len:number) {
 }
 
 export class Stream {
-    constructor(enc:Stream, pos?:number) {
+    constructor(enc:Stream|number[], pos?:number) {
         if (enc instanceof Stream) {
             this.enc = enc.enc;
             this.pos = enc.pos;
@@ -281,7 +281,7 @@ export class ASN1 {
     private header:number;
     private length:number;
     private tag:ASN1Tag;
-    private sub:ASN1[];
+    public sub:ASN1[];
 
     public typeName() {
         switch (this.tag.tagClass) {
@@ -479,10 +479,27 @@ export class ASN1 {
         return buf;
     }
 
-    public static decode(stream:Stream) {
-        if (!(stream instanceof Stream)) {
-            stream = new Stream(stream, 0);
+    /**
+     * Retrieve the hexadecimal value (as a string) of the current ASN.1 element
+     * @returns {string}
+     * @public
+     */
+    public getHexStringValue():string {
+        const hexString = this.toHexString();
+        const offset = this.header * 2;
+        const length = this.length * 2;
+        return hexString.substr(offset, length);
+    }
+
+    public static decode(str:Stream|number[]) {
+        let stream:Stream;
+
+        if (!(str instanceof Stream)) {
+            stream = new Stream(str, 0);
+        } else {
+            stream = str;
         }
+
         const streamStart = new Stream(stream);
         const tag = new ASN1Tag(stream);
         let len = ASN1.decodeLength(stream);
