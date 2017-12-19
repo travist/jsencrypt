@@ -1434,6 +1434,85 @@ export class BigInteger {
         return r;
     }
 
+    //#region ASYNC
+
+    // Public API method
+    public gcda(a:BigInteger, callback:(x:BigInteger) => void) {
+        let x = (this.s < 0) ? this.negate() : this.clone();
+        let y = (a.s < 0) ? a.negate() : a.clone();
+        if (x.compareTo(y) < 0) {
+            const t = x;
+            x = y;
+            y = t;
+        }
+        let i = x.getLowestSetBit();
+        let g = y.getLowestSetBit();
+        if (g < 0) {
+            callback(x);
+            return;
+        }
+        if (i < g) { g = i; }
+        if (g > 0) {
+            x.rShiftTo(g, x);
+            y.rShiftTo(g, y);
+        }
+        // Workhorse of the algorithm, gets called 200 - 800 times per 512 bit keygen.
+        const gcda1 = function () {
+            if ((i = x.getLowestSetBit()) > 0) { x.rShiftTo(i, x); }
+            if ((i = y.getLowestSetBit()) > 0) { y.rShiftTo(i, y); }
+            if (x.compareTo(y) >= 0) {
+                x.subTo(y, x);
+                x.rShiftTo(1, x);
+            } else {
+                y.subTo(x, y);
+                y.rShiftTo(1, y);
+            }
+            if (!(x.signum() > 0)) {
+                if (g > 0) { y.lShiftTo(g, y); }
+                setTimeout(function () {callback(y); }, 0); // escape
+            } else {
+                setTimeout(gcda1, 0);
+            }
+        };
+        setTimeout(gcda1, 10);
+    }
+
+    // (protected) alternate constructor
+    public fromNumberAsync(a:number, b:number|SecureRandom, c:number|SecureRandom, callback:() => void) {
+        if ("number" == typeof b) {
+            if (a < 2) {
+                this.fromInt(1);
+            } else {
+                this.fromNumber(a, c);
+                if (!this.testBit(a - 1)) {
+                    this.bitwiseTo(BigInteger.ONE.shiftLeft(a - 1), op_or, this);
+                }
+                if (this.isEven()) {
+                    this.dAddOffset(1, 0);
+                }
+                const bnp = this;
+                const bnpfn1 = function () {
+                    bnp.dAddOffset(2, 0);
+                    if (bnp.bitLength() > a) { bnp.subTo(BigInteger.ONE.shiftLeft(a - 1), bnp); }
+                    if (bnp.isProbablePrime(b)) {
+                        setTimeout(function () {callback(); }, 0); // escape
+                    } else {
+                        setTimeout(bnpfn1, 0);
+                    }
+                };
+                setTimeout(bnpfn1, 0);
+            }
+        } else {
+            const x:number[] = [];
+            const t = a & 7;
+            x.length = (a >> 3) + 1;
+            b.nextBytes(x);
+            if (t > 0) { x[0] &= ((1 << t) - 1); } else { x[0] = 0; }
+            this.fromString(x, 256);
+        }
+    }
+
+    //#endregion ASYNC
 
   //#endregion PROTECTED
 

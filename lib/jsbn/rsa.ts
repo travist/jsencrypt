@@ -4,7 +4,7 @@
 
 // convert a (hex) string to a bignum object
 
-import {BigInteger, parseBigInt} from "./jsbn";
+import {BigInteger, nbi, parseBigInt} from "./jsbn";
 import {SecureRandom} from "./rng";
 
 
@@ -212,6 +212,65 @@ export class RSAKey {
         const m = this.doPrivate(c);
         if (m == null) { return null; }
         return pkcs1unpad2(m, (this.n.bitLength() + 7) >> 3);
+    }
+
+    // Generate a new random private key B bits long, using public expt E
+    public generateAsync(B:number, E:string, callback:() => void) {
+        const rng = new SecureRandom();
+        const qs = B >> 1;
+        this.e = parseInt(E, 16);
+        const ee = new BigInteger(E, 16);
+        const rsa = this;
+        // These functions have non-descript names because they were originally for(;;) loops.
+        // I don't know about cryptography to give them better names than loop1-4.
+        const loop1 = function () {
+            const loop4 = function () {
+                if (rsa.p.compareTo(rsa.q) <= 0) {
+                    const t = rsa.p;
+                    rsa.p = rsa.q;
+                    rsa.q = t;
+                }
+                const p1 = rsa.p.subtract(BigInteger.ONE);
+                const q1 = rsa.q.subtract(BigInteger.ONE);
+                const phi = p1.multiply(q1);
+                if (phi.gcd(ee).compareTo(BigInteger.ONE) == 0) {
+                    rsa.n = rsa.p.multiply(rsa.q);
+                    rsa.d = ee.modInverse(phi);
+                    rsa.dmp1 = rsa.d.mod(p1);
+                    rsa.dmq1 = rsa.d.mod(q1);
+                    rsa.coeff = rsa.q.modInverse(rsa.p);
+                    setTimeout(function () {callback(); }, 0); // escape
+                } else {
+                    setTimeout(loop1, 0);
+                }
+            };
+            const loop3 = function () {
+                rsa.q = nbi();
+                rsa.q.fromNumberAsync(qs, 1, rng, function () {
+                    rsa.q.subtract(BigInteger.ONE).gcda(ee, function (r) {
+                        if (r.compareTo(BigInteger.ONE) == 0 && rsa.q.isProbablePrime(10)) {
+                            setTimeout(loop4, 0);
+                        } else {
+                            setTimeout(loop3, 0);
+                        }
+                    });
+                });
+            };
+            const loop2 = function () {
+                rsa.p = nbi();
+                rsa.p.fromNumberAsync(B - qs, 1, rng, function () {
+                    rsa.p.subtract(BigInteger.ONE).gcda(ee, function (r) {
+                        if (r.compareTo(BigInteger.ONE) == 0 && rsa.p.isProbablePrime(10)) {
+                            setTimeout(loop3, 0);
+                        } else {
+                            setTimeout(loop2, 0);
+                        }
+                    });
+                });
+            };
+            setTimeout(loop2, 0);
+        };
+        setTimeout(loop1, 0);
     }
 
     //#endregion PUBLIC
