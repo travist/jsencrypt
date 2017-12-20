@@ -118,6 +118,24 @@ keySizes.forEach(function(keySize, index){
             
         });
 
+        describe('#getKey() async', function(done) {
+
+            it('should be '+keySize+' bit long', function () {
+
+                jse.getKey(function () {
+                    var key = jse.getKey();
+                    var length = key.n.bitLength();
+                    length = length%2===0 ? length: length+1;
+                    expect(length).to.equal(keySize);
+
+                    done();
+                });
+
+
+            });
+
+        });
+
         describe('#encrypt() | #decrypt()', function(){
             
             //Tom Wu's RSA Object use paddingpkcs #1, type 2
