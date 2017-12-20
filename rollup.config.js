@@ -1,47 +1,48 @@
 "use strict";
-const path = require('path');
-const rollup = require('rollup');
 const resolve = require('rollup-plugin-node-resolve');
 const uglify = require('rollup-plugin-uglify');
+const pkg = require('./package.json');
+
+var plugins = [
+    resolve(),
+    uglify({
+        mangle: true,
+        warnings: true,
+        output: {
+            beautify: false,
+        },
+        compress: {
+            join_vars: true,
+            if_return: true,
+            properties: true,
+            conditionals: true,
+            warnings: true,
+            dead_code: true,
+            drop_console: true,
+            drop_debugger: true,
+        }
+    })
+];
 
 
-
-const entries = {
-    'src/JSEncrypt': {file: 'bin/jsencrypt.bundle', name: 'jsencrypt'},
-    'test/test.rsa': {file: 'test/test.rsa.bundle', name: 'rsaTest'}
-};
-for (let entry in entries) {
-    console.log(`processing ${entry}.js`);
-    rollup.rollup({
-        input: path.join(__dirname, `${entry}.js`),
-        plugins: [
-            resolve(),
-            uglify({
-                mangle: true,
-                warnings: true,
-                output: {
-                    beautify: false,
-                },
-                compress: {
-                    join_vars: true,
-                    if_return: true,
-                    properties: true,
-                    conditionals: true,
-                    warnings: true,
-                    dead_code: true,
-                    drop_console: true,
-                    drop_debugger: true,
-                }
-            })
+export default [
+    // {
+    //     input: "./src/JSEncrypt.js",
+    //     plugins: plugins,
+    //     name: "JSEncrypt",
+    //     output: [
+    //         { file: pkg.browser, format: 'umd' },
+    //     ]
+    //
+    // },
+    {
+        input: "./src/JSEncrypt.js",
+        plugins: plugins,
+        name: "JSEncrypt",
+        output: [
+            { file: pkg.main, format: 'umd' },
+            // { file: pkg.module, format: 'es' }
         ]
-    }).then(function (bundle) {
-        console.log(`processing ${entry}.js finished`);
-        bundle.write({
-            format: 'umd',
-            name: entries[entry].name,
-            file: path.join(__dirname, `${entries[entry].file}.js`)
-        });
-    }).catch((e)=>{
-        console.log(e);
-    });
-}
+
+    }
+]

@@ -17,7 +17,7 @@ interface IJSEncryptOptions {
  * - log                     {boolean} default: false whether log warn/error or not
  * @constructor
  */
-export class JSEncrypt {
+export default class JSEncrypt {
     constructor(options:IJSEncryptOptions) {
         options = options || {};
         this.default_key_size = parseInt(options.default_key_size, 10) || 1024;

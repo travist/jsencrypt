@@ -1,9 +1,10 @@
 var gulp = require('gulp');
-var eslint = require('gulp-eslint');
+var tslint = require('gulp-tslint');
 var uglify = require('gulp-uglify');
 var rename = require('gulp-rename');
 var concat = require('gulp-concat');
 var insert = require('gulp-insert');
+var gulpCopy = require('gulp-copy');
 var wrap = require('gulp-wrap');
 
 var files = [
@@ -23,7 +24,8 @@ var files = [
 ];
 
 var lintFiles = [
-  'src/jsencrypt.js'
+    'src/*.ts',
+    'lib/*/**.ts'
 ];
 
 var licenses = [
@@ -33,11 +35,17 @@ var licenses = [
   'lib/asn1js/LICENSE.txt'
 ];
 
+var libs_for_test = [
+    "node_modules/mocha/mocha.css",
+    "node_modules/expect.js/index.js",
+    "node_modules/mocha/mocha.js"
+
+]
+
 gulp.task('lint', function () {
   return gulp.src(lintFiles)
-    .pipe(eslint())
-    .pipe(eslint.format())
-    .pipe(eslint.failAfterError());
+      .pipe(tslint({}))
+      .pipe(tslint.report({ summarizeFailureOutput: true }));
 });
 
 gulp.task('license', function() {
@@ -59,6 +67,19 @@ gulp.task('scripts', function() {
     .pipe(uglify({preserveComments: 'license'}))
     .pipe(gulp.dest('bin'));
 });
+
+
+gulp.task('assemble', function () {
+
+});
+
+gulp.task('prepare_test', function() {
+    return gulp
+        .src(libs_for_test)
+        .pipe(gulpCopy("test/libs/", { prefix: 2}));
+
+});
+
 
 gulp.task('build', ['lint', 'scripts', 'license']);
 gulp.task('default', ['build']);
