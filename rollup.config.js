@@ -1,6 +1,7 @@
 "use strict";
 const resolve = require('rollup-plugin-node-resolve');
 const uglify = require('rollup-plugin-uglify');
+const replace = require('rollup-plugin-replace');
 const pkg = require('./package.json');
 
 var plugins = [
@@ -21,28 +22,24 @@ var plugins = [
             drop_console: true,
             drop_debugger: true,
         }
+    }),
+    replace({
+        'JSENCRYPT_VERSION': JSON.stringify(pkg.version)
     })
+
 ];
 
 
-export default [
-    // {
-    //     input: "./src/JSEncrypt.js",
-    //     plugins: plugins,
-    //     name: "JSEncrypt",
-    //     output: [
-    //         { file: pkg.browser, format: 'umd' },
-    //     ]
-    //
-    // },
-    {
+module.exports = {
         input: "./src/JSEncrypt.js",
         plugins: plugins,
         name: "JSEncrypt",
-        output: [
-            { file: pkg.main, format: 'umd' },
+        output: {
+            file: pkg.main,
+            format: 'umd',
+            name: "JSEncrypt"
+        },
             // { file: pkg.module, format: 'es' }
-        ]
 
-    }
-]
+
+    };
