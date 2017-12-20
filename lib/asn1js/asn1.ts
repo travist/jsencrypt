@@ -568,7 +568,7 @@ export class ASN1 {
 }
 
 
-class ASN1Tag {
+export class ASN1Tag {
     constructor(stream:Stream) {
         let buf = stream.get();
         this.tagClass = buf >> 6;

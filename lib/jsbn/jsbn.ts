@@ -1577,7 +1577,7 @@ class NullExp {
 
 //#region Classic
 
-interface IReduction {
+export interface IReduction {
     convert(x:BigInteger):BigInteger;
 
     revert(x:BigInteger):BigInteger;
@@ -1590,7 +1590,7 @@ interface IReduction {
 }
 
 // Modular reduction using "classic" algorithm
-export class Classic implements IReduction {
+class Classic implements IReduction {
     constructor(protected m:BigInteger) {
     }
 
@@ -1635,7 +1635,7 @@ export class Classic implements IReduction {
 //#region Montgomery
 
 // Montgomery reduction
-export class Montgomery implements IReduction {
+class Montgomery implements IReduction {
     constructor(protected m:BigInteger) {
         this.mp = m.invDigit();
         this.mpl = this.mp & 0x7fff;

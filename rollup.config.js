@@ -6,23 +6,23 @@ const pkg = require('./package.json');
 
 var plugins = [
     resolve(),
-    uglify({
-        mangle: true,
-        warnings: true,
-        output: {
-            beautify: false,
-        },
-        compress: {
-            join_vars: true,
-            if_return: true,
-            properties: true,
-            conditionals: true,
-            warnings: true,
-            dead_code: true,
-            drop_console: true,
-            drop_debugger: true,
-        }
-    }),
+    // uglify({
+    //     mangle: true,
+    //     warnings: true,
+    //     output: {
+    //         beautify: false,
+    //     },
+    //     compress: {
+    //         join_vars: true,
+    //         if_return: true,
+    //         properties: true,
+    //         conditionals: true,
+    //         warnings: true,
+    //         dead_code: true,
+    //         drop_console: true,
+    //         drop_debugger: true,
+    //     }
+    // }),
     replace({
         'JSENCRYPT_VERSION': JSON.stringify(pkg.version)
     })
@@ -31,13 +31,14 @@ var plugins = [
 
 
 module.exports = {
-        input: "./src/JSEncrypt.js",
+        input: "./src/index.js",
         plugins: plugins,
         name: "JSEncrypt",
         output: {
             file: pkg.main,
             format: 'umd',
-            name: "JSEncrypt"
+            name: "JSEncrypt",
+            exports: "named"
         },
             // { file: pkg.module, format: 'es' }
 

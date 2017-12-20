@@ -1,14 +1,14 @@
 const path = require('path');
-var modules_path = path.resolve(__dirname, './test');
+var modules_path = path.resolve(__dirname, './bin');
 
 
 
 module.exports = {
   target: 'web',
-  devtool: 'inline-source-map',
-  entry: './test/test.rsa.js',
+  // devtool: 'inline-source-map',
+  entry: './src/JSEncrypt.ts',
   output: {
-    filename: 'bundle.js',
+    filename: 'jsencrypt.js',
     chunkFilename: 'modules/[chunkhash].[name].chunk.js',
     path: modules_path,
     strictModuleExceptionHandling: true

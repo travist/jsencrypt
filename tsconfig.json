@@ -6,6 +6,8 @@
     "sourceMap": true,
     "jsx": "react",
     "experimentalDecorators": true,
+    "declaration": true,
+    "declarationDir": "./declarations",
     "noImplicitAny": true,
     "noUnusedLocals": true,
     "strictNullChecks": false,
@@ -18,7 +20,9 @@
     ]
   },
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "_site",
+    "declarations"
   ],
   "baseUrl": "."
 }
