@@ -2,6 +2,7 @@
 const path = require('path');
 const rollup = require('rollup');
 const resolve = require('rollup-plugin-node-resolve');
+const uglify = require('rollup-plugin-uglify');
 
 
 
@@ -13,6 +14,26 @@ for (let entry in entries) {
     console.log(`processing ${entry}.js`);
     rollup.rollup({
         input: path.join(__dirname, `${entry}.js`),
+        plugins: [
+            resolve(),
+            uglify({
+                mangle: true,
+                warnings: true,
+                output: {
+                    beautify: false,
+                },
+                compress: {
+                    join_vars: true,
+                    if_return: true,
+                    properties: true,
+                    conditionals: true,
+                    warnings: true,
+                    dead_code: true,
+                    drop_console: true,
+                    drop_debugger: true,
+                }
+            })
+        ]
     }).then(function (bundle) {
         console.log(`processing ${entry}.js finished`);
         bundle.write({

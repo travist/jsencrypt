@@ -41,7 +41,10 @@
     "gulp-wrap": "^0.11.0",
     "mocha": "^4.0.1",
     "rollup": "^0.52.1",
+    "rollup-plugin-node-resolve": "^3.0.0",
+    "rollup-plugin-uglify": "^2.0.1",
     "ts-loader": "^3.2.0",
+    "tslib": "^1.8.1",
     "tslint": "^5.8.0",
     "typescript": "^2.6.2",
     "webpack": "^3.10.0"
