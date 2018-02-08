@@ -2,6 +2,7 @@
   "name": "jsencrypt",
   "version": "2.3.1",
   "description": "A Javascript library to perform OpenSSL RSA Encryption, Decryption, and Key Generation.",
+  "license": "MIT",
   "main": "bin/jsencrypt.js",
   "scripts": {
     "prepublish": "node_modules/gulp/bin/gulp.js"
