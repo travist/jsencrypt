@@ -127,7 +127,6 @@ function b64tohex(s) {
     }
     return ret;
 }
-// convert a base64 string to a byte/number array
 
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation. All rights reserved.
@@ -395,20 +394,6 @@ var Int10 = /** @class */ (function () {
 }());
 
 // ASN.1 JavaScript decoder
-// Copyright (c) 2008-2014 Lapo Luchini <lapo@lapo.it>
-// Permission to use, copy, modify, and/or distribute this software for any
-// purpose with or without fee is hereby granted, provided that the above
-// copyright notice and this permission notice appear in all copies.
-//
-// THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-// WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-// MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-// ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-// WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
-// ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-// OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-/*jshint browser: true, strict: true, immed: true, latedef: true, undef: true, regexdash: false */
-/*global oids */
 var ellipsis = "\u2026";
 var reTimeS = /^(\d\d)(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])([01]\d|2[0-3])(?:([0-5]\d)(?:([0-5]\d)(?:[.,](\d{1,3}))?)?)?(Z|[-+](?:[0]\d|1[0-2])([0-5]\d)?)?$/;
 var reTimeL = /^(\d\d\d\d)(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])([01]\d|2[0-3])(?:([0-5]\d)(?:([0-5]\d)(?:[.,](\d{1,3}))?)?)?(Z|[-+](?:[0]\d|1[0-2])([0-5]\d)?)?$/;
@@ -957,9 +942,6 @@ var ASN1Tag = /** @class */ (function () {
 }());
 
 // Copyright (c) 2005  Tom Wu
-// All Rights Reserved.
-// See "LICENSE" for details.
-// Basic JavaScript BN library - subset useful for RSA encryption.
 // Bits per digit
 var dbits;
 // JavaScript engine analysis
@@ -2832,8 +2814,6 @@ var SecureRandom = /** @class */ (function () {
 }());
 
 // Depends on jsbn.js and rng.js
-// Version 1.1: support utf-8 encoding in pkcs1pad2
-// convert a (hex) string to a bignum object
 // function linebrk(s,n) {
 //   var ret = "";
 //   var i = 0;
@@ -3200,24 +3180,12 @@ YAHOO.lang = {
                         }
                     };
                 }
-            } catch (ex) {}
-            _IEEnumFix(subc.prototype, overrides);
+            } catch (ex) {}            _IEEnumFix(subc.prototype, overrides);
         }
     }
 };
 
 /* asn1-1.0.13.js (c) 2013-2017 Kenji Urushima | kjur.github.com/jsrsasign/license
- */
-/*
- * asn1.js - ASN.1 DER encoder classes
- *
- * Copyright (c) 2013-2017 Kenji Urushima (kenji.urushima@gmail.com)
- *
- * This software is licensed under the terms of the MIT License.
- * https://kjur.github.io/jsrsasign/license
- *
- * The above copyright and license notice shall be
- * included in all copies or substantial portions of the Software.
  */
 
 /**
@@ -3550,7 +3518,6 @@ KJUR.asn1.ASN1Util.oidHexToInt = function(hex) {
             binbuf = "";
         }
     }
-
     return s;
 };
 
@@ -3713,6 +3680,14 @@ KJUR.asn1.ASN1Object = function() {
  */
 KJUR.asn1.DERAbstractString = function(params) {
     KJUR.asn1.DERAbstractString.superclass.constructor.call(this);
+
+    /**
+     * get string value of this string object
+     * @name getString
+     * @memberOf KJUR.asn1.DERAbstractString#
+     * @function
+     * @return {String} string value of this string object
+     */
     this.getString = function() {
         return this.s;
     };
@@ -3774,6 +3749,8 @@ YAHOO.lang.extend(KJUR.asn1.DERAbstractString, KJUR.asn1.ASN1Object);
  */
 KJUR.asn1.DERAbstractTime = function(params) {
     KJUR.asn1.DERAbstractTime.superclass.constructor.call(this);
+
+    // --- PRIVATE METHODS --------------------
     this.localDateToUTC = function(d) {
         utc = d.getTime() + (d.getTimezoneOffset() * 60000);
         var utcDate = new Date(utc);
@@ -3879,6 +3856,14 @@ YAHOO.lang.extend(KJUR.asn1.DERAbstractTime, KJUR.asn1.ASN1Object);
  */
 KJUR.asn1.DERAbstractStructured = function(params) {
     KJUR.asn1.DERAbstractString.superclass.constructor.call(this);
+
+    /**
+     * set value by array of ASN1Object
+     * @name setByASN1ObjectArray
+     * @memberOf KJUR.asn1.DERAbstractStructured#
+     * @function
+     * @param {array} asn1ObjectArray array of ASN1Object to set
+     */
     this.setByASN1ObjectArray = function(asn1ObjectArray) {
         this.hTLV = null;
         this.isModified = true;
@@ -5130,7 +5115,7 @@ var JSEncryptRSAKey = /** @class */ (function (_super) {
  * - log                     {boolean} default: false whether log warn/error or not
  * @constructor
  */
-var JSEncrypt$1 = /** @class */ (function () {
+var JSEncrypt = /** @class */ (function () {
     function JSEncrypt(options) {
         options = options || {};
         this.default_key_size = parseInt(options.default_key_size, 10) || 1024;
@@ -5266,15 +5251,15 @@ var JSEncrypt$1 = /** @class */ (function () {
         // Return the private representation of this key.
         return this.getKey().getPublicBaseKeyB64();
     };
-    JSEncrypt.version = "2.3.1";
+    JSEncrypt.version = "3.0.0-beta.1";
     return JSEncrypt;
 }());
 
 window = window || {};
-window.JSEncrypt = JSEncrypt$1;
+window.JSEncrypt = JSEncrypt;
 
-exports.JSEncrypt = JSEncrypt$1;
-exports['default'] = JSEncrypt$1;
+exports.JSEncrypt = JSEncrypt;
+exports.default = JSEncrypt;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
