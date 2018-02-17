@@ -30,16 +30,29 @@
     "url": "http://github.com/travist/jsencrypt/issues"
   },
   "devDependencies": {
+    "expect.js": "^0.3.1",
     "gulp": "^3.9.1",
     "gulp-concat": "^2.6.0",
+    "gulp-copy": "^1.0.1",
     "gulp-eslint": "^2.0.0",
     "gulp-insert": "^0.5.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-tslint": "^8.1.2",
+    "gulp-typescript": "^3.2.3",
+    "gulp-uglify": "^1.5.3",
     "gulp-watch": "^4.3.5",
     "gulp-wrap": "^0.11.0",
-    "gulp-rename": "^1.2.2",
-    "gulp-uglify": "^1.5.3"
+    "mocha": "^4.0.1",
+    "rollup": "^0.52.1",
+    "rollup-plugin-node-resolve": "^3.0.0",
+    "rollup-plugin-replace": "^2.0.0",
+    "rollup-plugin-uglify": "^2.0.1",
+    "ts-loader": "^3.2.0",
+    "tslib": "^1.8.1",
+    "tslint": "^5.8.0",
+    "typescript": "^2.6.2",
+    "webpack": "^3.10.0"
   },
-  "dependencies": {
-
-  }
+  "dependencies": {},
+  "typings": "declarations/src/index.d.ts"
 }

@@ -1,0 +1,68 @@
+{
+  "extends": "tslint:recommended",
+  "rules": {
+    "no-consecutive-blank-lines": [
+      true,
+      2
+    ],
+    "ordered-imports": false,
+    "no-bitwise": false,
+    "triple-equals": false,
+    "no-empty": false,
+    "no-console": false,
+    "no-conditional-assignment": false,
+    "typedef-whitespace": {
+      "options": [
+        {
+          "call-signature": "nospace",
+          "index-signature": "nospace",
+          "parameter": "nospace",
+          "property-declaration": "nospace",
+          "variable-declaration": "nospace"
+        },
+        {
+          "call-signature": "nospace",
+          "index-signature": "nospace",
+          "parameter": "nospace",
+          "property-declaration": "nospace",
+          "variable-declaration": "nospace"
+        }
+      ]
+    },
+    "whitespace": {
+      "options": [
+        "check-branch",
+        "check-decl",
+        "check-operator",
+        "check-separator",
+        "check-typecast"
+      ]
+    },
+    "max-classes-per-file": false,
+    "trailing-comma": {
+      "options": {
+        "singleline": "never"
+      }
+    },
+    "variable-name": {
+      "options": [
+        "ban-keywords",
+        "allow-snake-case"
+      ]
+    },
+    "member-ordering": false,
+    "max-line-length": false,
+    "object-literal-sort-keys": false,
+    "only-arrow-functions": false,
+    "space-before-function-paren": {
+      "options": {
+        "anonymous": "always",
+        "asyncArrow": "always",
+        "constructor": "never",
+        "method": "never",
+        "named": "never"
+      }
+    },
+    "prefer-for-of": false
+  }
+}

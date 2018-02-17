@@ -6,3 +6,13 @@ node_modules
 project.properties
 project.xml
 /nbproject/private/
+
+src/*.js
+src/*.js.map
+
+lib/asn1js/*.js
+lib/asn1js/*.js.map
+!lib/asn1js/oids.js
+
+lib/jsbn/*.js
+lib/jsbn/*.js.map
