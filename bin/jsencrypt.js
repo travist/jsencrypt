@@ -5270,6 +5270,9 @@ var JSEncrypt$1 = /** @class */ (function () {
     return JSEncrypt;
 }());
 
+window = window || {};
+window.JSEncrypt = JSEncrypt$1;
+
 exports.JSEncrypt = JSEncrypt$1;
 exports['default'] = JSEncrypt$1;
 

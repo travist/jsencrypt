@@ -366,7 +366,7 @@ Context.prototype.runnable = function (runnable) {
 };
 
 /**
- * Set test timeout `ms`.
+ * Set or get test timeout `ms`.
  *
  * @api private
  * @param {number} ms
@@ -388,18 +388,24 @@ Context.prototype.timeout = function (ms) {
  * @return {Context} self
  */
 Context.prototype.enableTimeouts = function (enabled) {
+  if (!arguments.length) {
+    return this.runnable().enableTimeouts();
+  }
   this.runnable().enableTimeouts(enabled);
   return this;
 };
 
 /**
- * Set test slowness threshold `ms`.
+ * Set or get test slowness threshold `ms`.
  *
  * @api private
  * @param {number} ms
  * @return {Context} self
  */
 Context.prototype.slow = function (ms) {
+  if (!arguments.length) {
+    return this.runnable().slow();
+  }
   this.runnable().slow(ms);
   return this;
 };
@@ -415,7 +421,7 @@ Context.prototype.skip = function () {
 };
 
 /**
- * Allow a number of retries on failed tests
+ * Set or get a number of allowed retries on failed tests
  *
  * @api private
  * @param {number} n
@@ -427,18 +433,6 @@ Context.prototype.retries = function (n) {
   }
   this.runnable().retries(n);
   return this;
-};
-
-/**
- * Inspect the context void of `._runnable`.
- *
- * @api private
- * @return {string}
- */
-Context.prototype.inspect = function () {
-  return JSON.stringify(this, function (key, val) {
-    return key === 'runnable' || key === 'test' ? undefined : val;
-  }, 2);
 };
 
 },{}],6:[function(require,module,exports){
@@ -596,7 +590,7 @@ module.exports = function (suite) {
      */
 
     context.xit = context.xspecify = context.it.skip = function (title) {
-      context.it(title);
+      return context.it(title);
     };
 
     /**
@@ -1441,6 +1435,20 @@ Mocha.prototype.useInlineDiffs = function (inlineDiffs) {
 };
 
 /**
+ * Do not show diffs at all.
+ *
+ * @param {Boolean} hideDiff
+ * @return {Mocha}
+ * @api public
+ * @param {boolean} hideDiff
+ * @return {Mocha}
+ */
+Mocha.prototype.hideDiff = function (hideDiff) {
+  this.options.hideDiff = hideDiff !== undefined && hideDiff;
+  return this;
+};
+
+/**
  * Set the timeout in milliseconds.
  *
  * @param {Number} timeout
@@ -1556,6 +1564,14 @@ Mocha.prototype.forbidPending = function () {
 /**
  * Run tests and invoke `fn()` when complete.
  *
+ * Note that `loadFiles` relies on Node's `require` to execute
+ * the test interface functions and will be subject to the
+ * cache - if the files are already in the `require` cache,
+ * they will effectively be skipped. Therefore, to run tests
+ * multiple times or to run tests in files that are already
+ * in the `require` cache, make sure to clear them from the
+ * cache first in whichever manner best suits your needs.
+ *
  * @api public
  * @param {Function} fn
  * @return {Runner}
@@ -1588,6 +1604,7 @@ Mocha.prototype.run = function (fn) {
     exports.reporters.Base.useColors = options.useColors;
   }
   exports.reporters.Base.inlineDiffs = options.useInlineDiffs;
+  exports.reporters.Base.hideDiff = options.hideDiff;
 
   function done (failures) {
     if (reporter.done) {
@@ -1617,22 +1634,15 @@ var y = d * 365.25;
 /**
  * Parse or format the given `val`.
  *
- * Options:
- *
- *  - `long` verbose formatting [false]
- *
  * @api public
  * @param {string|number} val
- * @param {Object} options
  * @return {string|number}
  */
-module.exports = function (val, options) {
-  options = options || {};
+module.exports = function (val) {
   if (typeof val === 'string') {
     return parse(val);
   }
-  // https://github.com/mochajs/mocha/pull/1035
-  return options['long'] ? longFormat(val) : shortFormat(val);
+  return format(val);
 };
 
 /**
@@ -1678,13 +1688,13 @@ function parse (str) {
 }
 
 /**
- * Short format for `ms`.
+ * Format for `ms`.
  *
  * @api private
  * @param {number} ms
  * @return {string}
  */
-function shortFormat (ms) {
+function format (ms) {
   if (ms >= d) {
     return Math.round(ms / d) + 'd';
   }
@@ -1698,39 +1708,6 @@ function shortFormat (ms) {
     return Math.round(ms / s) + 's';
   }
   return ms + 'ms';
-}
-
-/**
- * Long format for `ms`.
- *
- * @api private
- * @param {number} ms
- * @return {string}
- */
-function longFormat (ms) {
-  return plural(ms, d, 'day') ||
-    plural(ms, h, 'hour') ||
-    plural(ms, m, 'minute') ||
-    plural(ms, s, 'second') ||
-    ms + ' ms';
-}
-
-/**
- * Pluralization helper.
- *
- * @api private
- * @param {number} ms
- * @param {number} n
- * @param {string} name
- */
-function plural (ms, n, name) {
-  if (ms < n) {
-    return;
-  }
-  if (ms < n * 1.5) {
-    return Math.floor(ms / n) + ' ' + name;
-  }
-  return Math.ceil(ms / n) + ' ' + name + 's';
 }
 
 },{}],15:[function(require,module,exports){
@@ -1910,6 +1887,17 @@ exports.cursor = {
   }
 };
 
+function showDiff (err) {
+  return err && err.showDiff !== false && sameType(err.actual, err.expected) && err.expected !== undefined;
+}
+
+function stringifyDiffObjs (err) {
+  if (!utils.isString(err.actual) || !utils.isString(err.expected)) {
+    err.actual = utils.stringify(err.actual);
+    err.expected = utils.stringify(err.expected);
+  }
+}
+
 /**
  * Output the given `failures` as a list.
  *
@@ -1938,9 +1926,6 @@ exports.list = function (failures) {
     }
     var stack = err.stack || message;
     var index = message ? stack.indexOf(message) : -1;
-    var actual = err.actual;
-    var expected = err.expected;
-    var escape = true;
 
     if (index === -1) {
       msg = message;
@@ -1956,21 +1941,16 @@ exports.list = function (failures) {
       msg = 'Uncaught ' + msg;
     }
     // explicitly show diff
-    if (err.showDiff !== false && sameType(actual, expected) && expected !== undefined) {
-      escape = false;
-      if (!(utils.isString(actual) && utils.isString(expected))) {
-        err.actual = actual = utils.stringify(actual);
-        err.expected = expected = utils.stringify(expected);
-      }
-
+    if (!exports.hideDiff && showDiff(err)) {
+      stringifyDiffObjs(err);
       fmt = color('error title', '  %s) %s:\n%s') + color('error stack', '\n%s\n');
       var match = message.match(/^([^:]+): expected/);
       msg = '\n      ' + color('error message', match ? match[1] : msg);
 
       if (exports.inlineDiffs) {
-        msg += inlineDiff(err, escape);
+        msg += inlineDiff(err);
       } else {
-        msg += unifiedDiff(err, escape);
+        msg += unifiedDiff(err);
       }
     }
 
@@ -2047,6 +2027,9 @@ function Base (runner) {
   runner.on('fail', function (test, err) {
     stats.failures = stats.failures || 0;
     stats.failures++;
+    if (showDiff(err)) {
+      stringifyDiffObjs(err);
+    }
     test.err = err;
     failures.push(test);
   });
@@ -2121,11 +2104,10 @@ function pad (str, len) {
  *
  * @api private
  * @param {Error} err with actual/expected
- * @param {boolean} escape
  * @return {string} Diff
  */
-function inlineDiff (err, escape) {
-  var msg = errorDiff(err, 'WordsWithSpace', escape);
+function inlineDiff (err) {
+  var msg = errorDiff(err);
 
   // linenos
   var lines = msg.split('\n');
@@ -2155,15 +2137,11 @@ function inlineDiff (err, escape) {
  *
  * @api private
  * @param {Error} err with actual/expected
- * @param {boolean} escape
  * @return {string} The diff.
  */
-function unifiedDiff (err, escape) {
+function unifiedDiff (err) {
   var indent = '      ';
   function cleanUp (line) {
-    if (escape) {
-      line = escapeInvisibles(line);
-    }
     if (line[0] === '+') {
       return indent + colorLines('diff added', line);
     }
@@ -2195,14 +2173,10 @@ function unifiedDiff (err, escape) {
  *
  * @api private
  * @param {Error} err
- * @param {string} type
- * @param {boolean} escape
  * @return {string}
  */
-function errorDiff (err, type, escape) {
-  var actual = escape ? escapeInvisibles(err.actual) : err.actual;
-  var expected = escape ? escapeInvisibles(err.expected) : err.expected;
-  return diff['diff' + type](actual, expected).map(function (str) {
+function errorDiff (err) {
+  return diff.diffWordsWithSpace(err.actual, err.expected).map(function (str) {
     if (str.added) {
       return colorLines('diff added', str.value);
     }
@@ -2211,19 +2185,6 @@ function errorDiff (err, type, escape) {
     }
     return str.value;
   }).join('');
-}
-
-/**
- * Returns a string with all invisible characters in plain text
- *
- * @api private
- * @param {string} line
- * @return {string}
- */
-function escapeInvisibles (line) {
-  return line.replace(/\t/g, '<tab>')
-    .replace(/\r/g, '<CR>')
-    .replace(/\n/g, '<LF>\n');
 }
 
 /**
@@ -3551,11 +3512,13 @@ function Progress (runner, options) {
 
   // default chars
   options = options || {};
-  options.open = options.open || '[';
-  options.complete = options.complete || '▬';
-  options.incomplete = options.incomplete || Base.symbols.dot;
-  options.close = options.close || ']';
-  options.verbose = false;
+  var reporterOptions = options.reporterOptions || {};
+
+  options.open = reporterOptions.open || '[';
+  options.complete = reporterOptions.complete || '▬';
+  options.incomplete = reporterOptions.incomplete || Base.symbols.dot;
+  options.close = reporterOptions.close || ']';
+  options.verbose = reporterOptions.verbose || false;
 
   // tests started
   runner.on('start', function () {
@@ -4040,14 +4003,14 @@ Runnable.prototype.timeout = function (ms) {
 };
 
 /**
- * Set & get slow `ms`.
+ * Set or get slow `ms`.
  *
  * @api private
  * @param {number|string} ms
  * @return {Runnable|number} ms or Runnable instance.
  */
 Runnable.prototype.slow = function (ms) {
-  if (typeof ms === 'undefined') {
+  if (!arguments.length || typeof ms === 'undefined') {
     return this._slow;
   }
   if (typeof ms === 'string') {
@@ -4093,7 +4056,7 @@ Runnable.prototype.isPending = function () {
 };
 
 /**
- * Set number of retries.
+ * Set or get number of retries.
  *
  * @api private
  */
@@ -4105,7 +4068,7 @@ Runnable.prototype.retries = function (n) {
 };
 
 /**
- * Get current retry
+ * Set or get current retry
  *
  * @api private
  */
@@ -4191,7 +4154,7 @@ Runnable.prototype.resetTimeout = function () {
 };
 
 /**
- * Whitelist a list of globals for this test run.
+ * Set or get a list of whitelisted globals for this test run.
  *
  * @api private
  * @param {string[]} globals
@@ -5422,7 +5385,7 @@ Suite.prototype.clone = function () {
 };
 
 /**
- * Set timeout `ms` or short-hand such as "2s".
+ * Set or get timeout `ms` or short-hand such as "2s".
  *
  * @api private
  * @param {number|string} ms
@@ -5444,7 +5407,7 @@ Suite.prototype.timeout = function (ms) {
 };
 
 /**
- * Set number of times to retry a failed test.
+ * Set or get number of times to retry a failed test.
  *
  * @api private
  * @param {number|string} n
@@ -5460,7 +5423,7 @@ Suite.prototype.retries = function (n) {
 };
 
 /**
-  * Set timeout to `enabled`.
+  * Set or get timeout to `enabled`.
   *
   * @api private
   * @param {boolean} enabled
@@ -5476,7 +5439,7 @@ Suite.prototype.enableTimeouts = function (enabled) {
 };
 
 /**
- * Set slow `ms` or short-hand such as "2s".
+ * Set or get slow `ms` or short-hand such as "2s".
  *
  * @api private
  * @param {number|string} ms
@@ -5495,7 +5458,7 @@ Suite.prototype.slow = function (ms) {
 };
 
 /**
- * Sets whether to bail after first error.
+ * Set or get whether to bail after first error.
  *
  * @api private
  * @param {boolean} bail
@@ -6275,7 +6238,6 @@ exports.canonicalize = function canonicalize (value, stack, typeHint) {
  */
 exports.lookupFiles = function lookupFiles (path, extensions, recursive) {
   var files = [];
-  var re = new RegExp('\\.(' + extensions.join('|') + ')$');
 
   if (!exists(path)) {
     if (exists(path + '.js')) {
@@ -6313,6 +6275,7 @@ exports.lookupFiles = function lookupFiles (path, extensions, recursive) {
       // ignore error
       return;
     }
+    var re = new RegExp('\\.(?:' + extensions.join('|') + ')$');
     if (!stat.isFile() || !re.test(file) || basename(file)[0] === '.') {
       return;
     }
