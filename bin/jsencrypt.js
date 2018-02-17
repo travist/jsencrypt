@@ -5255,7 +5255,6 @@ var JSEncrypt = /** @class */ (function () {
     return JSEncrypt;
 }());
 
-window = window || {};
 window.JSEncrypt = JSEncrypt;
 
 exports.JSEncrypt = JSEncrypt;

@@ -3,10 +3,11 @@ var tslint = require('gulp-tslint');
 var concat = require('gulp-concat');
 var insert = require('gulp-insert');
 var gulpCopy = require('gulp-copy');
+var uglify = require('gulp-uglify');
+var rename = require("gulp-rename");
 var ts = require('gulp-typescript');
 var through = require('through2');
 var rollup = require('rollup');
-
 
 var lintFiles = [
     'src/*.ts',
@@ -92,6 +93,12 @@ gulp.task('prepare_test', function() {
 
 });
 
+gulp.task('compress', function (cb) {
+  return gulp.src('bin/jsencrypt.js')
+    .pipe(uglify())
+    .pipe(rename('jsencrypt.min.js'))
+    .pipe(gulp.dest('bin'));
+});
 
-gulp.task('build', ['prepare_test', 'lint', 'assemble', 'license']);
+gulp.task('build', ['prepare_test', 'lint', 'assemble', 'license', 'compress']);
 gulp.task('default', ['build']);
