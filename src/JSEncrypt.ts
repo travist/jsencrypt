@@ -78,10 +78,10 @@ export default class JSEncrypt {
      * @return {string} the decrypted string
      * @public
      */
-    public decrypt(str:string) {
+    public decrypt(str:string, isByteEncoded:boolean = false) {
         // Return the decrypted string.
         try {
-            return this.getKey().decrypt(b64tohex(str));
+            return this.getKey().decrypt(b64tohex(str), isByteEncoded);
         } catch (ex) {
             return false;
         }
