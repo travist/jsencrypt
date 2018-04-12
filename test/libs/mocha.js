@@ -718,6 +718,8 @@ module.exports = function (suites, context, mocha) {
           suites.shift();
         } else if (typeof opts.fn === 'undefined' && !suite.pending) {
           throw new Error('Suite "' + suite.fullTitle() + '" was defined but no callback was supplied. Supply a callback or explicitly skip the suite.');
+        } else if (!opts.fn && suite.pending) {
+          suites.shift();
         }
 
         return suite;
@@ -1899,6 +1901,22 @@ function stringifyDiffObjs (err) {
 }
 
 /**
+ * Returns a diff between 2 strings with coloured ANSI output.
+ *
+ * The diff will be either inline or unified dependant on the value
+ * of `Base.inlineDiff`.
+ *
+ * @param {string} actual
+ * @param {string} expected
+ * @return {string} Diff
+ */
+var generateDiff = exports.generateDiff = function (actual, expected) {
+  return exports.inlineDiffs
+    ? inlineDiff(actual, expected)
+    : unifiedDiff(actual, expected);
+};
+
+/**
  * Output the given `failures` as a list.
  *
  * @param {Array} failures
@@ -1947,11 +1965,7 @@ exports.list = function (failures) {
       var match = message.match(/^([^:]+): expected/);
       msg = '\n      ' + color('error message', match ? match[1] : msg);
 
-      if (exports.inlineDiffs) {
-        msg += inlineDiff(err);
-      } else {
-        msg += unifiedDiff(err);
-      }
+      msg += generateDiff(err.actual, err.expected);
     }
 
     // indent stack trace
@@ -2034,7 +2048,7 @@ function Base (runner) {
     failures.push(test);
   });
 
-  runner.on('end', function () {
+  runner.once('end', function () {
     stats.end = new Date();
     stats.duration = stats.end - stats.start;
   });
@@ -2100,14 +2114,15 @@ function pad (str, len) {
 }
 
 /**
- * Returns an inline diff between 2 strings with coloured ANSI output
+ * Returns an inline diff between 2 strings with coloured ANSI output.
  *
  * @api private
- * @param {Error} err with actual/expected
+ * @param {String} actual
+ * @param {String} expected
  * @return {string} Diff
  */
-function inlineDiff (err) {
-  var msg = errorDiff(err);
+function inlineDiff (actual, expected) {
+  var msg = errorDiff(actual, expected);
 
   // linenos
   var lines = msg.split('\n');
@@ -2133,13 +2148,14 @@ function inlineDiff (err) {
 }
 
 /**
- * Returns a unified diff between two strings.
+ * Returns a unified diff between two strings with coloured ANSI output.
  *
  * @api private
- * @param {Error} err with actual/expected
+ * @param {String} actual
+ * @param {String} expected
  * @return {string} The diff.
  */
-function unifiedDiff (err) {
+function unifiedDiff (actual, expected) {
   var indent = '      ';
   function cleanUp (line) {
     if (line[0] === '+') {
@@ -2159,7 +2175,7 @@ function unifiedDiff (err) {
   function notBlank (line) {
     return typeof line !== 'undefined' && line !== null;
   }
-  var msg = diff.createPatch('string', err.actual, err.expected);
+  var msg = diff.createPatch('string', actual, expected);
   var lines = msg.split('\n').splice(5);
   return '\n      ' +
     colorLines('diff added', '+ expected') + ' ' +
@@ -2172,11 +2188,12 @@ function unifiedDiff (err) {
  * Return a character diff for `err`.
  *
  * @api private
- * @param {Error} err
- * @return {string}
+ * @param {String} actual
+ * @param {String} expected
+ * @return {string} the diff
  */
-function errorDiff (err) {
-  return diff.diffWordsWithSpace(err.actual, err.expected).map(function (str) {
+function errorDiff (actual, expected) {
+  return diff.diffWordsWithSpace(actual, expected).map(function (str) {
     if (str.added) {
       return colorLines('diff added', str.value);
     }
@@ -2345,7 +2362,7 @@ function Dot (runner) {
     process.stdout.write(color('fail', Base.symbols.bang));
   });
 
-  runner.on('end', function () {
+  runner.once('end', function () {
     console.log();
     self.epilogue();
   });
@@ -2773,7 +2790,7 @@ function List (runner) {
     console.log(JSON.stringify(['fail', test]));
   });
 
-  runner.on('end', function () {
+  runner.once('end', function () {
     process.stdout.write(JSON.stringify(['end', self.stats]));
   });
 }
@@ -2843,7 +2860,7 @@ function JSONReporter (runner) {
     pending.push(test);
   });
 
-  runner.on('end', function () {
+  runner.once('end', function () {
     var obj = {
       stats: self.stats,
       tests: tests.map(clean),
@@ -2977,7 +2994,7 @@ function Landing (runner) {
     stream.write('\u001b[0m');
   });
 
-  runner.on('end', function () {
+  runner.once('end', function () {
     cursor.show();
     console.log();
     self.epilogue();
@@ -3048,7 +3065,7 @@ function List (runner) {
     console.log(color('fail', '  %d) %s'), ++n, test.fullTitle());
   });
 
-  runner.on('end', self.epilogue.bind(self));
+  runner.once('end', self.epilogue.bind(self));
 }
 
 /**
@@ -3152,7 +3169,7 @@ function Markdown (runner) {
     buf += '```\n\n';
   });
 
-  runner.on('end', function () {
+  runner.once('end', function () {
     process.stdout.write('# TOC\n');
     process.stdout.write(generateTOC(runner.suite));
     process.stdout.write(buf);
@@ -3193,7 +3210,7 @@ function Min (runner) {
     process.stdout.write('\u001b[1;3H');
   });
 
-  runner.on('end', this.epilogue.bind(this));
+  runner.once('end', this.epilogue.bind(this));
 }
 
 /**
@@ -3258,7 +3275,7 @@ function NyanCat (runner) {
     self.draw();
   });
 
-  runner.on('end', function () {
+  runner.once('end', function () {
     Base.cursor.show();
     for (var i = 0; i < self.numberOfLines; i++) {
       write('\n');
@@ -3553,7 +3570,7 @@ function Progress (runner, options) {
 
   // tests are complete, output some stats
   // and the failures if any
-  runner.on('end', function () {
+  runner.once('end', function () {
     cursor.show();
     console.log();
     self.epilogue();
@@ -3641,7 +3658,7 @@ function Spec (runner) {
     console.log(indent() + color('fail', '  %d) %s'), ++n, test.title);
   });
 
-  runner.on('end', self.epilogue.bind(self));
+  runner.once('end', self.epilogue.bind(self));
 }
 
 /**
@@ -3703,7 +3720,7 @@ function TAP (runner) {
     }
   });
 
-  runner.on('end', function () {
+  runner.once('end', function () {
     console.log('# tests ' + (passes + failures));
     console.log('# pass ' + passes);
     console.log('# fail ' + failures);
@@ -3803,7 +3820,7 @@ function XUnit (runner, options) {
     tests.push(test);
   });
 
-  runner.on('end', function () {
+  runner.once('end', function () {
     self.write(tag('testsuite', {
       name: suiteName,
       tests: stats.tests,
@@ -4015,7 +4032,7 @@ Runnable.prototype.slow = function (ms) {
   if (typeof ms === 'string') {
     ms = milliseconds(ms);
   }
-  debug('timeout %d', ms);
+  debug('slow %d', ms);
   this._slow = ms;
   return this;
 };
@@ -4052,6 +4069,24 @@ Runnable.prototype.skip = function () {
  */
 Runnable.prototype.isPending = function () {
   return this.pending || (this.parent && this.parent.isPending());
+};
+
+/**
+ * Return `true` if this Runnable has failed.
+ * @return {boolean}
+ * @private
+ */
+Runnable.prototype.isFailed = function () {
+  return !this.isPending() && this.state === 'failed';
+};
+
+/**
+ * Return `true` if this Runnable has passed.
+ * @return {boolean}
+ * @private
+ */
+Runnable.prototype.isPassed = function () {
+  return !this.isPending() && this.state === 'passed';
 };
 
 /**
@@ -4582,10 +4617,10 @@ Runner.prototype.failHook = function (hook, err) {
     hook.title = hook.originalTitle + ' for "' + hook.ctx.currentTest.title + '"';
   }
 
-  this.fail(hook, err);
   if (this.suite.bail()) {
     this.emit('end');
   }
+  this.fail(hook, err);
 };
 
 /**
@@ -5043,21 +5078,25 @@ Runner.prototype.uncaught = function (err) {
 
   runnable.clearTimeout();
 
-  // Ignore errors if complete or pending
-  if (runnable.state || runnable.isPending()) {
+  // Ignore errors if already failed or pending
+  // See #3226
+  if (runnable.isFailed() || runnable.isPending()) {
     return;
   }
+  // we cannot recover gracefully if a Runnable has already passed
+  // then fails asynchronously
+  var alreadyPassed = runnable.isPassed();
+  // this will change the state to "failed" regardless of the current value
   this.fail(runnable, err);
+  if (!alreadyPassed) {
+    // recover from test
+    if (runnable.type === 'test') {
+      this.emit('test end', runnable);
+      this.hookUp('afterEach', this.next);
+      return;
+    }
 
-  // recover from test
-  if (runnable.type === 'test') {
-    this.emit('test end', runnable);
-    this.hookUp('afterEach', this.next);
-    return;
-  }
-
-  // recover from hooks
-  if (runnable.type === 'hook') {
+    // recover from hooks
     var errSuite = this.suite;
     // if hook failure is in afterEach block
     if (runnable.fullTitle().indexOf('after each') > -1) {
@@ -5767,22 +5806,15 @@ Test.prototype.clone = function () {
 (function (process,Buffer){
 'use strict';
 
-/* eslint-env browser */
-
 /**
  * Module dependencies.
  */
 
-var basename = require('path').basename;
 var debug = require('debug')('mocha:watch');
-var exists = require('fs').existsSync;
+var fs = require('fs');
 var glob = require('glob');
 var path = require('path');
 var join = path.join;
-var readdirSync = require('fs').readdirSync;
-var statSync = require('fs').statSync;
-var watchFile = require('fs').watchFile;
-var lstatSync = require('fs').lstatSync;
 var he = require('he');
 
 /**
@@ -5827,7 +5859,7 @@ exports.watch = function (files, fn) {
   var options = { interval: 100 };
   files.forEach(function (file) {
     debug('file %s', file);
-    watchFile(file, options, function (curr, prev) {
+    fs.watchFile(file, options, function (curr, prev) {
       if (prev.mtime < curr.mtime) {
         fn(file);
       }
@@ -5861,11 +5893,11 @@ exports.files = function (dir, ext, ret) {
 
   var re = new RegExp('\\.(' + ext.join('|') + ')$');
 
-  readdirSync(dir)
+  fs.readdirSync(dir)
     .filter(ignored)
     .forEach(function (path) {
       path = join(dir, path);
-      if (lstatSync(path).isDirectory()) {
+      if (fs.lstatSync(path).isDirectory()) {
         exports.files(path, ext, ret);
       } else if (path.match(re)) {
         ret.push(path);
@@ -6236,40 +6268,40 @@ exports.canonicalize = function canonicalize (value, stack, typeHint) {
  * Lookup file names at the given `path`.
  *
  * @api public
- * @param {string} path Base path to start searching from.
+ * @param {string} filepath Base path to start searching from.
  * @param {string[]} extensions File extensions to look for.
  * @param {boolean} recursive Whether or not to recurse into subdirectories.
  * @return {string[]} An array of paths.
  */
-exports.lookupFiles = function lookupFiles (path, extensions, recursive) {
+exports.lookupFiles = function lookupFiles (filepath, extensions, recursive) {
   var files = [];
 
-  if (!exists(path)) {
-    if (exists(path + '.js')) {
-      path += '.js';
+  if (!fs.existsSync(filepath)) {
+    if (fs.existsSync(filepath + '.js')) {
+      filepath += '.js';
     } else {
-      files = glob.sync(path);
+      files = glob.sync(filepath);
       if (!files.length) {
-        throw new Error("cannot resolve path (or pattern) '" + path + "'");
+        throw new Error("cannot resolve path (or pattern) '" + filepath + "'");
       }
       return files;
     }
   }
 
   try {
-    var stat = statSync(path);
+    var stat = fs.statSync(filepath);
     if (stat.isFile()) {
-      return path;
+      return filepath;
     }
   } catch (err) {
     // ignore error
     return;
   }
 
-  readdirSync(path).forEach(function (file) {
-    file = join(path, file);
+  fs.readdirSync(filepath).forEach(function (file) {
+    file = path.join(filepath, file);
     try {
-      var stat = statSync(file);
+      var stat = fs.statSync(file);
       if (stat.isDirectory()) {
         if (recursive) {
           files = files.concat(lookupFiles(file, extensions, recursive));
@@ -6281,7 +6313,7 @@ exports.lookupFiles = function lookupFiles (path, extensions, recursive) {
       return;
     }
     var re = new RegExp('\\.(?:' + extensions.join('|') + ')$');
-    if (!stat.isFile() || !re.test(file) || basename(file)[0] === '.') {
+    if (!stat.isFile() || !re.test(file) || path.basename(file)[0] === '.') {
       return;
     }
     files.push(file);
@@ -6364,7 +6396,7 @@ exports.stackTraceFilter = function () {
 
       // Clean up cwd(absolute)
       if (/\(?.+:\d+:\d+\)?$/.test(line)) {
-        line = line.replace(cwd, '');
+        line = line.replace('(' + cwd, '(');
       }
 
       list.push(line);
@@ -8797,7 +8829,7 @@ function coerce(val) {
 },{"ms":54}],45:[function(require,module,exports){
 /*!
 
- diff v3.3.1
+ diff v3.5.0
 
 Software License Agreement (BSD License)
 
@@ -9120,7 +9152,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return oldPos;
 	  },
 	  /*istanbul ignore start*/ /*istanbul ignore end*/equals: function equals(left, right) {
-	    return left === right || this.options.ignoreCase && left.toLowerCase() === right.toLowerCase();
+	    if (this.options.comparator) {
+	      return this.options.comparator(left, right);
+	    } else {
+	      return left === right || this.options.ignoreCase && left.toLowerCase() === right.toLowerCase();
+	    }
 	  },
 	  /*istanbul ignore start*/ /*istanbul ignore end*/removeEmpty: function removeEmpty(array) {
 	    var ret = [];
@@ -9183,10 +9219,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  }
 
-	  // Special case handle for when one terminal is ignored. For this case we merge the
-	  // terminal into the prior string and drop the change.
+	  // Special case handle for when one terminal is ignored (i.e. whitespace).
+	  // For this case we merge the terminal into the prior string and drop the change.
+	  // This is only available for string mode.
 	  var lastComponent = components[componentLen - 1];
-	  if (componentLen > 1 && (lastComponent.added || lastComponent.removed) && diff.equals('', lastComponent.value)) {
+	  if (componentLen > 1 && typeof lastComponent.value === 'string' && (lastComponent.added || lastComponent.removed) && diff.equals('', lastComponent.value)) {
 	    components[componentLen - 2].value += lastComponent.value;
 	    components.pop();
 	  }
@@ -9464,16 +9501,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	jsonDiff.tokenize = /*istanbul ignore start*/_line.lineDiff /*istanbul ignore end*/.tokenize;
 	jsonDiff.castInput = function (value) {
-	  /*istanbul ignore start*/var /*istanbul ignore end*/undefinedReplacement = this.options.undefinedReplacement;
+	  /*istanbul ignore start*/var _options = /*istanbul ignore end*/this.options,
+	      undefinedReplacement = _options.undefinedReplacement,
+	      _options$stringifyRep = _options.stringifyReplacer,
+	      stringifyReplacer = _options$stringifyRep === undefined ? function (k, v) /*istanbul ignore start*/{
+	    return (/*istanbul ignore end*/typeof v === 'undefined' ? undefinedReplacement : v
+	    );
+	  } : _options$stringifyRep;
 
 
-	  return typeof value === 'string' ? value : JSON.stringify(canonicalize(value), function (k, v) {
-	    if (typeof v === 'undefined') {
-	      return undefinedReplacement;
-	    }
-
-	    return v;
-	  }, '  ');
+	  return typeof value === 'string' ? value : JSON.stringify(canonicalize(value, null, null, stringifyReplacer), stringifyReplacer, '  ');
 	};
 	jsonDiff.equals = function (left, right) {
 	  return (/*istanbul ignore start*/_base2['default'] /*istanbul ignore end*/.prototype.equals.call(jsonDiff, left.replace(/,([\r\n])/g, '$1'), right.replace(/,([\r\n])/g, '$1'))
@@ -9485,10 +9522,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	// This function handles the presence of circular references by bailing out when encountering an
-	// object that is already on the "stack" of items being processed.
-	function canonicalize(obj, stack, replacementStack) {
+	// object that is already on the "stack" of items being processed. Accepts an optional replacer
+	function canonicalize(obj, stack, replacementStack, replacer, key) {
 	  stack = stack || [];
 	  replacementStack = replacementStack || [];
+
+	  if (replacer) {
+	    obj = replacer(key, obj);
+	  }
 
 	  var i = /*istanbul ignore start*/void 0 /*istanbul ignore end*/;
 
@@ -9505,7 +9546,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    canonicalizedObj = new Array(obj.length);
 	    replacementStack.push(canonicalizedObj);
 	    for (i = 0; i < obj.length; i += 1) {
-	      canonicalizedObj[i] = canonicalize(obj[i], stack, replacementStack);
+	      canonicalizedObj[i] = canonicalize(obj[i], stack, replacementStack, replacer, key);
 	    }
 	    stack.pop();
 	    replacementStack.pop();
@@ -9521,17 +9562,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	    canonicalizedObj = {};
 	    replacementStack.push(canonicalizedObj);
 	    var sortedKeys = [],
-	        key = /*istanbul ignore start*/void 0 /*istanbul ignore end*/;
-	    for (key in obj) {
+	        _key = /*istanbul ignore start*/void 0 /*istanbul ignore end*/;
+	    for (_key in obj) {
 	      /* istanbul ignore else */
-	      if (obj.hasOwnProperty(key)) {
-	        sortedKeys.push(key);
+	      if (obj.hasOwnProperty(_key)) {
+	        sortedKeys.push(_key);
 	      }
 	    }
 	    sortedKeys.sort();
 	    for (i = 0; i < sortedKeys.length; i += 1) {
-	      key = sortedKeys[i];
-	      canonicalizedObj[key] = canonicalize(obj[key], stack, replacementStack);
+	      _key = sortedKeys[i];
+	      canonicalizedObj[_key] = canonicalize(obj[_key], stack, replacementStack, replacer, _key);
 	    }
 	    stack.pop();
 	    replacementStack.pop();
@@ -9560,8 +9601,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 	/*istanbul ignore end*/var arrayDiff = /*istanbul ignore start*/exports. /*istanbul ignore end*/arrayDiff = new /*istanbul ignore start*/_base2['default'] /*istanbul ignore end*/();
-	arrayDiff.tokenize = arrayDiff.join = function (value) {
+	arrayDiff.tokenize = function (value) {
 	  return value.slice();
+	};
+	arrayDiff.join = arrayDiff.removeEmpty = function (value) {
+	  return value;
 	};
 
 	function diffArrays(oldArr, newArr, callback) {
@@ -9624,8 +9668,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  function hunkFits(hunk, toPos) {
 	    for (var j = 0; j < hunk.lines.length; j++) {
 	      var line = hunk.lines[j],
-	          operation = line[0],
-	          content = line.substr(1);
+	          operation = line.length > 0 ? line[0] : ' ',
+	          content = line.length > 0 ? line.substr(1) : line;
 
 	      if (operation === ' ' || operation === '-') {
 	        // Context sanity check
@@ -9682,8 +9726,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    for (var j = 0; j < _hunk.lines.length; j++) {
 	      var line = _hunk.lines[j],
-	          operation = line[0],
-	          content = line.substr(1),
+	          operation = line.length > 0 ? line[0] : ' ',
+	          content = line.length > 0 ? line.substr(1) : line,
 	          delimiter = _hunk.linedelimiters[j];
 
 	      if (operation === ' ') {
@@ -9821,16 +9865,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Parses the --- and +++ headers, if none are found, no lines
 	  // are consumed.
 	  function parseFileHeader(index) {
-	    var headerPattern = /^(---|\+\+\+)\s+([\S ]*)(?:\t(.*?)\s*)?$/;
-	    var fileHeader = headerPattern.exec(diffstr[i]);
+	    var fileHeader = /^(---|\+\+\+)\s+(.*)$/.exec(diffstr[i]);
 	    if (fileHeader) {
 	      var keyPrefix = fileHeader[1] === '---' ? 'old' : 'new';
-	      var fileName = fileHeader[2].replace(/\\\\/g, '\\');
+	      var data = fileHeader[2].split('\t', 2);
+	      var fileName = data[0].replace(/\\\\/g, '\\');
 	      if (/^".*"$/.test(fileName)) {
 	        fileName = fileName.substr(1, fileName.length - 2);
 	      }
 	      index[keyPrefix + 'FileName'] = fileName;
-	      index[keyPrefix + 'Header'] = fileHeader[3];
+	      index[keyPrefix + 'Header'] = (data[1] || '').trim();
 
 	      i++;
 	    }
@@ -9860,7 +9904,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (diffstr[i].indexOf('--- ') === 0 && i + 2 < diffstr.length && diffstr[i + 1].indexOf('+++ ') === 0 && diffstr[i + 2].indexOf('@@') === 0) {
 	        break;
 	      }
-	      var operation = diffstr[i][0];
+	      var operation = diffstr[i].length == 0 && i != diffstr.length - 1 ? ' ' : diffstr[i][0];
 
 	      if (operation === '+' || operation === '-' || operation === ' ' || operation === '\\') {
 	        hunk.lines.push(diffstr[i]);
@@ -9981,27 +10025,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	/*istanbul ignore start*/function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 	/*istanbul ignore end*/function calcLineCount(hunk) {
-	  var conflicted = false;
+	  /*istanbul ignore start*/var _calcOldNewLineCount = /*istanbul ignore end*/calcOldNewLineCount(hunk.lines),
+	      oldLines = _calcOldNewLineCount.oldLines,
+	      newLines = _calcOldNewLineCount.newLines;
 
-	  hunk.oldLines = 0;
-	  hunk.newLines = 0;
-
-	  hunk.lines.forEach(function (line) {
-	    if (typeof line !== 'string') {
-	      conflicted = true;
-	      return;
-	    }
-
-	    if (line[0] === '+' || line[0] === ' ') {
-	      hunk.newLines++;
-	    }
-	    if (line[0] === '-' || line[0] === ' ') {
-	      hunk.oldLines++;
-	    }
-	  });
-
-	  if (conflicted) {
+	  if (oldLines !== undefined) {
+	    hunk.oldLines = oldLines;
+	  } else {
 	    delete hunk.oldLines;
+	  }
+
+	  if (newLines !== undefined) {
+	    hunk.newLines = newLines;
+	  } else {
 	    delete hunk.newLines;
 	  }
 	}
@@ -10331,6 +10367,43 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  state.index += delta;
 	  return true;
+	}
+
+	function calcOldNewLineCount(lines) {
+	  var oldLines = 0;
+	  var newLines = 0;
+
+	  lines.forEach(function (line) {
+	    if (typeof line !== 'string') {
+	      var myCount = calcOldNewLineCount(line.mine);
+	      var theirCount = calcOldNewLineCount(line.theirs);
+
+	      if (oldLines !== undefined) {
+	        if (myCount.oldLines === theirCount.oldLines) {
+	          oldLines += myCount.oldLines;
+	        } else {
+	          oldLines = undefined;
+	        }
+	      }
+
+	      if (newLines !== undefined) {
+	        if (myCount.newLines === theirCount.newLines) {
+	          newLines += myCount.newLines;
+	        } else {
+	          newLines = undefined;
+	        }
+	      }
+	    } else {
+	      if (newLines !== undefined && (line[0] === '+' || line[0] === ' ')) {
+	        newLines++;
+	      }
+	      if (oldLines !== undefined && (line[0] === '-' || line[0] === ' ')) {
+	        oldLines++;
+	      }
+	    }
+	  });
+
+	  return { oldLines: oldLines, newLines: newLines };
 	}
 
 
