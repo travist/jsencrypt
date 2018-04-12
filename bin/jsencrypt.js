@@ -600,7 +600,7 @@ var Stream = /** @class */ (function () {
             var v = this.get(i);
             n.mulAdd(128, v & 0x7F);
             bits += 7;
-            if (!(v & 0x80)) {
+            if (!(v & 0x80)) { // finished
                 if (s === "") {
                     n = n.simplify();
                     if (n instanceof Int10) {
@@ -642,7 +642,7 @@ var ASN1 = /** @class */ (function () {
     }
     ASN1.prototype.typeName = function () {
         switch (this.tag.tagClass) {
-            case 0:// universal
+            case 0: // universal
                 switch (this.tag.tagNumber) {
                     case 0x00:
                         return "EOC";
@@ -724,18 +724,18 @@ var ASN1 = /** @class */ (function () {
             return this.stream.parseOctetString(content, content + len, maxLength);
         }
         switch (this.tag.tagNumber) {
-            case 0x01:// BOOLEAN
+            case 0x01: // BOOLEAN
                 return (this.stream.get(content) === 0) ? "false" : "true";
-            case 0x02:// INTEGER
+            case 0x02: // INTEGER
                 return this.stream.parseInteger(content, content + len);
-            case 0x03:// BIT_STRING
+            case 0x03: // BIT_STRING
                 return this.sub ? "(" + this.sub.length + " elem)" :
                     this.stream.parseBitString(content, content + len, maxLength);
-            case 0x04:// OCTET_STRING
+            case 0x04: // OCTET_STRING
                 return this.sub ? "(" + this.sub.length + " elem)" :
                     this.stream.parseOctetString(content, content + len, maxLength);
             // case 0x05: // NULL
-            case 0x06:// OBJECT_IDENTIFIER
+            case 0x06: // OBJECT_IDENTIFIER
                 return this.stream.parseOID(content, content + len, maxLength);
             // case 0x07: // ObjectDescriptor
             // case 0x08: // EXTERNAL
@@ -743,14 +743,14 @@ var ASN1 = /** @class */ (function () {
             // case 0x0A: // ENUMERATED
             // case 0x0B: // EMBEDDED_PDV
             case 0x10: // SEQUENCE
-            case 0x11:// SET
+            case 0x11: // SET
                 if (this.sub !== null) {
                     return "(" + this.sub.length + " elem)";
                 }
                 else {
                     return "(no elem)";
                 }
-            case 0x0C:// UTF8String
+            case 0x0C: // UTF8String
                 return stringCut(this.stream.parseStringUTF(content, content + len), maxLength);
             case 0x12: // NumericString
             case 0x13: // PrintableString
@@ -758,14 +758,14 @@ var ASN1 = /** @class */ (function () {
             case 0x15: // VideotexString
             case 0x16: // IA5String
             // case 0x19: // GraphicString
-            case 0x1A:// VisibleString
+            case 0x1A: // VisibleString
                 // case 0x1B: // GeneralString
                 // case 0x1C: // UniversalString
                 return stringCut(this.stream.parseStringISO(content, content + len), maxLength);
-            case 0x1E:// BMPString
+            case 0x1E: // BMPString
                 return stringCut(this.stream.parseStringBMP(content, content + len), maxLength);
             case 0x17: // UTCTime
-            case 0x18:// GeneralizedTime
+            case 0x18: // GeneralizedTime
                 return this.stream.parseTime(content, content + len, (this.tag.tagNumber == 0x17));
         }
         return null;
@@ -923,7 +923,7 @@ var ASN1Tag = /** @class */ (function () {
         this.tagClass = buf >> 6;
         this.tagConstructed = ((buf & 0x20) !== 0);
         this.tagNumber = buf & 0x1F;
-        if (this.tagNumber == 0x1F) {
+        if (this.tagNumber == 0x1F) { // long tag
             var n = new Int10();
             do {
                 buf = stream.get();
@@ -1409,7 +1409,7 @@ var BigInteger = /** @class */ (function () {
                 i += this.DB;
                 --j;
             }
-            if (is1) {
+            if (is1) { // ret == 1, don't bother squaring or multiplying it
                 g[w].copyTo(r);
                 is1 = false;
             }
@@ -1902,7 +1902,7 @@ var BigInteger = /** @class */ (function () {
         while (--j >= 0) {
             // Estimate quotient digit
             var qd = (r[--i] == y0) ? this.DM : Math.floor(r[i] * d1 + (r[i - 1] + e) * d2);
-            if ((r[i] += y.am(0, qd, r, j, 0, ys)) < qd) {
+            if ((r[i] += y.am(0, qd, r, j, 0, ys)) < qd) { // Try it out
                 y.dlShiftTo(j, t);
                 r.subTo(t, r);
                 while (r[i] < --qd) {
@@ -2626,7 +2626,7 @@ else if (j_lm && (navigator.appName != "Netscape")) {
     BigInteger.prototype.am = am1;
     dbits = 26;
 }
-else {
+else { // Mozilla/Netscape seems to prefer am3
     BigInteger.prototype.am = am3;
     dbits = 28;
 }
@@ -2831,7 +2831,7 @@ var SecureRandom = /** @class */ (function () {
 // }
 // PKCS#1 (type 2, random) pad input string s to n bytes, and return a bigint
 function pkcs1pad2(s, n) {
-    if (n < s.length + 11) {
+    if (n < s.length + 11) { // TODO: fix for utf-8
         console.error("Message too long for RSA");
         return null;
     }
@@ -2839,7 +2839,7 @@ function pkcs1pad2(s, n) {
     var i = s.length - 1;
     while (i >= 0 && n > 0) {
         var c = s.charCodeAt(i--);
-        if (c < 128) {
+        if (c < 128) { // encode using utf-8
             ba[--n] = c;
         }
         else if ((c > 127) && (c < 2048)) {
@@ -2855,7 +2855,7 @@ function pkcs1pad2(s, n) {
     ba[--n] = 0;
     var rng = new SecureRandom();
     var x = [];
-    while (n > 2) {
+    while (n > 2) { // random non-zero pad
         x[0] = 0;
         while (x[0] == 0) {
             rng.nextBytes(x);
@@ -2930,6 +2930,60 @@ var RSAKey = /** @class */ (function () {
         else {
             return "0" + h;
         }
+    };
+    // 分段加密长字符串
+    RSAKey.prototype.encryptLong = function (text) {
+        var ct = "";
+        // RSA每次加密117bytes，需要辅助方法判断字符串截取位置
+        // 1.获取字符串截取点
+        var bytes = new Array();
+        bytes.push(0);
+        var byteNo = 0;
+        var len = text.length;
+        var c;
+        var temp = 0;
+        for (var i = 0; i < len; i++) {
+            c = text.charCodeAt(i);
+            if (c >= 0x010000 && c <= 0x10FFFF) { // 特殊字符，如Ř，Ţ
+                byteNo += 4;
+            }
+            else if (c >= 0x000800 && c <= 0x00FFFF) { // 中文以及标点符号
+                byteNo += 3;
+            }
+            else if (c >= 0x000080 && c <= 0x0007FF) { // 特殊字符，如È，Ò
+                byteNo += 2;
+            }
+            else { // 英文以及标点符号
+                byteNo += 1;
+            }
+            if ((byteNo % 117) >= 114 || (byteNo % 117) == 0) {
+                if (byteNo - temp >= 114) {
+                    bytes.push(i);
+                    temp = byteNo;
+                }
+            }
+        }
+        // 2.截取字符串并分段加密
+        if (bytes.length > 1) {
+            for (var i = 0; i < bytes.length - 1; i++) {
+                var str = void 0;
+                if (i == 0) {
+                    str = text.substring(0, bytes[i + 1] + 1);
+                }
+                else {
+                    str = text.substring(bytes[i] + 1, bytes[i + 1] + 1);
+                }
+                var t1 = this.encrypt(str);
+                ct += t1;
+            }
+            if (bytes[bytes.length - 1] != text.length - 1) {
+                var lastStr = text.substring(bytes[bytes.length - 1] + 1);
+                ct += this.encrypt(lastStr);
+            }
+            return (ct);
+        }
+        var t = this.encrypt(text);
+        return t;
     };
     // RSAKey.prototype.setPrivate = RSASetPrivate;
     // Set the private key fields N, e, and d from hex strings
@@ -3008,6 +3062,27 @@ var RSAKey = /** @class */ (function () {
             return null;
         }
         return pkcs1unpad2(m, (this.n.bitLength() + 7) >> 3);
+    };
+    // 分段解密长字符串
+    RSAKey.prototype.decryptLong = function (text) {
+        var _this = this;
+        var maxLength = ((this.n.bitLength() + 7) >> 3);
+        try {
+            if (text.length > maxLength) {
+                var ct_1 = "";
+                var lt = text.match(/.{1,256}/g);
+                lt.forEach(function (entry) {
+                    var t1 = _this.decrypt(entry);
+                    ct_1 += t1;
+                });
+                return ct_1;
+            }
+            var y = this.decrypt(text);
+            return y;
+        }
+        catch (ex) {
+            return false;
+        }
     };
     // Generate a new random private key B bits long, using public expt E
     RSAKey.prototype.generateAsync = function (B, E, callback) {
@@ -3091,7 +3166,7 @@ function pkcs1unpad2(d, n) {
     var ret = "";
     while (++i < b.length) {
         var c = b[i] & 255;
-        if (c < 128) {
+        if (c < 128) { // utf-8 decode
             ret += String.fromCharCode(c);
         }
         else if ((c > 191) && (c < 224)) {
@@ -5172,6 +5247,16 @@ var JSEncrypt = /** @class */ (function () {
             return false;
         }
     };
+    // 分段解密长字符串
+    JSEncrypt.prototype.decryptLong = function (str) {
+        // Return the decrypted string.
+        try {
+            return this.getKey().decryptLong(b64tohex(str));
+        }
+        catch (ex) {
+            return false;
+        }
+    };
     /**
      * Proxy method for RSAKey object's encrypt, encrypt the string using the public
      * components of the rsa key object. Note that if the object was not set will be created
@@ -5184,6 +5269,15 @@ var JSEncrypt = /** @class */ (function () {
         // Return the encrypted string.
         try {
             return hex2b64(this.getKey().encrypt(str));
+        }
+        catch (ex) {
+            return false;
+        }
+    };
+    // 分段加密长字符串
+    JSEncrypt.prototype.encryptLong = function (str) {
+        try {
+            return hex2b64(this.getKey().encryptLong(str));
         }
         catch (ex) {
             return false;
