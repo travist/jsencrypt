@@ -1,3 +1,5 @@
+FORKED FROM - https://github.com/travist/jsencrypt
+
 Website
 ======================
 http://travistidwell.com/jsencrypt
