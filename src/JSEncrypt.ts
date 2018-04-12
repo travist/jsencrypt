@@ -87,6 +87,16 @@ export default class JSEncrypt {
         }
     }
 
+    // 分段解密长字符串
+    public decryptLong(str:string) {
+        // Return the decrypted string.
+        try {
+            return this.getKey().decryptLong(b64tohex(str));
+        } catch (ex) {
+            return false;
+        }
+    }
+
     /**
      * Proxy method for RSAKey object's encrypt, encrypt the string using the public
      * components of the rsa key object. Note that if the object was not set will be created
@@ -99,6 +109,15 @@ export default class JSEncrypt {
         // Return the encrypted string.
         try {
             return hex2b64(this.getKey().encrypt(str));
+        } catch (ex) {
+            return false;
+        }
+    }
+
+    // 分段加密长字符串
+    public encryptLong(str:string) {
+        try {
+            return hex2b64(this.getKey().encryptLong(str));
         } catch (ex) {
             return false;
         }
