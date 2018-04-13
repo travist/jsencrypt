@@ -64,7 +64,7 @@ function pkcs1pad2(s:string, n:number) {
 
 // "empty" RSA key constructor
 export class RSAKey {
-  constructor() {
+    constructor() {
         this.n = null;
         this.e = 0;
         this.d = null;
@@ -207,11 +207,15 @@ export class RSAKey {
     // RSAKey.prototype.decrypt = RSADecrypt;
     // Return the PKCS#1 RSA decryption of "ctext".
     // "ctext" is an even-length hex string and the output is a plain string.
-    public decrypt(ctext:string) {
+    public decrypt(ctext:string, isByteEncoded:boolean = false) {
         const c = parseBigInt(ctext, 16);
         const m = this.doPrivate(c);
         if (m == null) { return null; }
-        return pkcs1unpad2(m, (this.n.bitLength() + 7) >> 3);
+        if (isByteEncoded) {
+            return pkcs1unpad2ForBytes(m, (this.n.bitLength() + 7) >> 3);
+        } else {
+            return pkcs1unpad2(m, (this.n.bitLength() + 7) >> 3);
+        }
     }
 
     // Generate a new random private key B bits long, using public expt E
@@ -315,6 +319,26 @@ function pkcs1unpad2(d:BigInteger, n:number):string {
     return ret;
 }
 
+
+// Undo PKCS#1 (type 2, random) padding and, if valid, return the bytes
+function pkcs1unpad2ForBytes(d:BigInteger, n:number):string {
+    const b = d.toByteArray();
+    let i = 0;
+    while (i < b.length && b[i] == 0) { ++i; }
+    if (b.length - i != n - 1 || b[i] != 2) {
+        return null;
+    }
+    ++i;
+    while (b[i] != 0) {
+        if (++i >= b.length) { return null; }
+    }
+    let ret = "";
+    while (++i < b.length) {
+        const c = b[i] & 255;
+        ret += String.fromCharCode(c);
+    }
+    return ret;
+}
 
 // Return the PKCS#1 RSA encryption of "text" as a Base64-encoded string
 // function RSAEncryptB64(text) {
