@@ -303,8 +303,9 @@ export class RSAKey {
         setTimeout(loop1, 0);
     }
 
-    public sign(text:string, digestMethod:(str:string) => string):string {
-        const digest = digestMethod(text).toString();
+    public sign(text:string, digestMethod:(str:string) => string, digestName:string):string {
+        const header = getDigestHeader(digestName);
+        const digest = header + digestMethod(text).toString();
         const m = pkcs1pad1(digest, (this.n.bitLength() + 7) >> 3);
         if (m == null) {
             return null;
@@ -327,7 +328,8 @@ export class RSAKey {
         if (m == null) {
             return null;
         }
-        const digest = pkcs1unpad1(m, (this.n.bitLength() + 7) >> 3);
+        const unpadded = pkcs1unpad1(m, (this.n.bitLength() + 7) >> 3);
+        const digest = removeDigestHeader(unpadded);
         return digest == digestMethod(text).toString();
     }
 
@@ -398,6 +400,35 @@ function pkcs1unpad2(d:BigInteger, n:number):string {
         }
     }
     return ret;
+}
+
+// https://tools.ietf.org/html/rfc3447#page-43
+const DIGEST_HEADERS:{ [name:string]:string } = {
+    md2: "3020300c06082a864886f70d020205000410",
+    md5: "3020300c06082a864886f70d020505000410",
+    sha1: "3021300906052b0e03021a05000414",
+    sha224: "302d300d06096086480165030402040500041c",
+    sha256: "3031300d060960864801650304020105000420",
+    sha384: "3041300d060960864801650304020205000430",
+    sha512: "3051300d060960864801650304020305000440",
+    ripemd160: "3021300906052b2403020105000414",
+};
+
+function getDigestHeader(name:string):string {
+    return DIGEST_HEADERS[name] || "";
+}
+
+function removeDigestHeader(str:string):string {
+    for (const name in DIGEST_HEADERS) {
+        if (DIGEST_HEADERS.hasOwnProperty(name)) {
+            const header = DIGEST_HEADERS[name];
+            const len = header.length;
+            if (str.substr(0, len) == header) {
+                return str.substr(len);
+            }
+        }
+    }
+    return str;
 }
 
 

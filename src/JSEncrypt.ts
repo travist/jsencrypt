@@ -108,13 +108,14 @@ export default class JSEncrypt {
      * Proxy method for RSAKey object's sign.
      * @param {string} str the string to sign
      * @param {function} digestMethod hash method
+     * @param {string} digestName the name of the hash algorithm
      * @return {string} the signature encoded in base64
      * @public
      */
-    public sign(str:string, digestMethod:(str:string) => string):string|false {
+    public sign(str:string, digestMethod:(str:string) => string, digestName:string):string|false {
         // return the RSA signature of 'str' in 'hex' format.
         try {
-            return hex2b64(this.getKey().sign(str, digestMethod));
+            return hex2b64(this.getKey().sign(str, digestMethod, digestName));
         } catch (ex) {
             return false;
         }
