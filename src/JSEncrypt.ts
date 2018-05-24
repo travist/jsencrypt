@@ -105,6 +105,37 @@ export default class JSEncrypt {
     }
 
     /**
+     * Proxy method for RSAKey object's sign.
+     * @param {string} str the string to sign
+     * @param {function} digestMethod hash method
+     * @public
+     */
+    public sign(str:string, digestMethod:(str:string) => string):string|false {
+        // return the RSA signature of 'str' in 'hex' format.
+        try {
+            return this.getKey().sign(str, digestMethod);
+        } catch (ex) {
+            return false;
+        }
+    }
+
+    /**
+     * Proxy method for RSAKey object's verify.
+     * @param {string} str the string to verify
+     * @param {string} signature the signature to compare the string to
+     * @param {function} digestMethod hash method
+     * @public
+     */
+    public verify(str:string, signature:string, digestMethod:(str:string) => string):boolean {
+        // Return the decrypted 'digest' of the signature.
+        try {
+            return this.getKey().verify(str, signature, digestMethod);
+        } catch (ex) {
+            return false;
+        }
+    }
+
+    /**
      * Getter for the current JSEncryptRSAKey object. If it doesn't exists a new object
      * will be created and returned
      * @param {callback} [cb] the callback to be called if we want the key to be generated
