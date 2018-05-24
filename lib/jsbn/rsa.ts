@@ -309,7 +309,7 @@ export class RSAKey {
         if (m == null) {
             return null;
         }
-        const c = m.modPow(this.d, this.n);
+        const c = this.doPrivate(m);
         if (c == null) {
             return null;
         }
@@ -323,7 +323,7 @@ export class RSAKey {
 
     public verify(text:string, signature:string, digestMethod:(str:string) => string):boolean {
         const c = parseBigInt(signature, 16);
-        const m = c.modPowInt(this.e, this.n);
+        const m = this.doPublic(c);
         if (m == null) {
             return null;
         }
