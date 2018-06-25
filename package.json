@@ -1,6 +1,6 @@
 {
   "name": "jsencrypt",
-  "version": "3.0.0-beta.1",
+  "version": "3.0.0-rc.1",
   "description": "A Javascript library to perform OpenSSL RSA Encryption, Decryption, and Key Generation.",
   "license": "MIT",
   "main": "bin/jsencrypt.js",
