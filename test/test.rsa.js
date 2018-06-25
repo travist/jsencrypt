@@ -170,6 +170,45 @@ keySizes.forEach(function(keySize, index){
             });
 
         });
+
+        describe('#sign() | #verify()', function(){
+
+            var maxLength = (((jse.getKey().n.bitLength()+7)>>3)-11);
+            var maxLengthBit = maxLength << 3;
+
+            it('should sign/verify up to '+maxLengthBit+' bit', function () {
+
+                var digest = function(data){ return data; };
+
+                var test = [];
+                for (var i=0; i<maxLength;i++)
+                    test.push('a');
+                test = test.join('');
+
+                var signature = jse.sign(test, digest);
+                expect(signature).to.be.ok();
+
+                var verified = jse.verify(test, signature, digest);
+                expect(verified).to.be(true);
+
+                var failed = jse.verify('no', signature, digest);
+                expect(failed).to.be(false);
+
+            });
+
+            it('should fail to verify more than '+maxLengthBit+' bit', function(){
+
+                var test = [];
+                for (var i=0; i<(maxLength+1);i++)
+                    test.push('a');
+                test = test.join('');
+
+                var signature = jse.sign(test);
+                expect(signature).to.not.be.ok();
+
+            });
+
+        });
         
         describe('#getPublicKey()', function(){
             

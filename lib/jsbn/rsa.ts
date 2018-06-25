@@ -25,6 +25,20 @@ import {SecureRandom} from "./rng";
 //     return b.toString(16);
 // }
 
+function pkcs1pad1(s:string, n:number) {
+    if (n < s.length + 22) {
+        console.error("Message too long for RSA");
+        return null;
+    }
+    const len = n - s.length - 6;
+    let filler = "";
+    for (let f = 0; f < len; f += 2) {
+        filler += "ff";
+    }
+    const m = "0001" + filler + "00" + s;
+    return parseBigInt(m, 16);
+}
+
 // PKCS#1 (type 2, random) pad input string s to n bytes, and return a bigint
 function pkcs1pad2(s:string, n:number) {
     if (n < s.length + 11) { // TODO: fix for utf-8
@@ -273,6 +287,36 @@ export class RSAKey {
         setTimeout(loop1, 0);
     }
 
+    public sign(text:string, digestMethod:(str:string) => string, digestName:string):string {
+        const header = getDigestHeader(digestName);
+        const digest = header + digestMethod(text).toString();
+        const m = pkcs1pad1(digest, this.n.bitLength() / 4);
+        if (m == null) {
+            return null;
+        }
+        const c = this.doPrivate(m);
+        if (c == null) {
+            return null;
+        }
+        const h = c.toString(16);
+        if ((h.length & 1) == 0) {
+            return h;
+        } else {
+            return "0" + h;
+        }
+    }
+
+    public verify(text:string, signature:string, digestMethod:(str:string) => string):boolean {
+        const c = parseBigInt(signature, 16);
+        const m = this.doPublic(c);
+        if (m == null) {
+            return null;
+        }
+        const unpadded = m.toString(16).replace(/^1f+00/, "");
+        const digest = removeDigestHeader(unpadded);
+        return digest == digestMethod(text).toString();
+    }
+
     //#endregion PUBLIC
 
     protected n:BigInteger;
@@ -313,6 +357,35 @@ function pkcs1unpad2(d:BigInteger, n:number):string {
         }
     }
     return ret;
+}
+
+// https://tools.ietf.org/html/rfc3447#page-43
+const DIGEST_HEADERS:{ [name:string]:string } = {
+    md2: "3020300c06082a864886f70d020205000410",
+    md5: "3020300c06082a864886f70d020505000410",
+    sha1: "3021300906052b0e03021a05000414",
+    sha224: "302d300d06096086480165030402040500041c",
+    sha256: "3031300d060960864801650304020105000420",
+    sha384: "3041300d060960864801650304020205000430",
+    sha512: "3051300d060960864801650304020305000440",
+    ripemd160: "3021300906052b2403020105000414",
+};
+
+function getDigestHeader(name:string):string {
+    return DIGEST_HEADERS[name] || "";
+}
+
+function removeDigestHeader(str:string):string {
+    for (const name in DIGEST_HEADERS) {
+        if (DIGEST_HEADERS.hasOwnProperty(name)) {
+            const header = DIGEST_HEADERS[name];
+            const len = header.length;
+            if (str.substr(0, len) == header) {
+                return str.substr(len);
+            }
+        }
+    }
+    return str;
 }
 
 
