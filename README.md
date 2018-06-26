@@ -117,6 +117,31 @@ gwQco1KRMDSmXSMkDwIDAQAB
 
  - Look at how http://www.travistidwell.com/jsencrypt/example.html works to get a better idea.
 
+ - Signing and verification works in a similar way.
+
+```javascript
+// Sign with the private key...
+var sign = new JSEncrypt();
+sign.setPrivateKey($('#privkey').val());
+var signature = sign.sign($('#input').val(), CryptoJS.SHA256, "sha256");
+
+// Verify with the public key...
+var verify = new JSEncrypt();
+verify.setPublicKey($('#pubkey').val());
+var verified = verify.verify($('#input').val(), signature, CryptoJS.SHA256);
+
+// Now a simple check to see if the round-trip worked.
+if (verified) {
+  alert('It works!!!');
+}
+else {
+  alert('Something went wrong....');
+}
+```
+
+- Note that you have to provide the hash function. In this example we use one from the [CryptoJS](https://github.com/brix/crypto-js) library, but you can use whichever you want.
+- Also, unless you use a custom hash function, you should provide the hash type to the `sign` method. Possible values are: `md2`, `md5`, `sha1`, `sha224`, `sha256`, `sha384`, `sha512`, `ripemd160`.
+
 Other Information
 ========================
 
