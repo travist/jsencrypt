@@ -4,6 +4,7 @@
   "description": "A Javascript library to perform OpenSSL RSA Encryption, Decryption, and Key Generation.",
   "license": "MIT",
   "main": "bin/jsencrypt.js",
+  "files": ["declarations"],
   "scripts": {
     "prepublish": "node_modules/gulp/bin/gulp.js"
   },
