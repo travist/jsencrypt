@@ -59,6 +59,24 @@ export declare class JSEncrypt {
      */
     encrypt(str: string): string | false;
     /**
+     * Proxy method for RSAKey object's sign.
+     * @param {string} str the string to sign
+     * @param {function} digestMethod hash method
+     * @param {string} digestName the name of the hash algorithm
+     * @return {string} the signature encoded in base64
+     * @public
+     */
+    sign(str: string, digestMethod: (str: string) => string, digestName: string): string | false;
+    /**
+     * Proxy method for RSAKey object's verify.
+     * @param {string} str the string to verify
+     * @param {string} signature the signature encoded in base64 to compare the string to
+     * @param {function} digestMethod hash method
+     * @return {boolean} whether the data and signature match
+     * @public
+     */
+    verify(str: string, signature: string, digestMethod: (str: string) => string): boolean;
+    /**
      * Getter for the current JSEncryptRSAKey object. If it doesn't exists a new object
      * will be created and returned
      * @param {callback} [cb] the callback to be called if we want the key to be generated

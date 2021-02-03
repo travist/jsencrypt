@@ -1,11 +1,13 @@
 _site
 .idea
+.bundle
 .DS_Store
 node_modules
 *.pem
 project.properties
 project.xml
 /nbproject/private/
+vendor
 
 src/*.js
 src/*.js.map

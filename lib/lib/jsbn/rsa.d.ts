@@ -10,6 +10,8 @@ export declare class RSAKey {
     generate(B: number, E: string): void;
     decrypt(ctext: string): string;
     generateAsync(B: number, E: string, callback: () => void): void;
+    sign(text: string, digestMethod: (str: string) => string, digestName: string): string;
+    verify(text: string, signature: string, digestMethod: (str: string) => string): boolean;
     protected n: BigInteger;
     protected e: number;
     protected d: BigInteger;

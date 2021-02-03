@@ -1,4 +1,4 @@
-import { RSAKey } from "../lib/jsbn/rsa";
+import { RSAKey } from "./lib/jsbn/rsa";
 /**
  * Create a new JSEncryptRSAKey that extends Tom Wu's RSA key object.
  * This object is just a decorator for parsing the key parameter
