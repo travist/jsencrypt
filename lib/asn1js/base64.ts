@@ -25,6 +25,8 @@ export const Base64 = {
             for (i = 0; i < 64; ++i) {
                 decoder[b64.charAt(i)] = i;
             }
+            decoder['-'] = 62;//+
+            decoder['_'] = 63;//-
             for (i = 0; i < ignore.length; ++i) {
                 decoder[ignore.charAt(i)] = -1;
             }
