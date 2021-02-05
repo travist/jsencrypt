@@ -1,6 +1,6 @@
 {
   "name": "jsencrypt",
-  "version": "3.0.0-rc.2",
+  "version": "3.0.0",
   "description": "A Javascript library to perform OpenSSL RSA Encryption, Decryption, and Key Generation.",
   "main": "lib/index.js",
   "dependencies": {},
