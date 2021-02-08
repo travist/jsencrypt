@@ -1,8 +1,8 @@
 {
   "name": "jsencrypt",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "A Javascript library to perform OpenSSL RSA Encryption, Decryption, and Key Generation.",
-  "main": "lib/index.js",
+  "main": "bin/jsencrypt.js",
   "dependencies": {},
   "devDependencies": {
     "copy-webpack-plugin": "^7.0.0",
