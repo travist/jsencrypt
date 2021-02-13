@@ -1,8 +1,6 @@
 import { b64tohex, hex2b64 } from "./lib/jsbn/base64";
 import { JSEncryptRSAKey } from "./JSEncryptRSAKey";
-
-
-declare var JSENCRYPT_VERSION:string;
+import { version } from './version.json';
 
 export interface IJSEncryptOptions {
     default_key_size?:string;
@@ -33,8 +31,7 @@ export class JSEncrypt {
     private default_public_exponent:string;
     private log:boolean;
     private key:JSEncryptRSAKey;
-
-    public static version:string = JSENCRYPT_VERSION;
+    public static version:string = version;
 
     /**
      * Method to set the rsa key parameter (one method is enough to set both the public
