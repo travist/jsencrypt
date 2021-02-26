@@ -5,8 +5,8 @@
   "main": "lib/index.js",
   "dependencies": {},
   "devDependencies": {
-    "typescript": "^4.1.3",
-    "webpack": "^5.20.1",
+    "typescript": "4.1.3",
+    "webpack": "^5.24.2",
     "webpack-cli": "^4.5.0"
   },
   "files": [
