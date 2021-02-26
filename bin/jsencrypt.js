@@ -46,7 +46,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
   \**********************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   \"default\": () => (__WEBPACK_DEFAULT_EXPORT__)\n/* harmony export */ });\n/* harmony import */ var _JSEncrypt__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./JSEncrypt */ \"./lib/JSEncrypt.js\");\n\n/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_JSEncrypt__WEBPACK_IMPORTED_MODULE_0__.JSEncrypt);\n\n\n//# sourceURL=webpack://JSEncrypt/./lib/index.js?");
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   \"JSEncrypt\": () => (/* reexport safe */ _JSEncrypt__WEBPACK_IMPORTED_MODULE_0__.JSEncrypt),\n/* harmony export */   \"default\": () => (__WEBPACK_DEFAULT_EXPORT__)\n/* harmony export */ });\n/* harmony import */ var _JSEncrypt__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./JSEncrypt */ \"./lib/JSEncrypt.js\");\n\n\n/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_JSEncrypt__WEBPACK_IMPORTED_MODULE_0__.JSEncrypt);\n\n\n//# sourceURL=webpack://JSEncrypt/./lib/index.js?");
 
 /***/ }),
 
@@ -235,10 +235,14 @@ eval("module.exports = {\"version\":\"3.0.1\"};\n\n//# sourceURL=webpack://JSEnc
 /******/ 	})();
 /******/ 	
 /************************************************************************/
-/******/ 	// module exports must be returned from runtime so entry inlining is disabled
+/******/ 	
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__("./lib/index.js");
+/******/ 	// This entry module can't be inlined because the eval devtool is used.
+/******/ 	var __webpack_exports__ = __webpack_require__("./lib/index.js");
+/******/ 	__webpack_exports__ = __webpack_exports__.default;
+/******/ 	
+/******/ 	return __webpack_exports__;
 /******/ })()
-.default;
+;
 });
