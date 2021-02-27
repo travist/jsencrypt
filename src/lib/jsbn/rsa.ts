@@ -134,7 +134,8 @@ export class RSAKey {
     // RSAKey.prototype.encrypt = RSAEncrypt;
     // Return the PKCS#1 RSA encryption of "text" as an even-length hex string
     public encrypt(text:string) {
-        const m = pkcs1pad2(text, (this.n.bitLength() + 7) >> 3);
+        const maxLength = (this.n.bitLength() + 7) >> 3;
+        const m = pkcs1pad2(text, maxLength);
 
         if (m == null) {
             return null;
@@ -143,12 +144,16 @@ export class RSAKey {
         if (c == null) {
             return null;
         }
-        const h = c.toString(16);
-        if ((h.length & 1) == 0) {
-            return h;
-        } else {
-            return "0" + h;
+
+        let h = c.toString(16);
+        let length = h.length;
+
+        // fix zero before result
+        for (let i = 0; i < maxLength * 2 - length; i++) {
+            h = "0" + h;    
         }
+
+        return h
     }
 
 
