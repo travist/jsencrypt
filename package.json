@@ -1,12 +1,12 @@
 {
   "name": "jsencrypt",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "description": "A Javascript library to perform OpenSSL RSA Encryption, Decryption, and Key Generation.",
   "main": "lib/index.js",
   "dependencies": {},
   "devDependencies": {
-    "typescript": "^4.1.3",
-    "webpack": "^5.20.1",
+    "typescript": "^4.2.3",
+    "webpack": "^5.24.3",
     "webpack-cli": "^4.5.0"
   },
   "files": [
