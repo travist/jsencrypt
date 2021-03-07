@@ -176,7 +176,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
   \**************************/
 /***/ ((module) => {
 
-eval("module.exports = {\"version\":\"3.0.1\"};\n\n//# sourceURL=webpack://JSEncrypt/./lib/version.json?");
+eval("module.exports = {\"version\":\"3.0.2\"};\n\n//# sourceURL=webpack://JSEncrypt/./lib/version.json?");
 
 /***/ })
 
