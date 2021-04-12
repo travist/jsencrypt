@@ -1,2 +1,6 @@
 url: /jsencrypt
 baseurl: /jsencrypt
+
+plugins:
+  - jekyll-paginate
+  - jekyll-sitemap
