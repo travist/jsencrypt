@@ -18,7 +18,7 @@ export interface IJSEncryptOptions {
  * @constructor
  */
 export class JSEncrypt {
-    constructor(options:IJSEncryptOptions) {
+    constructor(options:IJSEncryptOptions = {}) {
         options = options || {};
         this.default_key_size = options.default_key_size ? parseInt(options.default_key_size, 10) : 1024;
         this.default_public_exponent = options.default_public_exponent || "010001"; // 65537 default openssl public exponent for rsa key type
@@ -203,4 +203,3 @@ export class JSEncrypt {
         return this.getKey().getPublicBaseKeyB64();
     }
 }
-
