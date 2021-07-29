@@ -14,7 +14,7 @@ export interface IJSEncryptOptions {
  * @constructor
  */
 export declare class JSEncrypt {
-    constructor(options: IJSEncryptOptions);
+    constructor(options?: IJSEncryptOptions);
     private default_key_size;
     private default_public_exponent;
     private log;
