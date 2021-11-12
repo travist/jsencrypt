@@ -1,6 +1,6 @@
 import { JSEncryptRSAKey } from "./JSEncryptRSAKey";
 export interface IJSEncryptOptions {
-    default_key_size?: string;
+    default_key_size?: number;
     default_public_exponent?: string;
     log?: boolean;
 }
