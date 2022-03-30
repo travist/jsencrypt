@@ -6,7 +6,7 @@ let rng_pool:number[] = null;
 let rng_pptr:number;
 
 // Initialize the pool with junk if needed.
-if (rng_pool == null) {
+if (rng_pool == null && typeof window === 'object' && !!window) {
   rng_pool = [];
   rng_pptr = 0;
   let t;

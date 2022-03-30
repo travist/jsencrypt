@@ -1,12 +1,12 @@
 {
   "name": "jsencrypt",
-  "version": "3.2.1",
+  "version": "3.2.2",
   "description": "A Javascript library to perform OpenSSL RSA Encryption, Decryption, and Key Generation.",
   "main": "bin/jsencrypt.js",
   "module": "lib/index.js",
   "types": "lib/index.d.ts",
-  "dependencies": {},
   "devDependencies": {
+    "mocha": "^9.2.2",
     "typescript": "^4.2.4",
     "webpack": "^5.35.1",
     "webpack-cli": "^4.6.0"
@@ -19,7 +19,8 @@
     "build:dev": "tsc && tsc --project tsconfig-def.json && webpack",
     "build:prod": "tsc && tsc --project tsconfig-def.json && webpack --config webpack.prod.js",
     "build": "npm run build:dev && npm run build:prod",
-    "serve": "bundle exec jekyll server --config _config.build.yml"
+    "serve": "bundle exec jekyll server --config _config.build.yml",
+    "test:rsa": "mocha test/rsa/**/*.test.js"
   },
   "author": "Travis Tidwell <travis@form.io>",
   "contributors": [
