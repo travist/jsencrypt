@@ -1,11 +1,11 @@
-import { b64tohex, hex2b64 } from "./lib/jsbn/base64";
-import { JSEncryptRSAKey } from "./JSEncryptRSAKey";
-import version from './version.json';
+import { b64tohex, hex2b64 } from './lib/jsbn/base64';
+import { JSEncryptRSAKey } from './JSEncryptRSAKey';
+import version from './version.json' assert { type: 'json' };
 
 export interface IJSEncryptOptions {
-    default_key_size?:string;
-    default_public_exponent?:string;
-    log?:boolean;
+    default_key_size?: string;
+    default_public_exponent?: string;
+    log?: boolean;
 }
 
 /**
@@ -18,20 +18,22 @@ export interface IJSEncryptOptions {
  * @constructor
  */
 export class JSEncrypt {
-    constructor(options:IJSEncryptOptions = {}) {
+    constructor(options: IJSEncryptOptions = {}) {
         options = options || {};
-        this.default_key_size = options.default_key_size ? parseInt(options.default_key_size, 10) : 1024;
-        this.default_public_exponent = options.default_public_exponent || "010001"; // 65537 default openssl public exponent for rsa key type
+        this.default_key_size = options.default_key_size
+            ? parseInt(options.default_key_size, 10)
+            : 1024;
+        this.default_public_exponent = options.default_public_exponent || '010001'; // 65537 default openssl public exponent for rsa key type
         this.log = options.log || false;
         // The private and public key.
         this.key = null;
     }
 
-    private default_key_size:number;
-    private default_public_exponent:string;
-    private log:boolean;
-    private key:JSEncryptRSAKey;
-    public static version:string = version.version;
+    private default_key_size: number;
+    private default_public_exponent: string;
+    private log: boolean;
+    private key: JSEncryptRSAKey;
+    public static version: string = version.version;
 
     /**
      * Method to set the rsa key parameter (one method is enough to set both the public
@@ -40,9 +42,9 @@ export class JSEncrypt {
      * @param {Object|string} key the pem encoded string or an object (with or without header/footer)
      * @public
      */
-    public setKey(key:string) {
+    public setKey(key: string) {
         if (this.log && this.key) {
-            console.warn("A key was already set, overriding existing.");
+            console.warn('A key was already set, overriding existing.');
         }
         this.key = new JSEncryptRSAKey(key);
     }
@@ -52,7 +54,7 @@ export class JSEncrypt {
      * @see setKey
      * @public
      */
-    public setPrivateKey(privkey:string) {
+    public setPrivateKey(privkey: string) {
         // Create the key.
         this.setKey(privkey);
     }
@@ -62,7 +64,7 @@ export class JSEncrypt {
      * @see setKey
      * @public
      */
-    public setPublicKey(pubkey:string) {
+    public setPublicKey(pubkey: string) {
         // Sets the public key.
         this.setKey(pubkey);
     }
@@ -75,7 +77,7 @@ export class JSEncrypt {
      * @return {string} the decrypted string
      * @public
      */
-    public decrypt(str:string) {
+    public decrypt(str: string) {
         // Return the decrypted string.
         try {
             return this.getKey().decrypt(b64tohex(str));
@@ -92,7 +94,7 @@ export class JSEncrypt {
      * @return {string} the encrypted string encoded in base64
      * @public
      */
-    public encrypt(str:string) {
+    public encrypt(str: string) {
         // Return the encrypted string.
         try {
             return hex2b64(this.getKey().encrypt(str));
@@ -109,7 +111,11 @@ export class JSEncrypt {
      * @return {string} the signature encoded in base64
      * @public
      */
-    public sign(str:string, digestMethod:(str:string) => string, digestName:string):string|false {
+    public sign(
+        str: string,
+        digestMethod: (str: string) => string,
+        digestName: string,
+    ): string | false {
         // return the RSA signature of 'str' in 'hex' format.
         try {
             return hex2b64(this.getKey().sign(str, digestMethod, digestName));
@@ -126,7 +132,11 @@ export class JSEncrypt {
      * @return {boolean} whether the data and signature match
      * @public
      */
-    public verify(str:string, signature:string, digestMethod:(str:string) => string):boolean {
+    public verify(
+        str: string,
+        signature: string,
+        digestMethod: (str: string) => string,
+    ): boolean {
         // Return the decrypted 'digest' of the signature.
         try {
             return this.getKey().verify(str, b64tohex(signature), digestMethod);
@@ -143,13 +153,17 @@ export class JSEncrypt {
      * @returns {JSEncryptRSAKey} the JSEncryptRSAKey object
      * @public
      */
-    public getKey(cb?:() => void) {
+    public getKey(cb?: () => void) {
         // Only create new if it does not exist.
         if (!this.key) {
             // Get a new private key.
             this.key = new JSEncryptRSAKey();
-            if (cb && {}.toString.call(cb) === "[object Function]") {
-                this.key.generateAsync(this.default_key_size, this.default_public_exponent, cb);
+            if (cb && {}.toString.call(cb) === '[object Function]') {
+                this.key.generateAsync(
+                    this.default_key_size,
+                    this.default_public_exponent,
+                    cb,
+                );
                 return;
             }
             // Generate the key.
@@ -179,7 +193,6 @@ export class JSEncrypt {
         // Return the private representation of this key.
         return this.getKey().getPrivateBaseKeyB64();
     }
-
 
     /**
      * Returns the pem encoded representation of the public key

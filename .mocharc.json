@@ -1,0 +1,8 @@
+{
+  "extension": ["ts"],
+  "spec": "test/**/test.rsa.js",
+  "node-option": [
+    "experimental-specifier-resolution=node",
+    "loader=ts-node/esm"
+  ]
+}
