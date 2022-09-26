@@ -2,6 +2,8 @@ import { JSEncrypt } from '../src/JSEncrypt';
 import chai from 'chai';
 import dirtyChai from 'dirty-chai';
 
+import jetpack from 'fs-jetpack';
+
 chai.use(dirtyChai);
 
 var expect = chai.expect;
@@ -101,6 +103,8 @@ var prkeys = [
         '05R9mA5TZmzUU9m/PzUrRjasOGYSKkCz4Y2qGlrKI3H0aE+p+R56kQ==\n' +
         '-----END RSA PRIVATE KEY-----\n',
 ];
+
+const pkcs1pbkey = jetpack.read('./test/pkcs1.pub');
 
 keySizes.forEach(function (keySize, index) {
     var jse = new JSEncrypt({ default_key_size: keySize });
@@ -279,7 +283,7 @@ keySizes.forEach(function (keySize, index) {
             });
         });
 
-        describe('#setPublicKey()', function () {
+        describe('#setPublicKey() X509 format', function () {
             var tmp = new JSEncrypt();
             tmp.setPublicKey(openssl_public_key);
 
@@ -304,5 +308,31 @@ keySizes.forEach(function (keySize, index) {
                 expect(dec).to.not.be.ok();
             });
         });
+    });
+});
+
+describe('#setPublicKey() PKCS #1 format', function () {
+    var tmp = new JSEncrypt();
+    tmp.setPublicKey(pkcs1pbkey);
+
+    it('should correctly set the public key parameters', function () {
+        var pub_params = ['n', 'e'];
+        var priv_params = ['d', 'p', 'q', 'dmp1', 'dmq1', 'coeff'];
+        expect(tmp.key).to.be.ok();
+        expect(tmp.key).to.include.all.keys(pub_params);
+        pub_params.forEach(function (value, index) {
+            expect(tmp.key[value]).to.be.ok();
+        });
+        priv_params.forEach(function (value, index) {
+            expect(tmp.key[value]).to.not.be.ok();
+        });
+    });
+
+    it('should only encrypt', function () {
+        var test = 'test';
+        var enc = tmp.encrypt(test);
+        var dec = tmp.decrypt(enc);
+        expect(enc).to.be.ok();
+        expect(dec).to.not.be.ok();
     });
 });

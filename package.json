@@ -14,6 +14,7 @@
         "@types/node": "^18.7.21",
         "chai": "^4.3.6",
         "dirty-chai": "^2.0.1",
+        "fs-jetpack": "^5.0.0",
         "mocha": "^10.0.0",
         "ts-mocha": "^10.0.0",
         "ts-node": "^10.9.1",
