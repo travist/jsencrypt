@@ -1,6 +1,6 @@
-import { b64tohex, hex2b64 } from './lib/jsbn/base64';
-import { JSEncryptRSAKey } from './JSEncryptRSAKey';
-import version from './version.json' assert { type: 'json' };
+import { b64tohex, hex2b64 } from "./lib/jsbn/base64";
+import { JSEncryptRSAKey } from "./JSEncryptRSAKey";
+const version = process.env.npm_package_version;
 
 export interface IJSEncryptOptions {
     default_key_size?: string;
@@ -23,7 +23,7 @@ export class JSEncrypt {
         this.default_key_size = options.default_key_size
             ? parseInt(options.default_key_size, 10)
             : 1024;
-        this.default_public_exponent = options.default_public_exponent || '010001'; // 65537 default openssl public exponent for rsa key type
+        this.default_public_exponent = options.default_public_exponent || "010001"; // 65537 default openssl public exponent for rsa key type
         this.log = options.log || false;
         // The private and public key.
         this.key = null;
@@ -33,7 +33,7 @@ export class JSEncrypt {
     private default_public_exponent: string;
     private log: boolean;
     private key: JSEncryptRSAKey;
-    public static version: string = version.version;
+    public static version: string = version;
 
     /**
      * Method to set the rsa key parameter (one method is enough to set both the public
@@ -44,7 +44,7 @@ export class JSEncrypt {
      */
     public setKey(key: string) {
         if (this.log && this.key) {
-            console.warn('A key was already set, overriding existing.');
+            console.warn("A key was already set, overriding existing.");
         }
         this.key = new JSEncryptRSAKey(key);
     }
@@ -158,7 +158,7 @@ export class JSEncrypt {
         if (!this.key) {
             // Get a new private key.
             this.key = new JSEncryptRSAKey();
-            if (cb && {}.toString.call(cb) === '[object Function]') {
+            if (cb && {}.toString.call(cb) === "[object Function]") {
                 this.key.generateAsync(
                     this.default_key_size,
                     this.default_public_exponent,
