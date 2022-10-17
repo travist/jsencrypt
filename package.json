@@ -1,50 +1,62 @@
 {
-  "name": "jsencrypt",
-  "version": "3.2.1",
-  "description": "A Javascript library to perform OpenSSL RSA Encryption, Decryption, and Key Generation.",
-  "main": "bin/jsencrypt.js",
-  "module": "lib/index.js",
-  "browser": "lib/index.js",
-  "types": "lib/index.d.ts",
-  "dependencies": {},
-  "devDependencies": {
-    "typescript": "^4.2.4",
-    "webpack": "^5.35.1",
-    "webpack-cli": "^4.6.0"
-  },
-  "files": [
-    "bin",
-    "lib"
-  ],
-  "scripts": {
-    "build:dev": "tsc && tsc --project tsconfig-def.json && webpack",
-    "build:prod": "tsc && tsc --project tsconfig-def.json && webpack --config webpack.prod.js",
-    "build": "npm run build:dev && npm run build:prod",
-    "serve": "bundle exec jekyll server --config _config.build.yml"
-  },
-  "author": "Travis Tidwell <travis@form.io>",
-  "contributors": [
-    {
-      "name": "Travis Tidwell",
-      "email": "travis@form.io",
-      "url": "http://github.com/travist"
+    "name": "jsencrypt",
+    "type": "module",
+    "version": "3.2.1",
+    "description": "A Javascript library to perform OpenSSL RSA Encryption, Decryption, and Key Generation.",
+    "main": "bin/jsencrypt.js",
+    "module": "lib/index.js",
+    "browser": "lib/index.js",
+    "types": "lib/index.d.ts",
+    "dependencies": {},
+    "devDependencies": {
+        "@types/expect": "^24.3.0",
+        "@types/mocha": "^9.1.1",
+        "@types/node": "^18.7.21",
+        "chai": "^4.3.6",
+        "dirty-chai": "^2.0.1",
+        "fs-jetpack": "^5.0.0",
+        "mocha": "^10.0.0",
+        "ts-mocha": "^10.0.0",
+        "ts-node": "^10.9.1",
+        "typescript": "^4.2.4",
+        "url": "^0.11.0",
+        "webpack": "^5.35.1",
+        "webpack-cli": "^4.6.0"
     },
-    {
-      "name": "Antonio",
-      "url": "https://github.com/zoloft"
+    "files": [
+        "bin",
+        "lib"
+    ],
+    "scripts": {
+        "build:dev": "tsc && tsc --project tsconfig-def.json && webpack",
+        "build:prod": "tsc && tsc --project tsconfig-def.json && webpack --config webpack.prod.js",
+        "build": "npm run build:dev && npm run build:prod",
+        "serve": "bundle exec jekyll server --config _config.build.yml",
+        "test": "ts-mocha test/test.rsa.js"
     },
-    {
-      "name": "Julio",
-      "url": "https://github.com/jmgaya"
-    }
-  ],
-  "homepage": "http://www.travistidwell.com/jsencrypt",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/travist/jsencrypt.git"
-  },
-  "bugs": {
-    "url": "http://github.com/travist/jsencrypt/issues"
-  },
-  "license": "MIT"
+    "author": "Travis Tidwell <travis@form.io>",
+    "contributors": [
+        {
+            "name": "Travis Tidwell",
+            "email": "travis@form.io",
+            "url": "http://github.com/travist"
+        },
+        {
+            "name": "Antonio",
+            "url": "https://github.com/zoloft"
+        },
+        {
+            "name": "Julio",
+            "url": "https://github.com/jmgaya"
+        }
+    ],
+    "homepage": "http://www.travistidwell.com/jsencrypt",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/travist/jsencrypt.git"
+    },
+    "bugs": {
+        "url": "http://github.com/travist/jsencrypt/issues"
+    },
+    "license": "MIT"
 }

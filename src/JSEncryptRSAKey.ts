@@ -6,7 +6,6 @@ import { RSAKey } from "./lib/jsbn/rsa";
 import { parseBigInt } from "./lib/jsbn/jsbn";
 import { KJUR } from "./lib/jsrsasign/asn1-1.0";
 
-
 /**
  * Create a new JSEncryptRSAKey that extends Tom Wu's RSA key object.
  * This object is just a decorator for parsing the key parameter
@@ -15,7 +14,7 @@ import { KJUR } from "./lib/jsrsasign/asn1-1.0";
  * @constructor
  */
 export class JSEncryptRSAKey extends RSAKey {
-    constructor(key?:string) {
+    constructor(key?: string) {
         super();
         // Call the super constructor.
         //  RSAKey.call(this);
@@ -62,10 +61,10 @@ export class JSEncryptRSAKey extends RSAKey {
      * @argument {string} pem the pem encoded string, can include the BEGIN/END header/footer
      * @private
      */
-    public parseKey(pem:string) {
+    public parseKey(pem: string) {
         try {
-            let modulus:string | number = 0;
-            let public_exponent:string | number = 0;
+            let modulus: string | number = 0;
+            let public_exponent: string | number = 0;
             const reHex = /^\s*(?:[0-9A-Fa-f][0-9A-Fa-f]\s*)+$/;
             const der = reHex.test(pem) ? Hex.decode(pem) : Base64.unarmor(pem);
             let asn1 = ASN1.decode(der);
@@ -75,7 +74,6 @@ export class JSEncryptRSAKey extends RSAKey {
                 asn1 = asn1.sub[2].sub[0];
             }
             if (asn1.sub.length === 9) {
-
                 // Parse the private key.
                 modulus = asn1.sub[1].getHexStringValue(); // bigint
                 this.n = parseBigInt(modulus, 16);
@@ -100,18 +98,22 @@ export class JSEncryptRSAKey extends RSAKey {
 
                 const coefficient = asn1.sub[8].getHexStringValue(); // bigint
                 this.coeff = parseBigInt(coefficient, 16);
-
             } else if (asn1.sub.length === 2) {
-
-                // Parse the public key.
-                const bit_string = asn1.sub[1];
-                const sequence = bit_string.sub[0];
-
-                modulus = sequence.sub[0].getHexStringValue();
-                this.n = parseBigInt(modulus, 16);
-                public_exponent = sequence.sub[1].getHexStringValue();
-                this.e = parseInt(public_exponent, 16);
-
+                if (asn1.sub[0].sub) {
+                    // Parse ASN.1 SubjectPublicKeyInfo type as defined by X.509
+                    var bit_string = asn1.sub[1];
+                    var sequence = bit_string.sub[0];
+                    modulus = sequence.sub[0].getHexStringValue();
+                    this.n = parseBigInt(modulus, 16);
+                    public_exponent = sequence.sub[1].getHexStringValue();
+                    this.e = parseInt(public_exponent, 16);
+                } else {
+                    // Parse ASN.1 RSAPublicKey type as defined by PKCS #1
+                    modulus = asn1.sub[0].getHexStringValue();
+                    this.n = parseBigInt(modulus, 16);
+                    public_exponent = asn1.sub[1].getHexStringValue();
+                    this.e = parseInt(public_exponent, 16);
+                }
             } else {
                 return false;
             }
@@ -142,16 +144,16 @@ export class JSEncryptRSAKey extends RSAKey {
     public getPrivateBaseKey() {
         const options = {
             array: [
-                new KJUR.asn1.DERInteger({int: 0}),
-                new KJUR.asn1.DERInteger({bigint: this.n}),
-                new KJUR.asn1.DERInteger({int: this.e}),
-                new KJUR.asn1.DERInteger({bigint: this.d}),
-                new KJUR.asn1.DERInteger({bigint: this.p}),
-                new KJUR.asn1.DERInteger({bigint: this.q}),
-                new KJUR.asn1.DERInteger({bigint: this.dmp1}),
-                new KJUR.asn1.DERInteger({bigint: this.dmq1}),
-                new KJUR.asn1.DERInteger({bigint: this.coeff})
-            ]
+                new KJUR.asn1.DERInteger({ int: 0 }),
+                new KJUR.asn1.DERInteger({ bigint: this.n }),
+                new KJUR.asn1.DERInteger({ int: this.e }),
+                new KJUR.asn1.DERInteger({ bigint: this.d }),
+                new KJUR.asn1.DERInteger({ bigint: this.p }),
+                new KJUR.asn1.DERInteger({ bigint: this.q }),
+                new KJUR.asn1.DERInteger({ bigint: this.dmp1 }),
+                new KJUR.asn1.DERInteger({ bigint: this.dmq1 }),
+                new KJUR.asn1.DERInteger({ bigint: this.coeff }),
+            ],
         };
         const seq = new KJUR.asn1.DERSequence(options);
         return seq.getEncodedHex();
@@ -189,27 +191,24 @@ export class JSEncryptRSAKey extends RSAKey {
     public getPublicBaseKey() {
         const first_sequence = new KJUR.asn1.DERSequence({
             array: [
-                new KJUR.asn1.DERObjectIdentifier({oid: "1.2.840.113549.1.1.1"}), // RSA Encryption pkcs #1 oid
-                new KJUR.asn1.DERNull()
-            ]
+                new KJUR.asn1.DERObjectIdentifier({ oid: "1.2.840.113549.1.1.1" }), // RSA Encryption pkcs #1 oid
+                new KJUR.asn1.DERNull(),
+            ],
         });
 
         const second_sequence = new KJUR.asn1.DERSequence({
             array: [
-                new KJUR.asn1.DERInteger({bigint: this.n}),
-                new KJUR.asn1.DERInteger({int: this.e})
-            ]
+                new KJUR.asn1.DERInteger({ bigint: this.n }),
+                new KJUR.asn1.DERInteger({ int: this.e }),
+            ],
         });
 
         const bit_string = new KJUR.asn1.DERBitString({
-            hex: "00" + second_sequence.getEncodedHex()
+            hex: "00" + second_sequence.getEncodedHex(),
         });
 
         const seq = new KJUR.asn1.DERSequence({
-            array: [
-                first_sequence,
-                bit_string
-            ]
+            array: [first_sequence, bit_string],
         });
         return seq.getEncodedHex();
     }
@@ -231,7 +230,7 @@ export class JSEncryptRSAKey extends RSAKey {
      * @returns {string}
      * @private
      */
-    public static wordwrap(str:string, width?:number) {
+    public static wordwrap(str: string, width?: number) {
         width = width || 64;
         if (!str) {
             return str;
@@ -275,12 +274,9 @@ export class JSEncryptRSAKey extends RSAKey {
      * be a parseable integer number
      * @private
      */
-    public static hasPublicKeyProperty(obj:object) {
+    public static hasPublicKeyProperty(obj: object) {
         obj = obj || {};
-        return (
-            obj.hasOwnProperty("n") &&
-            obj.hasOwnProperty("e")
-        );
+        return obj.hasOwnProperty("n") && obj.hasOwnProperty("e");
     }
 
     /**
@@ -292,7 +288,7 @@ export class JSEncryptRSAKey extends RSAKey {
      * should be parseable bigint objects, the public exponent should be a parseable integer number
      * @private
      */
-    public static hasPrivateKeyProperty(obj:object) {
+    public static hasPrivateKeyProperty(obj: object) {
         obj = obj || {};
         return (
             obj.hasOwnProperty("n") &&
@@ -312,7 +308,7 @@ export class JSEncryptRSAKey extends RSAKey {
      * @param {Object} obj - the object containing rsa parameters
      * @private
      */
-    public parsePropertiesFrom(obj:any) {
+    public parsePropertiesFrom(obj: any) {
         this.n = obj.n;
         this.e = obj.e;
 
