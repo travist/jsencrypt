@@ -16,7 +16,9 @@
 	else
 		root["JSEncrypt"] = factory();
 })(window, () => {
-return /******/ var __webpack_modules__ = ({
+return /******/ (() => { // webpackBootstrap
+/******/ 	"use strict";
+/******/ 	var __webpack_modules__ = ({
 
 /***/ "./lib/JSEncrypt.js":
 /*!**************************!*\
@@ -24,7 +26,7 @@ return /******/ var __webpack_modules__ = ({
   \**************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   \"JSEncrypt\": () => (/* binding */ JSEncrypt)\n/* harmony export */ });\n/* harmony import */ var _lib_jsbn_base64__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./lib/jsbn/base64 */ \"./lib/lib/jsbn/base64.js\");\n/* harmony import */ var _JSEncryptRSAKey__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./JSEncryptRSAKey */ \"./lib/JSEncryptRSAKey.js\");\n\n\nvar version = process.env.npm_package_version;\n/**\n *\n * @param {Object} [options = {}] - An object to customize JSEncrypt behaviour\n * possible parameters are:\n * - default_key_size        {number}  default: 1024 the key size in bit\n * - default_public_exponent {string}  default: '010001' the hexadecimal representation of the public exponent\n * - log                     {boolean} default: false whether log warn/error or not\n * @constructor\n */\nvar JSEncrypt = /** @class */ (function () {\n    function JSEncrypt(options) {\n        if (options === void 0) { options = {}; }\n        options = options || {};\n        this.default_key_size = options.default_key_size\n            ? parseInt(options.default_key_size, 10)\n            : 1024;\n        this.default_public_exponent = options.default_public_exponent || \"010001\"; // 65537 default openssl public exponent for rsa key type\n        this.log = options.log || false;\n        // The private and public key.\n        this.key = null;\n    }\n    /**\n     * Method to set the rsa key parameter (one method is enough to set both the public\n     * and the private key, since the private key contains the public key paramenters)\n     * Log a warning if logs are enabled\n     * @param {Object|string} key the pem encoded string or an object (with or without header/footer)\n     * @public\n     */\n    JSEncrypt.prototype.setKey = function (key) {\n        if (this.log && this.key) {\n            console.warn(\"A key was already set, overriding existing.\");\n        }\n        this.key = new _JSEncryptRSAKey__WEBPACK_IMPORTED_MODULE_1__.JSEncryptRSAKey(key);\n    };\n    /**\n     * Proxy method for setKey, for api compatibility\n     * @see setKey\n     * @public\n     */\n    JSEncrypt.prototype.setPrivateKey = function (privkey) {\n        // Create the key.\n        this.setKey(privkey);\n    };\n    /**\n     * Proxy method for setKey, for api compatibility\n     * @see setKey\n     * @public\n     */\n    JSEncrypt.prototype.setPublicKey = function (pubkey) {\n        // Sets the public key.\n        this.setKey(pubkey);\n    };\n    /**\n     * Proxy method for RSAKey object's decrypt, decrypt the string using the private\n     * components of the rsa key object. Note that if the object was not set will be created\n     * on the fly (by the getKey method) using the parameters passed in the JSEncrypt constructor\n     * @param {string} str base64 encoded crypted string to decrypt\n     * @return {string} the decrypted string\n     * @public\n     */\n    JSEncrypt.prototype.decrypt = function (str) {\n        // Return the decrypted string.\n        try {\n            return this.getKey().decrypt((0,_lib_jsbn_base64__WEBPACK_IMPORTED_MODULE_0__.b64tohex)(str));\n        }\n        catch (ex) {\n            return false;\n        }\n    };\n    /**\n     * Proxy method for RSAKey object's encrypt, encrypt the string using the public\n     * components of the rsa key object. Note that if the object was not set will be created\n     * on the fly (by the getKey method) using the parameters passed in the JSEncrypt constructor\n     * @param {string} str the string to encrypt\n     * @return {string} the encrypted string encoded in base64\n     * @public\n     */\n    JSEncrypt.prototype.encrypt = function (str) {\n        // Return the encrypted string.\n        try {\n            return (0,_lib_jsbn_base64__WEBPACK_IMPORTED_MODULE_0__.hex2b64)(this.getKey().encrypt(str));\n        }\n        catch (ex) {\n            return false;\n        }\n    };\n    /**\n     * Proxy method for RSAKey object's sign.\n     * @param {string} str the string to sign\n     * @param {function} digestMethod hash method\n     * @param {string} digestName the name of the hash algorithm\n     * @return {string} the signature encoded in base64\n     * @public\n     */\n    JSEncrypt.prototype.sign = function (str, digestMethod, digestName) {\n        // return the RSA signature of 'str' in 'hex' format.\n        try {\n            return (0,_lib_jsbn_base64__WEBPACK_IMPORTED_MODULE_0__.hex2b64)(this.getKey().sign(str, digestMethod, digestName));\n        }\n        catch (ex) {\n            return false;\n        }\n    };\n    /**\n     * Proxy method for RSAKey object's verify.\n     * @param {string} str the string to verify\n     * @param {string} signature the signature encoded in base64 to compare the string to\n     * @param {function} digestMethod hash method\n     * @return {boolean} whether the data and signature match\n     * @public\n     */\n    JSEncrypt.prototype.verify = function (str, signature, digestMethod) {\n        // Return the decrypted 'digest' of the signature.\n        try {\n            return this.getKey().verify(str, (0,_lib_jsbn_base64__WEBPACK_IMPORTED_MODULE_0__.b64tohex)(signature), digestMethod);\n        }\n        catch (ex) {\n            return false;\n        }\n    };\n    /**\n     * Getter for the current JSEncryptRSAKey object. If it doesn't exists a new object\n     * will be created and returned\n     * @param {callback} [cb] the callback to be called if we want the key to be generated\n     * in an async fashion\n     * @returns {JSEncryptRSAKey} the JSEncryptRSAKey object\n     * @public\n     */\n    JSEncrypt.prototype.getKey = function (cb) {\n        // Only create new if it does not exist.\n        if (!this.key) {\n            // Get a new private key.\n            this.key = new _JSEncryptRSAKey__WEBPACK_IMPORTED_MODULE_1__.JSEncryptRSAKey();\n            if (cb && {}.toString.call(cb) === \"[object Function]\") {\n                this.key.generateAsync(this.default_key_size, this.default_public_exponent, cb);\n                return;\n            }\n            // Generate the key.\n            this.key.generate(this.default_key_size, this.default_public_exponent);\n        }\n        return this.key;\n    };\n    /**\n     * Returns the pem encoded representation of the private key\n     * If the key doesn't exists a new key will be created\n     * @returns {string} pem encoded representation of the private key WITH header and footer\n     * @public\n     */\n    JSEncrypt.prototype.getPrivateKey = function () {\n        // Return the private representation of this key.\n        return this.getKey().getPrivateKey();\n    };\n    /**\n     * Returns the pem encoded representation of the private key\n     * If the key doesn't exists a new key will be created\n     * @returns {string} pem encoded representation of the private key WITHOUT header and footer\n     * @public\n     */\n    JSEncrypt.prototype.getPrivateKeyB64 = function () {\n        // Return the private representation of this key.\n        return this.getKey().getPrivateBaseKeyB64();\n    };\n    /**\n     * Returns the pem encoded representation of the public key\n     * If the key doesn't exists a new key will be created\n     * @returns {string} pem encoded representation of the public key WITH header and footer\n     * @public\n     */\n    JSEncrypt.prototype.getPublicKey = function () {\n        // Return the private representation of this key.\n        return this.getKey().getPublicKey();\n    };\n    /**\n     * Returns the pem encoded representation of the public key\n     * If the key doesn't exists a new key will be created\n     * @returns {string} pem encoded representation of the public key WITHOUT header and footer\n     * @public\n     */\n    JSEncrypt.prototype.getPublicKeyB64 = function () {\n        // Return the private representation of this key.\n        return this.getKey().getPublicBaseKeyB64();\n    };\n    JSEncrypt.version = version;\n    return JSEncrypt;\n}());\n\n\n\n//# sourceURL=webpack://JSEncrypt/./lib/JSEncrypt.js?");
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   \"JSEncrypt\": () => (/* binding */ JSEncrypt)\n/* harmony export */ });\n/* harmony import */ var _lib_jsbn_base64__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./lib/jsbn/base64 */ \"./lib/lib/jsbn/base64.js\");\n/* harmony import */ var _JSEncryptRSAKey__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./JSEncryptRSAKey */ \"./lib/JSEncryptRSAKey.js\");\n\n\nvar version = \"3.2.1\";\n/**\n *\n * @param {Object} [options = {}] - An object to customize JSEncrypt behaviour\n * possible parameters are:\n * - default_key_size        {number}  default: 1024 the key size in bit\n * - default_public_exponent {string}  default: '010001' the hexadecimal representation of the public exponent\n * - log                     {boolean} default: false whether log warn/error or not\n * @constructor\n */\nvar JSEncrypt = /** @class */ (function () {\n    function JSEncrypt(options) {\n        if (options === void 0) { options = {}; }\n        options = options || {};\n        this.default_key_size = options.default_key_size\n            ? parseInt(options.default_key_size, 10)\n            : 1024;\n        this.default_public_exponent = options.default_public_exponent || \"010001\"; // 65537 default openssl public exponent for rsa key type\n        this.log = options.log || false;\n        // The private and public key.\n        this.key = null;\n    }\n    /**\n     * Method to set the rsa key parameter (one method is enough to set both the public\n     * and the private key, since the private key contains the public key paramenters)\n     * Log a warning if logs are enabled\n     * @param {Object|string} key the pem encoded string or an object (with or without header/footer)\n     * @public\n     */\n    JSEncrypt.prototype.setKey = function (key) {\n        if (this.log && this.key) {\n            console.warn(\"A key was already set, overriding existing.\");\n        }\n        this.key = new _JSEncryptRSAKey__WEBPACK_IMPORTED_MODULE_1__.JSEncryptRSAKey(key);\n    };\n    /**\n     * Proxy method for setKey, for api compatibility\n     * @see setKey\n     * @public\n     */\n    JSEncrypt.prototype.setPrivateKey = function (privkey) {\n        // Create the key.\n        this.setKey(privkey);\n    };\n    /**\n     * Proxy method for setKey, for api compatibility\n     * @see setKey\n     * @public\n     */\n    JSEncrypt.prototype.setPublicKey = function (pubkey) {\n        // Sets the public key.\n        this.setKey(pubkey);\n    };\n    /**\n     * Proxy method for RSAKey object's decrypt, decrypt the string using the private\n     * components of the rsa key object. Note that if the object was not set will be created\n     * on the fly (by the getKey method) using the parameters passed in the JSEncrypt constructor\n     * @param {string} str base64 encoded crypted string to decrypt\n     * @return {string} the decrypted string\n     * @public\n     */\n    JSEncrypt.prototype.decrypt = function (str) {\n        // Return the decrypted string.\n        try {\n            return this.getKey().decrypt((0,_lib_jsbn_base64__WEBPACK_IMPORTED_MODULE_0__.b64tohex)(str));\n        }\n        catch (ex) {\n            return false;\n        }\n    };\n    /**\n     * Proxy method for RSAKey object's encrypt, encrypt the string using the public\n     * components of the rsa key object. Note that if the object was not set will be created\n     * on the fly (by the getKey method) using the parameters passed in the JSEncrypt constructor\n     * @param {string} str the string to encrypt\n     * @return {string} the encrypted string encoded in base64\n     * @public\n     */\n    JSEncrypt.prototype.encrypt = function (str) {\n        // Return the encrypted string.\n        try {\n            return (0,_lib_jsbn_base64__WEBPACK_IMPORTED_MODULE_0__.hex2b64)(this.getKey().encrypt(str));\n        }\n        catch (ex) {\n            return false;\n        }\n    };\n    /**\n     * Proxy method for RSAKey object's sign.\n     * @param {string} str the string to sign\n     * @param {function} digestMethod hash method\n     * @param {string} digestName the name of the hash algorithm\n     * @return {string} the signature encoded in base64\n     * @public\n     */\n    JSEncrypt.prototype.sign = function (str, digestMethod, digestName) {\n        // return the RSA signature of 'str' in 'hex' format.\n        try {\n            return (0,_lib_jsbn_base64__WEBPACK_IMPORTED_MODULE_0__.hex2b64)(this.getKey().sign(str, digestMethod, digestName));\n        }\n        catch (ex) {\n            return false;\n        }\n    };\n    /**\n     * Proxy method for RSAKey object's verify.\n     * @param {string} str the string to verify\n     * @param {string} signature the signature encoded in base64 to compare the string to\n     * @param {function} digestMethod hash method\n     * @return {boolean} whether the data and signature match\n     * @public\n     */\n    JSEncrypt.prototype.verify = function (str, signature, digestMethod) {\n        // Return the decrypted 'digest' of the signature.\n        try {\n            return this.getKey().verify(str, (0,_lib_jsbn_base64__WEBPACK_IMPORTED_MODULE_0__.b64tohex)(signature), digestMethod);\n        }\n        catch (ex) {\n            return false;\n        }\n    };\n    /**\n     * Getter for the current JSEncryptRSAKey object. If it doesn't exists a new object\n     * will be created and returned\n     * @param {callback} [cb] the callback to be called if we want the key to be generated\n     * in an async fashion\n     * @returns {JSEncryptRSAKey} the JSEncryptRSAKey object\n     * @public\n     */\n    JSEncrypt.prototype.getKey = function (cb) {\n        // Only create new if it does not exist.\n        if (!this.key) {\n            // Get a new private key.\n            this.key = new _JSEncryptRSAKey__WEBPACK_IMPORTED_MODULE_1__.JSEncryptRSAKey();\n            if (cb && {}.toString.call(cb) === \"[object Function]\") {\n                this.key.generateAsync(this.default_key_size, this.default_public_exponent, cb);\n                return;\n            }\n            // Generate the key.\n            this.key.generate(this.default_key_size, this.default_public_exponent);\n        }\n        return this.key;\n    };\n    /**\n     * Returns the pem encoded representation of the private key\n     * If the key doesn't exists a new key will be created\n     * @returns {string} pem encoded representation of the private key WITH header and footer\n     * @public\n     */\n    JSEncrypt.prototype.getPrivateKey = function () {\n        // Return the private representation of this key.\n        return this.getKey().getPrivateKey();\n    };\n    /**\n     * Returns the pem encoded representation of the private key\n     * If the key doesn't exists a new key will be created\n     * @returns {string} pem encoded representation of the private key WITHOUT header and footer\n     * @public\n     */\n    JSEncrypt.prototype.getPrivateKeyB64 = function () {\n        // Return the private representation of this key.\n        return this.getKey().getPrivateBaseKeyB64();\n    };\n    /**\n     * Returns the pem encoded representation of the public key\n     * If the key doesn't exists a new key will be created\n     * @returns {string} pem encoded representation of the public key WITH header and footer\n     * @public\n     */\n    JSEncrypt.prototype.getPublicKey = function () {\n        // Return the private representation of this key.\n        return this.getKey().getPublicKey();\n    };\n    /**\n     * Returns the pem encoded representation of the public key\n     * If the key doesn't exists a new key will be created\n     * @returns {string} pem encoded representation of the public key WITHOUT header and footer\n     * @public\n     */\n    JSEncrypt.prototype.getPublicKeyB64 = function () {\n        // Return the private representation of this key.\n        return this.getKey().getPublicBaseKeyB64();\n    };\n    JSEncrypt.version = version;\n    return JSEncrypt;\n}());\n\n\n\n//# sourceURL=webpack://JSEncrypt/./lib/JSEncrypt.js?");
 
 /***/ }),
 
@@ -168,69 +170,70 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 
 /***/ })
 
-/******/ });
+/******/ 	});
 /************************************************************************/
-/******/ // The module cache
-/******/ var __webpack_module_cache__ = {};
-/******/ 
-/******/ // The require function
-/******/ function __webpack_require__(moduleId) {
-/******/ 	// Check if module is in cache
-/******/ 	var cachedModule = __webpack_module_cache__[moduleId];
-/******/ 	if (cachedModule !== undefined) {
-/******/ 		return cachedModule.exports;
+/******/ 	// The module cache
+/******/ 	var __webpack_module_cache__ = {};
+/******/ 	
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/ 		// Check if module is in cache
+/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 		if (cachedModule !== undefined) {
+/******/ 			return cachedModule.exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = __webpack_module_cache__[moduleId] = {
+/******/ 			// no module.id needed
+/******/ 			// no module.loaded needed
+/******/ 			exports: {}
+/******/ 		};
+/******/ 	
+/******/ 		// Execute the module function
+/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
+/******/ 	
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
 /******/ 	}
-/******/ 	// Create a new module (and put it into the cache)
-/******/ 	var module = __webpack_module_cache__[moduleId] = {
-/******/ 		// no module.id needed
-/******/ 		// no module.loaded needed
-/******/ 		exports: {}
-/******/ 	};
-/******/ 
-/******/ 	// Execute the module function
-/******/ 	__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
-/******/ 
-/******/ 	// Return the exports of the module
-/******/ 	return module.exports;
-/******/ }
-/******/ 
+/******/ 	
 /************************************************************************/
-/******/ /* webpack/runtime/define property getters */
-/******/ (() => {
-/******/ 	// define getter functions for harmony exports
-/******/ 	__webpack_require__.d = (exports, definition) => {
-/******/ 		for(var key in definition) {
-/******/ 			if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
-/******/ 				Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 	/* webpack/runtime/define property getters */
+/******/ 	(() => {
+/******/ 		// define getter functions for harmony exports
+/******/ 		__webpack_require__.d = (exports, definition) => {
+/******/ 			for(var key in definition) {
+/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
+/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 				}
 /******/ 			}
-/******/ 		}
-/******/ 	};
-/******/ })();
-/******/ 
-/******/ /* webpack/runtime/hasOwnProperty shorthand */
-/******/ (() => {
-/******/ 	__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
-/******/ })();
-/******/ 
-/******/ /* webpack/runtime/make namespace object */
-/******/ (() => {
-/******/ 	// define __esModule on exports
-/******/ 	__webpack_require__.r = (exports) => {
-/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
-/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
-/******/ 		}
-/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
-/******/ 	};
-/******/ })();
-/******/ 
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
+/******/ 	(() => {
+/******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/make namespace object */
+/******/ 	(() => {
+/******/ 		// define __esModule on exports
+/******/ 		__webpack_require__.r = (exports) => {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
+/******/ 	})();
+/******/ 	
 /************************************************************************/
-/******/ 
-/******/ // startup
-/******/ // Load entry module and return exports
-/******/ // This entry module can't be inlined because the eval devtool is used.
-/******/ var __webpack_exports__ = __webpack_require__("./lib/index.js");
-/******/ __webpack_exports__ = __webpack_exports__["default"];
-/******/ 
-/******/ return __webpack_exports__;
+/******/ 	
+/******/ 	// startup
+/******/ 	// Load entry module and return exports
+/******/ 	// This entry module can't be inlined because the eval devtool is used.
+/******/ 	var __webpack_exports__ = __webpack_require__("./lib/index.js");
+/******/ 	__webpack_exports__ = __webpack_exports__["default"];
+/******/ 	
+/******/ 	return __webpack_exports__;
+/******/ })()
 ;
-})
+});

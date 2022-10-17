@@ -2,12 +2,11 @@ import path from "path";
 
 import * as url from "url";
 const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
+import pkg from "webpack";
+const { ProvidePlugin, DefinePlugin } = pkg;
 
 export default {
     entry: path.join(path.resolve(__dirname, "lib"), "index.js"),
-    experiments: {
-        outputModule: true,
-    },
     output: {
         library: "JSEncrypt",
         libraryTarget: "umd",
@@ -32,4 +31,14 @@ export default {
             },
         ],
     },
+    plugins: [
+        new ProvidePlugin({
+            process: "process/browser",
+        }),
+        new DefinePlugin({
+            "process.env.npm_package_version": JSON.stringify(
+                process.env.npm_package_version,
+            ),
+        }),
+    ],
 };
