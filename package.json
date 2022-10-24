@@ -32,7 +32,7 @@
         "build:dev": "tsc && tsc --project tsconfig-def.json && webpack",
         "build:test": "tsc && tsc --project tsconfig-def.json && webpack --config webpack.test.js",
         "build:prod": "tsc && tsc --project tsconfig-def.json && webpack --config webpack.prod.js",
-        "build": "npm run build:dev && npm run build:prod",
+        "build": "npm run build:dev && npm run build:test && npm run build:prod",
         "serve": "bundle exec jekyll server --config _config.build.yml",
         "test": "ts-mocha test/test.rsa.js"
     },
