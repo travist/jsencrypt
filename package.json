@@ -16,6 +16,7 @@
         "dirty-chai": "^2.0.1",
         "fs-jetpack": "^5.0.0",
         "mocha": "^10.0.0",
+        "process": "^0.11.10",
         "ts-mocha": "^10.0.0",
         "ts-node": "^10.9.1",
         "typescript": "^4.2.4",
@@ -29,8 +30,9 @@
     ],
     "scripts": {
         "build:dev": "tsc && tsc --project tsconfig-def.json && webpack",
+        "build:test": "tsc && tsc --project tsconfig-def.json && webpack --config webpack.test.js",
         "build:prod": "tsc && tsc --project tsconfig-def.json && webpack --config webpack.prod.js",
-        "build": "npm run build:dev && npm run build:prod",
+        "build": "npm run build:dev && npm run build:test && npm run build:prod",
         "serve": "bundle exec jekyll server --config _config.build.yml",
         "test": "ts-mocha test/test.rsa.js"
     },
