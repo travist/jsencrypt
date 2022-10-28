@@ -10,10 +10,10 @@ if (rng_pool == null) {
   rng_pool = [];
   rng_pptr = 0;
   let t;
-  if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
+  if (typeof window !== 'undefined' && self.crypto && self.crypto.getRandomValues) {
     // Extract entropy (2048 bits) from RNG if available
     const z = new Uint32Array(256);
-    window.crypto.getRandomValues(z);
+    self.crypto.getRandomValues(z);
     for (t = 0; t < z.length; ++t) {
         rng_pool[rng_pptr++] = z[t] & 255;
     }
@@ -25,10 +25,10 @@ if (rng_pool == null) {
   const onMouseMoveListener = function (ev:Event & {x:number; y:number; }) {
     count = count || 0;
     if (count >= 256 || rng_pptr >= rng_psize) {
-      if (window.removeEventListener) {
-          window.removeEventListener("mousemove", onMouseMoveListener, false);
-      } else if ((window as any).detachEvent) {
-          (window as any).detachEvent("onmousemove", onMouseMoveListener);
+      if (self.removeEventListener) {
+        self.removeEventListener("mousemove", onMouseMoveListener, false);
+      } else if ((self as any).detachEvent) {
+          (self as any).detachEvent("onmousemove", onMouseMoveListener);
       }
       return;
     }
@@ -41,10 +41,10 @@ if (rng_pool == null) {
     }
   };
   if (typeof window !== 'undefined') {
-    if (window.addEventListener) {
-        window.addEventListener("mousemove", onMouseMoveListener, false);
-    } else if ((window as any).attachEvent) {
-        (window as any).attachEvent("onmousemove", onMouseMoveListener);
+    if (self.addEventListener) {
+      self.addEventListener("mousemove", onMouseMoveListener, false);
+    } else if ((self as any).attachEvent) {
+        (self as any).attachEvent("onmousemove", onMouseMoveListener);
     }
   }
 
