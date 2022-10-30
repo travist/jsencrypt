@@ -1,6 +1,8 @@
 import { b64tohex, hex2b64 } from "./lib/jsbn/base64";
 import { JSEncryptRSAKey } from "./JSEncryptRSAKey";
-const version = process.env.npm_package_version;
+const version = typeof process !== 'undefined'
+    ? process.env?.npm_package_version
+    : undefined;
 
 export interface IJSEncryptOptions {
     default_key_size?: string;
