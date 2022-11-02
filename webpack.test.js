@@ -36,9 +36,7 @@ export default {
             process: "process/browser",
         }),
         new DefinePlugin({
-            "process.env.npm_package_version": JSON.stringify(
-                process.env.npm_package_version,
-            ),
+            "process.env.npm_package_version": `${require("./package.json").version}`,
         }),
     ],
 };
