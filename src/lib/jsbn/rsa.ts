@@ -385,8 +385,8 @@ function removeDigestHeader(str: string): string {
         if (DIGEST_HEADERS.hasOwnProperty(name)) {
             const header = DIGEST_HEADERS[name];
             const len = header.length;
-            if (str.substr(0, len) == header) {
-                return str.substr(len);
+            if (str.substring(0, len) == header) {
+                return str.substring(len);
             }
         }
     }

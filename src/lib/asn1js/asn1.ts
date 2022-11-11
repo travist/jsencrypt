@@ -488,7 +488,7 @@ export class ASN1 {
         const hexString = this.toHexString();
         const offset = this.header * 2;
         const length = this.length * 2;
-        return hexString.substr(offset, length);
+        return hexString.substring(offset, offset + length);
     }
 
     public static decode(str: Stream | number[]) {

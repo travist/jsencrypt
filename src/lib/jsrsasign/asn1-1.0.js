@@ -106,7 +106,7 @@ KJUR.asn1.ASN1Util = new function () {
     };
     this.bigIntToMinTwosComplementsHex = function (bigIntegerValue) {
         var h = bigIntegerValue.toString(16);
-        if (h.substr(0, 1) != '-') {
+        if (h.substring(0, 1) != '-') {
             if (h.length % 2 == 1) {
                 h = '0' + h;
             } else {
@@ -115,7 +115,7 @@ KJUR.asn1.ASN1Util = new function () {
                 }
             }
         } else {
-            var hPos = h.substr(1);
+            var hPos = h.substring(1);
             var xorLen = hPos.length;
             if (xorLen % 2 == 1) {
                 xorLen += 1;
@@ -331,17 +331,17 @@ KJUR.asn1.ASN1Util = new function () {
  */
 KJUR.asn1.ASN1Util.oidHexToInt = function (hex) {
     var s = "";
-    var i01 = parseInt(hex.substr(0, 2), 16);
+    var i01 = parseInt(hex.substring(0, 2), 16);
     var i0 = Math.floor(i01 / 40);
     var i1 = i01 % 40;
     var s = i0 + "." + i1;
 
     var binbuf = "";
     for (var i = 2; i < hex.length; i += 2) {
-        var value = parseInt(hex.substr(i, 2), 16);
+        var value = parseInt(hex.substring(i, i + 2), 16);
         var bin = ("00000000" + value.toString(2)).slice(- 8);
-        binbuf = binbuf + bin.substr(1, 7);
-        if (bin.substr(0, 1) == "0") {
+        binbuf = binbuf + bin.substring(1, 8);
+        if (bin.substring(0, 1) == "0") {
             var bi = new BigInteger(binbuf, 2);
             s = s + "." + bi.toString(10);
             binbuf = "";
@@ -382,7 +382,7 @@ KJUR.asn1.ASN1Util.oidIntToHex = function (oidString) {
         for (var i = 0; i < padLen; i++) bPad += '0';
         b = bPad + b;
         for (var i = 0; i < b.length - 1; i += 7) {
-            var b8 = b.substr(i, 7);
+            var b8 = b.substring(i, i + 7);
             if (i != b.length - 7) b8 = '1' + b8;
             h += itox(parseInt(b8, 2));
         }
@@ -609,7 +609,7 @@ KJUR.asn1.DERAbstractTime = function (params) {
         var pad = this.zeroPadding;
         var d = this.localDateToUTC(dateObject);
         var year = String(d.getFullYear());
-        if (type == 'utc') year = year.substr(2, 2);
+        if (type == 'utc') year = year.substring(2, 4);
         var month = pad(String(d.getMonth() + 1), 2);
         var day = pad(String(d.getDate()), 2);
         var hour = pad(String(d.getHours()), 2);
@@ -936,7 +936,7 @@ KJUR.asn1.DERBitString = function (params) {
         }
         var h = '';
         for (var i = 0; i < binaryString.length - 1; i += 8) {
-            var b = binaryString.substr(i, 8);
+            var b = binaryString.substring(i, i + 8);
             var x = parseInt(b, 2).toString(16);
             if (x.length == 1) x = '0' + x;
             h += x;
@@ -1105,7 +1105,7 @@ KJUR.asn1.DERObjectIdentifier = function (params) {
         for (var i = 0; i < padLen; i++) bPad += '0';
         b = bPad + b;
         for (var i = 0; i < b.length - 1; i += 7) {
-            var b8 = b.substr(i, 7);
+            var b8 = b.substring(i, i + 7);
             if (i != b.length - 7) b8 = '1' + b8;
             h += itox(parseInt(b8, 2));
         }
