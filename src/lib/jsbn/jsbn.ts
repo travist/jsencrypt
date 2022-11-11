@@ -4,8 +4,8 @@
 
 // Basic JavaScript BN library - subset useful for RSA encryption.
 
-import {cbit, int2char, lbit, op_and, op_andnot, op_or, op_xor} from "./util";
-import {SecureRandom} from "./rng";
+import { cbit, int2char, lbit, op_and, op_andnot, op_or, op_xor } from "./util";
+import { SecureRandom } from "./rng";
 // Bits per digit
 let dbits;
 
@@ -21,7 +21,7 @@ const lplim = (1 << 26) / lowprimes[lowprimes.length - 1];
 
 // (public) Constructor
 export class BigInteger {
-    constructor(a:number|number[]|string, b?:number|SecureRandom, c?:number|SecureRandom) {
+    constructor(a: number | number[] | string, b?: number | SecureRandom, c?: number | SecureRandom) {
         if (a != null) {
             if ("number" == typeof a) {
                 this.fromNumber(a, b, c);
@@ -33,11 +33,11 @@ export class BigInteger {
         }
     }
 
-  //#region PUBLIC
+    //#region PUBLIC
 
     // BigInteger.prototype.toString = bnToString;
     // (public) return string representation in given radix
-    public toString(b:number):string {
+    public toString(b: number): string {
         if (this.s < 0) {
             return "-" + this.negate().toString(b);
         }
@@ -91,7 +91,7 @@ export class BigInteger {
 
     // BigInteger.prototype.negate = bnNegate;
     // (public) -this
-    protected negate():BigInteger {
+    protected negate(): BigInteger {
         const r = nbi();
         BigInteger.ZERO.subTo(this, r);
         return r;
@@ -107,7 +107,7 @@ export class BigInteger {
 
     // BigInteger.prototype.compareTo = bnCompareTo;
     // (public) return + if this > a, - if this < a, 0 if equal
-    public compareTo(a:BigInteger):number {
+    public compareTo(a: BigInteger): number {
         let r = this.s - a.s;
         if (r != 0) {
             return r;
@@ -138,7 +138,7 @@ export class BigInteger {
 
     // BigInteger.prototype.mod = bnMod;
     // (public) this mod a
-    public mod(a:BigInteger):BigInteger {
+    public mod(a: BigInteger): BigInteger {
         const r = nbi();
         this.abs().divRemTo(a, null, r);
         if (this.s < 0 && r.compareTo(BigInteger.ZERO) > 0) {
@@ -150,7 +150,7 @@ export class BigInteger {
 
     // BigInteger.prototype.modPowInt = bnModPowInt;
     // (public) this^e % m, 0 <= e < 2^32
-    public modPowInt(e:number, m:BigInteger):BigInteger {
+    public modPowInt(e: number, m: BigInteger): BigInteger {
         let z;
         if (e < 256 || m.isEven()) {
             z = new Classic(m);
@@ -163,7 +163,7 @@ export class BigInteger {
 
     // BigInteger.prototype.clone = bnClone;
     // (public)
-    protected clone():BigInteger {
+    protected clone(): BigInteger {
         const r = nbi();
         this.copyTo(r);
         return r;
@@ -218,7 +218,7 @@ export class BigInteger {
 
     // BigInteger.prototype.toByteArray = bnToByteArray;
     // (public) convert to bigendian byte array
-    public toByteArray():number[] {
+    public toByteArray(): number[] {
         let i = this.t;
         const r = [];
         r[0] = this.s;
@@ -256,25 +256,25 @@ export class BigInteger {
 
 
     // BigInteger.prototype.equals = bnEquals;
-    protected equals(a:BigInteger):boolean {
+    protected equals(a: BigInteger): boolean {
         return (this.compareTo(a) == 0);
     }
 
 
     // BigInteger.prototype.min = bnMin;
-    protected min(a:BigInteger):BigInteger {
+    protected min(a: BigInteger): BigInteger {
         return (this.compareTo(a) < 0) ? this : a;
     }
 
 
     // BigInteger.prototype.max = bnMax;
-    protected max(a:BigInteger):BigInteger {
+    protected max(a: BigInteger): BigInteger {
         return (this.compareTo(a) > 0) ? this : a;
     }
 
 
     // BigInteger.prototype.and = bnAnd;
-    protected and(a:BigInteger):BigInteger {
+    protected and(a: BigInteger): BigInteger {
         const r = nbi();
         this.bitwiseTo(a, op_and, r);
         return r;
@@ -282,7 +282,7 @@ export class BigInteger {
 
 
     // BigInteger.prototype.or = bnOr;
-    protected or(a:BigInteger):BigInteger {
+    protected or(a: BigInteger): BigInteger {
         const r = nbi();
         this.bitwiseTo(a, op_or, r);
         return r;
@@ -290,7 +290,7 @@ export class BigInteger {
 
 
     // BigInteger.prototype.xor = bnXor;
-    protected xor(a:BigInteger):BigInteger {
+    protected xor(a: BigInteger): BigInteger {
         const r = nbi();
         this.bitwiseTo(a, op_xor, r);
         return r;
@@ -298,7 +298,7 @@ export class BigInteger {
 
 
     // BigInteger.prototype.andNot = bnAndNot;
-    protected andNot(a:BigInteger):BigInteger {
+    protected andNot(a: BigInteger): BigInteger {
         const r = nbi();
         this.bitwiseTo(a, op_andnot, r);
         return r;
@@ -307,7 +307,7 @@ export class BigInteger {
 
     // BigInteger.prototype.not = bnNot;
     // (public) ~this
-    protected not():BigInteger {
+    protected not(): BigInteger {
         const r = nbi();
         for (let i = 0; i < this.t; ++i) {
             r[i] = this.DM & ~this[i];
@@ -320,7 +320,7 @@ export class BigInteger {
 
     // BigInteger.prototype.shiftLeft = bnShiftLeft;
     // (public) this << n
-    protected shiftLeft(n:number) {
+    protected shiftLeft(n: number) {
         const r = nbi();
         if (n < 0) {
             this.rShiftTo(-n, r);
@@ -333,7 +333,7 @@ export class BigInteger {
 
     // BigInteger.prototype.shiftRight = bnShiftRight;
     // (public) this >> n
-    protected shiftRight(n:number) {
+    protected shiftRight(n: number) {
         const r = nbi();
         if (n < 0) {
             this.lShiftTo(-n, r);
@@ -373,7 +373,7 @@ export class BigInteger {
 
     // BigInteger.prototype.testBit = bnTestBit;
     // (public) true iff nth bit is set
-    protected testBit(n:number) {
+    protected testBit(n: number) {
         const j = Math.floor(n / this.DB);
         if (j >= this.t) {
             return (this.s != 0);
@@ -384,28 +384,28 @@ export class BigInteger {
 
     // BigInteger.prototype.setBit = bnSetBit;
     // (public) this | (1<<n)
-    protected setBit(n:number) {
+    protected setBit(n: number) {
         return this.changeBit(n, op_or);
     }
 
 
     // BigInteger.prototype.clearBit = bnClearBit;
     // (public) this & ~(1<<n)
-    protected clearBit(n:number) {
+    protected clearBit(n: number) {
         return this.changeBit(n, op_andnot);
     }
 
 
     // BigInteger.prototype.flipBit = bnFlipBit;
     // (public) this ^ (1<<n)
-    protected flipBit(n:number) {
+    protected flipBit(n: number) {
         return this.changeBit(n, op_xor);
     }
 
 
     // BigInteger.prototype.add = bnAdd;
     // (public) this + a
-    public add(a:BigInteger) {
+    public add(a: BigInteger) {
         const r = nbi();
         this.addTo(a, r);
         return r;
@@ -414,7 +414,7 @@ export class BigInteger {
 
     // BigInteger.prototype.subtract = bnSubtract;
     // (public) this - a
-    public subtract(a:BigInteger) {
+    public subtract(a: BigInteger) {
         const r = nbi();
         this.subTo(a, r);
         return r;
@@ -423,7 +423,7 @@ export class BigInteger {
 
     // BigInteger.prototype.multiply = bnMultiply;
     // (public) this * a
-    public multiply(a:BigInteger) {
+    public multiply(a: BigInteger) {
         const r = nbi();
         this.multiplyTo(a, r);
         return r;
@@ -432,7 +432,7 @@ export class BigInteger {
 
     // BigInteger.prototype.divide = bnDivide;
     // (public) this / a
-    public divide(a:BigInteger):BigInteger {
+    public divide(a: BigInteger): BigInteger {
         const r = nbi();
         this.divRemTo(a, r, null);
         return r;
@@ -441,7 +441,7 @@ export class BigInteger {
 
     // BigInteger.prototype.remainder = bnRemainder;
     // (public) this % a
-    protected remainder(a:BigInteger):BigInteger {
+    protected remainder(a: BigInteger): BigInteger {
         const r = nbi();
         this.divRemTo(a, null, r);
         return r;
@@ -450,7 +450,7 @@ export class BigInteger {
 
     // BigInteger.prototype.divideAndRemainder = bnDivideAndRemainder;
     // (public) [this/a,this%a]
-    protected divideAndRemainder(a:BigInteger) {
+    protected divideAndRemainder(a: BigInteger) {
         const q = nbi();
         const r = nbi();
         this.divRemTo(a, q, r);
@@ -460,11 +460,11 @@ export class BigInteger {
 
     // BigInteger.prototype.modPow = bnModPow;
     // (public) this^e % m (HAC 14.85)
-    public modPow(e:BigInteger, m:BigInteger) {
+    public modPow(e: BigInteger, m: BigInteger) {
         let i = e.bitLength();
         let k;
         let r = nbv(1);
-        let z:IReduction;
+        let z: IReduction;
         if (i <= 0) {
             return r;
         } else if (i < 18) {
@@ -563,7 +563,7 @@ export class BigInteger {
 
     // BigInteger.prototype.modInverse = bnModInverse;
     // (public) 1/this % m (HAC 14.61)
-    public modInverse(m:BigInteger) {
+    public modInverse(m: BigInteger) {
         const ac = m.isEven();
         if ((this.isEven() && ac) || m.signum() == 0) {
             return BigInteger.ZERO;
@@ -634,14 +634,14 @@ export class BigInteger {
 
     // BigInteger.prototype.pow = bnPow;
     // (public) this^e
-    protected pow(e:number) {
+    protected pow(e: number) {
         return this.exp(e, new NullExp());
     }
 
 
     // BigInteger.prototype.gcd = bnGCD;
     // (public) gcd(this,a) (HAC 14.54)
-    public gcd(a:BigInteger) {
+    public gcd(a: BigInteger) {
         let x = (this.s < 0) ? this.negate() : this.clone();
         let y = (a.s < 0) ? a.negate() : a.clone();
         if (x.compareTo(y) < 0) {
@@ -685,7 +685,7 @@ export class BigInteger {
 
     // BigInteger.prototype.isProbablePrime = bnIsProbablePrime;
     // (public) test primality with certainty >= 1-.5^t
-    public isProbablePrime(t:number) {
+    public isProbablePrime(t: number) {
         let i;
         const x = this.abs();
         if (x.t == 1 && x[0] <= lowprimes[lowprimes.length - 1]) {
@@ -717,13 +717,13 @@ export class BigInteger {
     }
 
 
-  //#endregion PUBLIC
+    //#endregion PUBLIC
 
-  //#region PROTECTED
+    //#region PROTECTED
 
     // BigInteger.prototype.copyTo = bnpCopyTo;
     // (protected) copy this to r
-    public copyTo(r:BigInteger) {
+    public copyTo(r: BigInteger) {
         for (let i = this.t - 1; i >= 0; --i) {
             r[i] = this[i];
         }
@@ -734,7 +734,7 @@ export class BigInteger {
 
     // BigInteger.prototype.fromInt = bnpFromInt;
     // (protected) set from integer value x, -DV <= x < DV
-    public fromInt(x:number) {
+    public fromInt(x: number) {
         this.t = 1;
         this.s = (x < 0) ? -1 : 0;
         if (x > 0) {
@@ -749,7 +749,7 @@ export class BigInteger {
 
     // BigInteger.prototype.fromString = bnpFromString;
     // (protected) set from string and radix
-    protected fromString(s:string|number[], b:number) {
+    protected fromString(s: string | number[], b: number) {
         let k;
         if (b == 16) {
             k = 4;
@@ -820,7 +820,7 @@ export class BigInteger {
 
     // BigInteger.prototype.dlShiftTo = bnpDLShiftTo;
     // (protected) r = this << n*DB
-    public dlShiftTo(n:number, r:BigInteger) {
+    public dlShiftTo(n: number, r: BigInteger) {
         let i;
         for (i = this.t - 1; i >= 0; --i) {
             r[i + n] = this[i];
@@ -835,7 +835,7 @@ export class BigInteger {
 
     // BigInteger.prototype.drShiftTo = bnpDRShiftTo;
     // (protected) r = this >> n*DB
-    public drShiftTo(n:number, r:BigInteger) {
+    public drShiftTo(n: number, r: BigInteger) {
         for (let i = n; i < this.t; ++i) {
             r[i - n] = this[i];
         }
@@ -846,7 +846,7 @@ export class BigInteger {
 
     // BigInteger.prototype.lShiftTo = bnpLShiftTo;
     // (protected) r = this << n
-    protected lShiftTo(n:number, r:BigInteger) {
+    protected lShiftTo(n: number, r: BigInteger) {
         const bs = n % this.DB;
         const cbs = this.DB - bs;
         const bm = (1 << cbs) - 1;
@@ -869,7 +869,7 @@ export class BigInteger {
 
     // BigInteger.prototype.rShiftTo = bnpRShiftTo;
     // (protected) r = this >> n
-    protected rShiftTo(n:number, r:BigInteger) {
+    protected rShiftTo(n: number, r: BigInteger) {
         r.s = this.s;
         const ds = Math.floor(n / this.DB);
         if (ds >= this.t) {
@@ -894,7 +894,7 @@ export class BigInteger {
 
     // BigInteger.prototype.subTo = bnpSubTo;
     // (protected) r = this - a
-    public subTo(a:BigInteger, r:BigInteger) {
+    public subTo(a: BigInteger, r: BigInteger) {
         let i = 0;
         let c = 0;
         const m = Math.min(a.t, this.t);
@@ -934,7 +934,7 @@ export class BigInteger {
     // BigInteger.prototype.multiplyTo = bnpMultiplyTo;
     // (protected) r = this * a, r != this,a (HAC 14.12)
     // "this" should be the larger one if appropriate.
-    public multiplyTo(a:BigInteger, r:BigInteger) {
+    public multiplyTo(a: BigInteger, r: BigInteger) {
         const x = this.abs();
         const y = a.abs();
         let i = x.t;
@@ -955,7 +955,7 @@ export class BigInteger {
 
     // BigInteger.prototype.squareTo = bnpSquareTo;
     // (protected) r = this^2, r != this (HAC 14.16)
-    public squareTo(r:BigInteger) {
+    public squareTo(r: BigInteger) {
         const x = this.abs();
         let i = r.t = 2 * x.t;
         while (--i >= 0) {
@@ -979,7 +979,7 @@ export class BigInteger {
     // BigInteger.prototype.divRemTo = bnpDivRemTo;
     // (protected) divide this by m, quotient and remainder to q, r (HAC 14.20)
     // r != q, this != m.  q or r may be null.
-    public divRemTo(m:BigInteger, q:BigInteger, r:BigInteger) {
+    public divRemTo(m: BigInteger, q: BigInteger, r: BigInteger) {
         const pm = m.abs();
         if (pm.t <= 0) {
             return;
@@ -1069,7 +1069,7 @@ export class BigInteger {
     // if y is 1/x mod m, then y(2-xy) is 1/x mod m^2
     // should reduce x and y(2-xy) by m^2 at each step to keep size bounded.
     // JS multiply "overflows" differently from C/C++, so care is needed here.
-    public invDigit():number {
+    public invDigit(): number {
         if (this.t < 1) {
             return 0;
         }
@@ -1098,7 +1098,7 @@ export class BigInteger {
 
     // BigInteger.prototype.exp = bnpExp;
     // (protected) this^e, e < 2^32, doing sqr and mul with "r" (HAC 14.79)
-    protected exp(e:number, z:IReduction) {
+    protected exp(e: number, z: IReduction) {
         if (e > 0xffffffff || e < 1) {
             return BigInteger.ONE;
         }
@@ -1123,14 +1123,14 @@ export class BigInteger {
 
     // BigInteger.prototype.chunkSize = bnpChunkSize;
     // (protected) return x s.t. r^x < DV
-    protected chunkSize(r:number) {
+    protected chunkSize(r: number) {
         return Math.floor(Math.LN2 * this.DB / Math.log(r));
     }
 
 
     // BigInteger.prototype.toRadix = bnpToRadix;
     // (protected) convert to radix string
-    protected toRadix(b:number) {
+    protected toRadix(b: number) {
         if (b == null) {
             b = 10;
         }
@@ -1154,7 +1154,7 @@ export class BigInteger {
 
     // BigInteger.prototype.fromRadix = bnpFromRadix;
     // (protected) convert from radix string
-    public fromRadix(s:string, b:number) {
+    public fromRadix(s: string, b: number) {
         this.fromInt(0);
         if (b == null) {
             b = 10;
@@ -1192,7 +1192,7 @@ export class BigInteger {
 
     // BigInteger.prototype.fromNumber = bnpFromNumber;
     // (protected) alternate constructor
-    protected fromNumber(a:number, b:number|SecureRandom, c?:number|SecureRandom) {
+    protected fromNumber(a: number, b: number | SecureRandom, c?: number | SecureRandom) {
         if ("number" == typeof b) {
             // new BigInteger(int,int,RNG)
             if (a < 2) {
@@ -1215,7 +1215,7 @@ export class BigInteger {
             }
         } else {
             // new BigInteger(int,RNG)
-            const x:number[] = [];
+            const x: number[] = [];
             const t = a & 7;
             x.length = (a >> 3) + 1;
             b.nextBytes(x);
@@ -1231,7 +1231,7 @@ export class BigInteger {
 
     // BigInteger.prototype.bitwiseTo = bnpBitwiseTo;
     // (protected) r = this op a (bitwise)
-    protected bitwiseTo(a:BigInteger, op:(a:number, b:number) => number, r:BigInteger) {
+    protected bitwiseTo(a: BigInteger, op: (a: number, b: number) => number, r: BigInteger) {
         let i;
         let f;
         const m = Math.min(a.t, this.t);
@@ -1258,7 +1258,7 @@ export class BigInteger {
 
     // BigInteger.prototype.changeBit = bnpChangeBit;
     // (protected) this op (1<<n)
-    protected changeBit(n:number, op:(a:number, b:number) => number) {
+    protected changeBit(n: number, op: (a: number, b: number) => number) {
         const r = BigInteger.ONE.shiftLeft(n);
         this.bitwiseTo(r, op, r);
         return r;
@@ -1267,7 +1267,7 @@ export class BigInteger {
 
     // BigInteger.prototype.addTo = bnpAddTo;
     // (protected) r = this + a
-    protected addTo(a:BigInteger, r:BigInteger) {
+    protected addTo(a: BigInteger, r: BigInteger) {
         let i = 0;
         let c = 0;
         const m = Math.min(a.t, this.t);
@@ -1306,7 +1306,7 @@ export class BigInteger {
 
     // BigInteger.prototype.dMultiply = bnpDMultiply;
     // (protected) this *= n, this >= 0, 1 < n < DV
-    protected dMultiply(n:number) {
+    protected dMultiply(n: number) {
         this[this.t] = this.am(0, n - 1, this, 0, 0, this.t);
         ++this.t;
         this.clamp();
@@ -1315,7 +1315,7 @@ export class BigInteger {
 
     // BigInteger.prototype.dAddOffset = bnpDAddOffset;
     // (protected) this += n << w words, this >= 0
-    public dAddOffset(n:number, w:number) {
+    public dAddOffset(n: number, w: number) {
         if (n == 0) {
             return;
         }
@@ -1336,7 +1336,7 @@ export class BigInteger {
     // BigInteger.prototype.multiplyLowerTo = bnpMultiplyLowerTo;
     // (protected) r = lower n words of "this * a", a.t <= n
     // "this" should be the larger one if appropriate.
-    public multiplyLowerTo(a:BigInteger, n:number, r:BigInteger) {
+    public multiplyLowerTo(a: BigInteger, n: number, r: BigInteger) {
         let i = Math.min(this.t + a.t, n);
         r.s = 0; // assumes a,this >= 0
         r.t = i;
@@ -1356,7 +1356,7 @@ export class BigInteger {
     // BigInteger.prototype.multiplyUpperTo = bnpMultiplyUpperTo;
     // (protected) r = "this * a" without lower n words, n > 0
     // "this" should be the larger one if appropriate.
-    public multiplyUpperTo(a:BigInteger, n:number, r:BigInteger) {
+    public multiplyUpperTo(a: BigInteger, n: number, r: BigInteger) {
         --n;
         let i = r.t = this.t + a.t - n;
         r.s = 0; // assumes a,this >= 0
@@ -1373,7 +1373,7 @@ export class BigInteger {
 
     // BigInteger.prototype.modInt = bnpModInt;
     // (protected) this % n, n < 2^26
-    protected modInt(n:number) {
+    protected modInt(n: number) {
         if (n <= 0) {
             return 0;
         }
@@ -1394,7 +1394,7 @@ export class BigInteger {
 
     // BigInteger.prototype.millerRabin = bnpMillerRabin;
     // (protected) true if probably prime (HAC 4.24, Miller-Rabin)
-    protected millerRabin(t:number) {
+    protected millerRabin(t: number) {
         const n1 = this.subtract(BigInteger.ONE);
         const k = n1.getLowestSetBit();
         if (k <= 0) {
@@ -1437,7 +1437,7 @@ export class BigInteger {
     //#region ASYNC
 
     // Public API method
-    public gcda(a:BigInteger, callback:(x:BigInteger) => void) {
+    public gcda(a: BigInteger, callback: (x: BigInteger) => void) {
         let x = (this.s < 0) ? this.negate() : this.clone();
         let y = (a.s < 0) ? a.negate() : a.clone();
         if (x.compareTo(y) < 0) {
@@ -1469,7 +1469,7 @@ export class BigInteger {
             }
             if (!(x.signum() > 0)) {
                 if (g > 0) { y.lShiftTo(g, y); }
-                setTimeout(function () {callback(y); }, 0); // escape
+                setTimeout(function () { callback(y); }, 0); // escape
             } else {
                 setTimeout(gcda1, 0);
             }
@@ -1478,7 +1478,7 @@ export class BigInteger {
     }
 
     // (protected) alternate constructor
-    public fromNumberAsync(a:number, b:number|SecureRandom, c:number|SecureRandom, callback:() => void) {
+    public fromNumberAsync(a: number, b: number | SecureRandom, c: number | SecureRandom, callback: () => void) {
         if ("number" == typeof b) {
             if (a < 2) {
                 this.fromInt(1);
@@ -1495,7 +1495,7 @@ export class BigInteger {
                     bnp.dAddOffset(2, 0);
                     if (bnp.bitLength() > a) { bnp.subTo(BigInteger.ONE.shiftLeft(a - 1), bnp); }
                     if (bnp.isProbablePrime(b)) {
-                        setTimeout(function () {callback(); }, 0); // escape
+                        setTimeout(function () { callback(); }, 0); // escape
                     } else {
                         setTimeout(bnpfn1, 0);
                     }
@@ -1503,7 +1503,7 @@ export class BigInteger {
                 setTimeout(bnpfn1, 0);
             }
         } else {
-            const x:number[] = [];
+            const x: number[] = [];
             const t = a & 7;
             x.length = (a >> 3) + 1;
             b.nextBytes(x);
@@ -1514,28 +1514,28 @@ export class BigInteger {
 
     //#endregion ASYNC
 
-  //#endregion PROTECTED
+    //#endregion PROTECTED
 
     //#region FIELDS
 
-    public s:number;
-    public t:number;
+    public s: number;
+    public t: number;
 
 
-    public DB:number;
-    public DM:number;
-    public DV:number;
+    public DB: number;
+    public DM: number;
+    public DV: number;
 
-    public FV:number;
-    public F1:number;
-    public F2:number;
+    public FV: number;
+    public F1: number;
+    public F2: number;
 
-    public am:(i:number, x:number, w:BigInteger, j:number, c:number, n:number) => number;
+    public am: (i: number, x: number, w: BigInteger, j: number, c: number, n: number) => number;
 
-    [index:number]:number;
+    [index: number]: number;
 
-    public static ONE:BigInteger;
-    public static ZERO:BigInteger;
+    public static ONE: BigInteger;
+    public static ZERO: BigInteger;
 
     //#endregion FIELDS
 }
@@ -1550,25 +1550,25 @@ class NullExp {
     }
 
     // NullExp.prototype.convert = nNop;
-    public convert(x:BigInteger) {
+    public convert(x: BigInteger) {
         return x;
     }
 
 
     // NullExp.prototype.revert = nNop;
-    public revert(x:BigInteger) {
+    public revert(x: BigInteger) {
         return x;
     }
 
 
     // NullExp.prototype.mulTo = nMulTo;
-    public mulTo(x:BigInteger, y:BigInteger, r:BigInteger) {
+    public mulTo(x: BigInteger, y: BigInteger, r: BigInteger) {
         x.multiplyTo(y, r);
     }
 
 
     // NullExp.prototype.sqrTo = nSqrTo;
-    public sqrTo(x:BigInteger, r:BigInteger) {
+    public sqrTo(x: BigInteger, r: BigInteger) {
         x.squareTo(r);
     }
 }
@@ -1578,24 +1578,24 @@ class NullExp {
 //#region Classic
 
 export interface IReduction {
-    convert(x:BigInteger):BigInteger;
+    convert(x: BigInteger): BigInteger;
 
-    revert(x:BigInteger):BigInteger;
+    revert(x: BigInteger): BigInteger;
 
     // reduce?(x:BigInteger):void;
 
-    mulTo(x:BigInteger, y:BigInteger, r:BigInteger):void;
+    mulTo(x: BigInteger, y: BigInteger, r: BigInteger): void;
 
-    sqrTo(x:BigInteger, r:BigInteger):void;
+    sqrTo(x: BigInteger, r: BigInteger): void;
 }
 
 // Modular reduction using "classic" algorithm
 class Classic implements IReduction {
-    constructor(protected m:BigInteger) {
+    constructor(protected m: BigInteger) {
     }
 
     // Classic.prototype.convert = cConvert;
-    public convert(x:BigInteger) {
+    public convert(x: BigInteger) {
         if (x.s < 0 || x.compareTo(this.m) >= 0) {
             return x.mod(this.m);
         } else {
@@ -1605,26 +1605,26 @@ class Classic implements IReduction {
 
 
     // Classic.prototype.revert = cRevert;
-    public revert(x:BigInteger) {
+    public revert(x: BigInteger) {
         return x;
     }
 
 
     // Classic.prototype.reduce = cReduce;
-    public reduce(x:BigInteger) {
+    public reduce(x: BigInteger) {
         x.divRemTo(this.m, null, x);
     }
 
 
     // Classic.prototype.mulTo = cMulTo;
-    public mulTo(x:BigInteger, y:BigInteger, r:BigInteger) {
+    public mulTo(x: BigInteger, y: BigInteger, r: BigInteger) {
         x.multiplyTo(y, r);
         this.reduce(r);
     }
 
 
     // Classic.prototype.sqrTo = cSqrTo;
-    public sqrTo(x:BigInteger, r:BigInteger) {
+    public sqrTo(x: BigInteger, r: BigInteger) {
         x.squareTo(r);
         this.reduce(r);
     }
@@ -1636,7 +1636,7 @@ class Classic implements IReduction {
 
 // Montgomery reduction
 class Montgomery implements IReduction {
-    constructor(protected m:BigInteger) {
+    constructor(protected m: BigInteger) {
         this.mp = m.invDigit();
         this.mpl = this.mp & 0x7fff;
         this.mph = this.mp >> 15;
@@ -1644,15 +1644,15 @@ class Montgomery implements IReduction {
         this.mt2 = 2 * m.t;
     }
 
-    protected mp:number;
-    protected mpl:number;
-    protected mph:number;
-    protected um:number;
-    protected mt2:number;
+    protected mp: number;
+    protected mpl: number;
+    protected mph: number;
+    protected um: number;
+    protected mt2: number;
 
     // Montgomery.prototype.convert = montConvert;
     // xR mod m
-    public convert(x:BigInteger) {
+    public convert(x: BigInteger) {
         const r = nbi();
         x.abs().dlShiftTo(this.m.t, r);
         r.divRemTo(this.m, null, r);
@@ -1664,7 +1664,7 @@ class Montgomery implements IReduction {
 
     // Montgomery.prototype.revert = montRevert;
     // x/R mod m
-    public revert(x:BigInteger) {
+    public revert(x: BigInteger) {
         const r = nbi();
         x.copyTo(r);
         this.reduce(r);
@@ -1673,7 +1673,7 @@ class Montgomery implements IReduction {
 
     // Montgomery.prototype.reduce = montReduce;
     // x = x/R mod m (HAC 14.32)
-    public reduce(x:BigInteger) {
+    public reduce(x: BigInteger) {
         while (x.t <= this.mt2) {
             // pad x so am has enough room later
             x[x.t++] = 0;
@@ -1701,7 +1701,7 @@ class Montgomery implements IReduction {
 
     // Montgomery.prototype.mulTo = montMulTo;
     // r = "xy/R mod m"; x,y != r
-    public mulTo(x:BigInteger, y:BigInteger, r:BigInteger) {
+    public mulTo(x: BigInteger, y: BigInteger, r: BigInteger) {
         x.multiplyTo(y, r);
         this.reduce(r);
     }
@@ -1709,7 +1709,7 @@ class Montgomery implements IReduction {
 
     // Montgomery.prototype.sqrTo = montSqrTo;
     // r = "x^2/R mod m"; x != r
-    public sqrTo(x:BigInteger, r:BigInteger) {
+    public sqrTo(x: BigInteger, r: BigInteger) {
         x.squareTo(r);
         this.reduce(r);
     }
@@ -1723,7 +1723,7 @@ class Montgomery implements IReduction {
 
 // Barrett modular reduction
 class Barrett implements IReduction {
-    constructor(protected m:BigInteger) {
+    constructor(protected m: BigInteger) {
         // setup Barrett
         this.r2 = nbi();
         this.q3 = nbi();
@@ -1731,12 +1731,12 @@ class Barrett implements IReduction {
         this.mu = this.r2.divide(m);
     }
 
-    protected r2:BigInteger;
-    protected q3:BigInteger;
-    protected mu:BigInteger;
+    protected r2: BigInteger;
+    protected q3: BigInteger;
+    protected mu: BigInteger;
 
     // Barrett.prototype.convert = barrettConvert;
-    public convert(x:BigInteger) {
+    public convert(x: BigInteger) {
         if (x.s < 0 || x.t > 2 * this.m.t) {
             return x.mod(this.m);
         } else if (x.compareTo(this.m) < 0) {
@@ -1750,13 +1750,13 @@ class Barrett implements IReduction {
     }
 
     // Barrett.prototype.revert = barrettRevert;
-    public revert(x:BigInteger) {
+    public revert(x: BigInteger) {
         return x;
     }
 
     // Barrett.prototype.reduce = barrettReduce;
     // x = x mod m (HAC 14.42)
-    public reduce(x:BigInteger) {
+    public reduce(x: BigInteger) {
         x.drShiftTo(this.m.t - 1, this.r2);
         if (x.t > this.m.t + 1) {
             x.t = this.m.t + 1;
@@ -1776,7 +1776,7 @@ class Barrett implements IReduction {
 
     // Barrett.prototype.mulTo = barrettMulTo;
     // r = x*y mod m; x,y != r
-    public mulTo(x:BigInteger, y:BigInteger, r:BigInteger) {
+    public mulTo(x: BigInteger, y: BigInteger, r: BigInteger) {
         x.multiplyTo(y, r);
         this.reduce(r);
     }
@@ -1784,7 +1784,7 @@ class Barrett implements IReduction {
 
     // Barrett.prototype.sqrTo = barrettSqrTo;
     // r = x^2 mod m; x != r
-    public sqrTo(x:BigInteger, r:BigInteger) {
+    public sqrTo(x: BigInteger, r: BigInteger) {
         x.squareTo(r);
         this.reduce(r);
     }
@@ -1797,7 +1797,7 @@ class Barrett implements IReduction {
 // return new, unset BigInteger
 export function nbi() { return new BigInteger(null); }
 
-export function parseBigInt(str:string, r:number) {
+export function parseBigInt(str: string, r: number) {
     return new BigInteger(str, r);
 }
 
@@ -1810,7 +1810,7 @@ if (inBrowser && j_lm && (navigator.appName == "Microsoft Internet Explorer")) {
     // am2 avoids a big mult-and-extract completely.
     // Max digit bits should be <= 30 because we do bitwise ops
     // on values up to 2*hdvalue^2-hdvalue-1 (< 2^31)
-    BigInteger.prototype.am = function am2(i:number, x:number, w:BigInteger, j:number, c:number, n:number) {
+    BigInteger.prototype.am = function am2(i: number, x: number, w: BigInteger, j: number, c: number, n: number) {
         const xl = x & 0x7fff;
         const xh = x >> 15;
         while (--n >= 0) {
@@ -1828,7 +1828,7 @@ if (inBrowser && j_lm && (navigator.appName == "Microsoft Internet Explorer")) {
     // am1: use a single mult and divide to get the high bits,
     // max digit bits should be 26 because
     // max internal value = 2*dvalue^2-2*dvalue (< 2^53)
-    BigInteger.prototype.am = function am1(i:number, x:number, w:BigInteger, j:number, c:number, n:number) {
+    BigInteger.prototype.am = function am1(i: number, x: number, w: BigInteger, j: number, c: number, n: number) {
         while (--n >= 0) {
             const v = x * this[i++] + w[j] + c;
             c = Math.floor(v / 0x4000000);
@@ -1840,7 +1840,7 @@ if (inBrowser && j_lm && (navigator.appName == "Microsoft Internet Explorer")) {
 } else { // Mozilla/Netscape seems to prefer am3
     // Alternately, set max digit bits to 28 since some
     // browsers slow down when dealing with 32-bit numbers.
-    BigInteger.prototype.am = function am3(i:number, x:number, w:BigInteger, j:number, c:number, n:number) {
+    BigInteger.prototype.am = function am3(i: number, x: number, w: BigInteger, j: number, c: number, n: number) {
         const xl = x & 0x3fff;
         const xh = x >> 14;
         while (--n >= 0) {
@@ -1866,7 +1866,7 @@ BigInteger.prototype.F1 = BI_FP - dbits;
 BigInteger.prototype.F2 = 2 * dbits - BI_FP;
 
 // Digit conversions
-const BI_RC:number[] = [];
+const BI_RC: number[] = [];
 let rr;
 let vv;
 rr = "0".charCodeAt(0);
@@ -1883,21 +1883,21 @@ for (vv = 10; vv < 36; ++vv) {
 }
 
 
-export function intAt(s:string, i:number) {
+export function intAt(s: string, i: number) {
     const c = BI_RC[s.charCodeAt(i)];
     return (c == null) ? -1 : c;
 }
 
 
 // return bigint initialized to value
-export function nbv(i:number) {
+export function nbv(i: number) {
     const r = nbi();
     r.fromInt(i);
     return r;
 }
 
 // returns bit length of the integer x
-export function nbits(x:number) {
+export function nbits(x: number) {
     let r = 1;
     let t;
     if ((t = x >>> 16) != 0) {

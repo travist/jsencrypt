@@ -1,35 +1,35 @@
 const BI_RM = "0123456789abcdefghijklmnopqrstuvwxyz";
 
-export function int2char(n:number) {
+export function int2char(n: number) {
     return BI_RM.charAt(n);
 }
 
 //#region BIT_OPERATIONS
 
 // (public) this & a
-export function op_and(x:number, y:number):number {
+export function op_and(x: number, y: number): number {
     return x & y;
 }
 
 
 // (public) this | a
-export function op_or(x:number, y:number):number {
+export function op_or(x: number, y: number): number {
     return x | y;
 }
 
 // (public) this ^ a
-export function op_xor(x:number, y:number):number {
+export function op_xor(x: number, y: number): number {
     return x ^ y;
 }
 
 
 // (public) this & ~a
-export function op_andnot(x:number, y:number):number {
+export function op_andnot(x: number, y: number): number {
     return x & ~y;
 }
 
 // return index of lowest 1-bit in x, x < 2^31
-export function lbit(x:number) {
+export function lbit(x: number) {
     if (x == 0) {
         return -1;
     }
@@ -57,7 +57,7 @@ export function lbit(x:number) {
 }
 
 // return number of 1 bits in x
-export function cbit(x:number) {
+export function cbit(x: number) {
     let r = 0;
     while (x != 0) {
         x &= x - 1;

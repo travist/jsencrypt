@@ -1,9 +1,9 @@
-import {int2char} from "./util";
+import { int2char } from "./util";
 
 const b64map = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 const b64pad = "=";
 
-export function hex2b64(h:string) {
+export function hex2b64(h: string) {
     let i;
     let c;
     let ret = "";
@@ -25,7 +25,7 @@ export function hex2b64(h:string) {
 }
 
 // convert a base64 string to hex
-export function b64tohex(s:string) {
+export function b64tohex(s: string) {
     let ret = "";
     let i;
     let k = 0; // b64 state, 0-3
@@ -64,7 +64,7 @@ export function b64tohex(s:string) {
 }
 
 // convert a base64 string to a byte/number array
-export function b64toBA(s:string) {
+export function b64toBA(s: string) {
     // piggyback on b64tohex for now, optimize later
     const h = b64tohex(s);
     let i;
