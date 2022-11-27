@@ -1,9 +1,6 @@
-const { merge } = require("webpack-merge");
-const config = require("./webpack.config.js");
+import config from "./webpack.config.js";
+config.mode = "production";
+config.output.filename = "jsencrypt.min.js";
 
-module.exports = merge(config, {
-  mode: "production",
-  output: {
-    filename: "jsencrypt.min.js"
-  }
-});
+export default config;
+
