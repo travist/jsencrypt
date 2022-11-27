@@ -1,15 +1,17 @@
-const path = require("path");
-const pkg = require("webpack");
+import path from "path";
 
+import * as url from "url";
+const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
+import pkg from "webpack";
 const { ProvidePlugin, DefinePlugin } = pkg;
 
-module.exports = {
+export default {
     entry: path.join(path.resolve(__dirname, "lib"), "index.js"),
     output: {
         library: "JSEncrypt",
         libraryTarget: "umd",
         libraryExport: "default",
-        globalObject: "this",
+        globalObject: "window",
         path: path.resolve(__dirname, "bin"),
         filename: "jsencrypt.js",
     },
