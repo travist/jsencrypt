@@ -1,17 +1,15 @@
-import path from "path";
+const path = require("path");
+const pkg = require("webpack");
 
-import * as url from "url";
-const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
-import pkg from "webpack";
 const { ProvidePlugin, DefinePlugin } = pkg;
 
-export default {
+module.exports = {
     entry: "./test/test.rsa.js",
     output: {
         library: "JSEncrypt",
         libraryTarget: "umd",
         libraryExport: "default",
-        globalObject: "window",
+        globalObject: "this",
         path: path.resolve(__dirname, "test"),
         filename: "test.rsa.bundle.js",
     },
