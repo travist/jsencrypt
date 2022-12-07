@@ -295,7 +295,8 @@ export class RSAKey {
     public sign(text:string, digestMethod:(str:string) => string, digestName:string):string {
         const header = getDigestHeader(digestName);
         const digest = header + digestMethod(text).toString();
-        const m = pkcs1pad1(digest, this.n.bitLength() / 4);
+        let maxLength = this.n.bitLength() / 4;
+        const m = pkcs1pad1(digest, maxLength);
         if (m == null) {
             return null;
         }
@@ -303,12 +304,16 @@ export class RSAKey {
         if (c == null) {
             return null;
         }
-        const h = c.toString(16);
-        if ((h.length & 1) == 0) {
-            return h;
-        } else {
-            return "0" + h;
+
+        let h = c.toString(16);
+        let length = h.length
+
+        // fix zero before result
+        for (let i = 0; i < maxLength - length; i++) {
+            h = "0" + h;
         }
+
+        return h
     }
 
     public verify(text:string, signature:string, digestMethod:(str:string) => string):boolean {
