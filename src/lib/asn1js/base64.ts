@@ -14,9 +14,9 @@
 // OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 /*jshint browser: true, strict: true, immed: true, latedef: true, undef: true, regexdash: false */
-let decoder:{ [index:string]:number | string };
+let decoder: { [index: string]: number | string };
 export const Base64 = {
-    decode(a:string) {
+    decode(a: string) {
         let i;
         if (decoder === undefined) {
             const b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -35,7 +35,7 @@ export const Base64 = {
         let bits = 0;
         let char_count = 0;
         for (i = 0; i < a.length; ++i) {
-            let c:string|number = a.charAt(i);
+            let c: string | number = a.charAt(i);
             if (c == "=") {
                 break;
             }
@@ -71,7 +71,7 @@ export const Base64 = {
         return out;
     },
     re: /-----BEGIN [^-]+-----([A-Za-z0-9+\/=\s]+)-----END [^-]+-----|begin-base64[^\n]+\n([A-Za-z0-9+\/=\s]+)====/,
-    unarmor(a:string):number[] {
+    unarmor(a: string): number[] {
         const m = Base64.re.exec(a);
         if (m) {
             if (m[1]) {
