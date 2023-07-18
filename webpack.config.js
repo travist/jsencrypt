@@ -11,7 +11,7 @@ export default {
         library: "JSEncrypt",
         libraryTarget: "umd",
         libraryExport: "default",
-        globalObject: "window",
+        globalObject: "globalThis",
         path: path.resolve(__dirname, "bin"),
         filename: "jsencrypt.js",
     },
