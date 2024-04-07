@@ -1,6 +1,9 @@
 import { JSEncrypt } from "../lib/JSEncrypt";
 import chai from "chai";
 import dirtyChai from "dirty-chai";
+import { JSEncryptRSAKey } from "../lib/JSEncryptRSAKey";
+import { KJUR } from "../lib/lib/jsrsasign/asn1-1.0";
+import { extendClass } from "../lib/lib/jsrsasign/base64x-1.1";
 
 chai.use(dirtyChai);
 
@@ -118,6 +121,10 @@ keySizes.forEach(function (keySize, index) {
         //this.timeout(0); //Timout for test cases, zero means infinite. Needed for key sizes > 1024
 
         describe("#getKey()", function () {
+            it("should be instance of JSEncryptRSAKey", function () {
+                var key = jse.getKey();
+                expect(key).to.instanceOf(JSEncryptRSAKey);
+            });
             it("should be " + keySize + " bit long", function () {
                 var key = jse.getKey();
                 var length = key.n.bitLength();
@@ -339,5 +346,78 @@ describe("JSEncrypt - 1024 bit", function () {
             expect(enc).to.be.ok();
             expect(dec).to.not.be.ok();
         });
+    });
+});
+
+describe("#extendClass()", function () {
+    var Animal = function () {
+        this.hello = function () {
+            console.log("Hello");
+        };
+        this.name = "Ani";
+    };
+    var Dog = function () {
+        Dog.superclass.constructor.call(this);
+        this.vow = function () {
+            console.log("Vow wow");
+        };
+        this.tail = true;
+    };
+    extendClass(Dog, Animal);
+    var childObject = new Dog();
+    var parentObject = new Animal();
+
+    it("object of child should be instance of parent", function () {
+        expect(childObject).to.be.instanceOf(Animal);
+    });
+
+    it("object of child should have all keys of parent", function () {
+        Object.keys(parentObject).forEach((key) => {
+            expect(childObject[key]).to.be.ok();
+        });
+    });
+});
+
+describe("KJUR", function () {
+    it("KJUR.asn1.DERAbstractString should be instance of KJUR.asn1.ASN1Object", function () {
+        expect(new KJUR.asn1.DERAbstractString()).to.be.instanceOf(KJUR.asn1.ASN1Object);
+    });
+
+    it("KJUR.asn1.DERAbstractTime should be instance of KJUR.asn1.ASN1Object", function () {
+        expect(new KJUR.asn1.DERAbstractTime()).to.be.instanceOf(KJUR.asn1.ASN1Object);
+    });
+
+    it("KJUR.asn1.DERAbstractStructured should be instance of KJUR.asn1.ASN1Object", function () {
+        expect(new KJUR.asn1.DERAbstractStructured()).to.be.instanceOf(
+            KJUR.asn1.ASN1Object,
+        );
+    });
+
+    it("KJUR.asn1.DERAbstractStructDERBooleanured should be instance of KJUR.asn1.ASN1Object", function () {
+        expect(new KJUR.asn1.DERBoolean()).to.be.instanceOf(KJUR.asn1.ASN1Object);
+    });
+
+    it("KJUR.asn1.DERInteger should be instance of KJUR.asn1.ASN1Object", function () {
+        expect(new KJUR.asn1.DERInteger()).to.be.instanceOf(KJUR.asn1.ASN1Object);
+    });
+
+    it("KJUR.asn1.DERUTF8String should be instance of KJUR.asn1.DERAbstractString", function () {
+        expect(new KJUR.asn1.DERUTF8String()).to.be.instanceOf(
+            KJUR.asn1.DERAbstractString,
+        );
+    });
+
+    it("KJUR.asn1.DERNumericString should be instance of KJUR.asn1.DERAbstractString", function () {
+        expect(new KJUR.asn1.DERNumericString()).to.be.instanceOf(
+            KJUR.asn1.DERAbstractString,
+        );
+    });
+
+    it("KJUR.asn1.DERUTCTime should be instance of KJUR.asn1.DERAbstractTime", function () {
+        expect(new KJUR.asn1.DERUTCTime()).to.be.instanceOf(KJUR.asn1.DERAbstractTime);
+    });
+
+    it("KJUR.asn1.DERSet should be instance of KJUR.asn1.DERAbstractStructured", function () {
+        expect(new KJUR.asn1.DERSet()).to.be.instanceOf(KJUR.asn1.DERAbstractStructured);
     });
 });
