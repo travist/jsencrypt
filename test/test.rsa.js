@@ -2,6 +2,7 @@ import { JSEncrypt } from "../lib/JSEncrypt";
 import chai from "chai";
 import dirtyChai from "dirty-chai";
 import { parseBigInt } from "../lib/lib/jsbn/jsbn";
+import { JSEncryptRSAKey } from "../lib/JSEncryptRSAKey";
 
 chai.use(dirtyChai);
 
@@ -528,8 +529,9 @@ describe("JSEncrypt setKey Method", function () {
 describe("JSEncrypt", function () {
     describe("#constructor()", function () {
         it("should set the key correctly when provided in options", function () {
-            const jse = new JSEncrypt({ key: prKeyObject });
-            expect(jse.getKey()).to.equal(prKeyObject);
+            const key = new JSEncryptRSAKey(prKeyObject);
+            const jse = new JSEncrypt({ key: key });
+            expect(jse.getKey()).to.equal(key);
         });
 
         it("should default the key to null when not provided", function () {
