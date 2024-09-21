@@ -5,6 +5,7 @@ const version = typeof process !== 'undefined'
     : undefined;
 
 export interface IJSEncryptOptions {
+    key?: JSEncryptRSAKey;
     default_key_size?: string;
     default_public_exponent?: string;
     log?: boolean;
@@ -14,6 +15,7 @@ export interface IJSEncryptOptions {
  *
  * @param {Object} [options = {}] - An object to customize JSEncrypt behaviour
  * possible parameters are:
+ * - key                     {JSEncryptRSAKey}  default: null
  * - default_key_size        {number}  default: 1024 the key size in bit
  * - default_public_exponent {string}  default: '010001' the hexadecimal representation of the public exponent
  * - log                     {boolean} default: false whether log warn/error or not
@@ -21,14 +23,13 @@ export interface IJSEncryptOptions {
  */
 export class JSEncrypt {
     constructor(options: IJSEncryptOptions = {}) {
-        options = options || {};
         this.default_key_size = options.default_key_size
             ? parseInt(options.default_key_size, 10)
             : 1024;
         this.default_public_exponent = options.default_public_exponent || "010001"; // 65537 default openssl public exponent for rsa key type
         this.log = options.log || false;
         // The private and public key.
-        this.key = null;
+        this.key = options.key || null;
     }
 
     private default_key_size: number;
