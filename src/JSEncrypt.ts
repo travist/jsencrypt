@@ -44,11 +44,15 @@ export class JSEncrypt {
      * @param {Object|string} key the pem encoded string or an object (with or without header/footer)
      * @public
      */
-    public setKey(key: string) {
-        if (this.log && this.key) {
-            console.warn("A key was already set, overriding existing.");
+    public setKey(key?: string) {
+        if (key) {
+            if (this.log && this.key) {
+                console.warn("A key was already set, overriding existing.");
+            }
+            this.key = new JSEncryptRSAKey(key);
+        } else if (!this.key && this.log) {
+            console.error("A key was not set.");
         }
-        this.key = new JSEncryptRSAKey(key);
     }
 
     /**
