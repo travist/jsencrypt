@@ -2,7 +2,7 @@
     "name": "jsencrypt",
     "version": "3.3.2",
     "description": "A Javascript library to perform OpenSSL RSA Encryption, Decryption, and Key Generation.",
-    "main": "bin/jsencrypt.js",
+    "main": "bin/jsencrypt.min.js",
     "module": "lib/index.js",
     "browser": "lib/index.js",
     "types": "lib/index.d.ts",
@@ -39,6 +39,15 @@
         "serve": "bundle exec jekyll server --config _config.build.yml",
         "test": "ts-mocha test/test.rsa.js"
     },
+    "browserslist": [
+        "last 1 version",
+        "> 1%",
+        "ie 11",
+        "chrome >= 30",
+        "edge >= 79",
+        "firefox >= 63",
+        "safari >= 11"
+    ],
     "author": "Travis Tidwell <travis@form.io>",
     "contributors": [
         {
