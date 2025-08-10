@@ -19,12 +19,12 @@
 const max = 10000000000000; // biggest integer that can still fit 2^53 when multiplied by 256
 
 export class Int10 {
-    constructor(value?:string | number) {
+    constructor(value?: string | number) {
         this.buf = [+value || 0];
     }
 
 
-    public mulAdd(m:number, c:number) {
+    public mulAdd(m: number, c: number) {
         // assert(m <= 256)
         const b = this.buf;
         const l = b.length;
@@ -45,7 +45,7 @@ export class Int10 {
         }
     }
 
-    public sub(c:number) {
+    public sub(c: number) {
         // assert(m <= 256)
         const b = this.buf;
         const l = b.length;
@@ -66,7 +66,7 @@ export class Int10 {
         }
     }
 
-    public toString(base?:number) {
+    public toString(base?: number) {
         if ((base || 10) != 10) {
             throw new Error("only base 10 is supported");
         }
@@ -92,6 +92,6 @@ export class Int10 {
         return (b.length == 1) ? b[0] : this;
     }
 
-    private buf:number[];
+    private buf: number[];
 }
 
