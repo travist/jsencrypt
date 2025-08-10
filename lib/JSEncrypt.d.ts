@@ -59,6 +59,16 @@ export declare class JSEncrypt {
      */
     encrypt(str: string): string | false;
     /**
+     * Proxy method for RSAKey object's encrypt with padding: RSA_PKCS1_OAEP_PADDING and oaepHash: sha256,
+     * encrypt the string using the public
+     * components of the rsa key object. Note that if the object was not set will be created
+     * on the fly (by the getKey method) using the parameters passed in the JSEncrypt constructor
+     * @param {string} str the string to encrypt
+     * @return {string} the encrypted string encoded in base64
+     * @public
+     */
+    encryptOAEP(str: string): string | false;
+    /**
      * Proxy method for RSAKey object's sign.
      * @param {string} str the string to sign
      * @param {function} digestMethod hash method

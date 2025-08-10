@@ -4,9 +4,9 @@
 
 // convert a (hex) string to a bignum object
 
-import { BigInteger, nbi, parseBigInt } from "./jsbn";
-import { SecureRandom } from "./rng";
-
+import {BigInteger, nbi, parseBigInt} from "./jsbn";
+import {SecureRandom} from "./rng";
+import { rstr_sha256 } from './sha256';
 
 // function linebrk(s,n) {
 //   var ret = "";
@@ -76,6 +76,68 @@ function pkcs1pad2(s: string, n: number) {
     return new BigInteger(ba);
 }
 
+// PKCS#1 (OAEP) mask generation function, using SHA-256
+function oaep_mgf1_arr(seed: number[], len: number, hashFunc: (input: string) => string) {
+    var mask = "",
+        i = 0;
+
+    while (mask.length < len) {
+        mask += hashFunc(
+            String.fromCharCode.apply(
+                String,
+                seed.concat([
+                    (i & 0xff000000) >> 24,
+                    (i & 0x00ff0000) >> 16,
+                    (i & 0x0000ff00) >> 8,
+                    i & 0x000000ff,
+                ]),
+            ),
+        );
+        i += 1;
+    }
+
+    return mask;
+}
+
+const SHA256_SIZE = 32;
+
+// PKCS#1 (OAEP) pad input string s to n bytes, and return a BigInteger
+export function oaep_pad(s: string, n: number) {
+    const hashLen = SHA256_SIZE;
+    const hashFunc = rstr_sha256;
+
+    if (s.length + 2 * hashLen + 2 > n) {
+        throw "Message too long for RSA";
+    }
+
+    var PS = "",
+        i;
+
+    for (i = 0; i < n - s.length - 2 * hashLen - 2; i += 1) {
+        PS += "\x00";
+    }
+
+    var DB = hashFunc("") + PS + "\x01" + s,
+        seed = new Array(hashLen);
+    new SecureRandom().nextBytes(seed);
+
+    var dbMask = oaep_mgf1_arr(seed, DB.length, hashFunc),
+        maskedDB = [];
+
+    for (i = 0; i < DB.length; i += 1) {
+        maskedDB[i] = DB.charCodeAt(i) ^ dbMask.charCodeAt(i);
+    }
+
+    var seedMask = oaep_mgf1_arr(maskedDB, seed.length, hashFunc),
+        maskedSeed = [0];
+
+    for (i = 0; i < seed.length; i += 1) {
+        maskedSeed[i + 1] = seed[i] ^ seedMask.charCodeAt(i);
+    }
+
+    return new BigInteger(maskedSeed.concat(maskedDB));
+}
+
 // "empty" RSA key constructor
 export class RSAKey {
     constructor() {
@@ -133,9 +195,12 @@ export class RSAKey {
 
     // RSAKey.prototype.encrypt = RSAEncrypt;
     // Return the PKCS#1 RSA encryption of "text" as an even-length hex string
-    public encrypt(text: string) {
+    public encrypt(text:string, paddingFunction?: (s: string, n: number) => BigInteger) {
+        if (typeof paddingFunction === 'undefined') {
+            paddingFunction = pkcs1pad2;
+        }
         const maxLength = (this.n.bitLength() + 7) >> 3;
-        const m = pkcs1pad2(text, maxLength);
+        const m = paddingFunction(text, maxLength);
 
         if (m == null) {
             return null;
