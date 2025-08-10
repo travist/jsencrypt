@@ -1,5 +1,6 @@
 import { JSEncryptRSAKey } from "./JSEncryptRSAKey";
 export interface IJSEncryptOptions {
+    key?: JSEncryptRSAKey;
     default_key_size?: string;
     default_public_exponent?: string;
     log?: boolean;
@@ -8,6 +9,7 @@ export interface IJSEncryptOptions {
  *
  * @param {Object} [options = {}] - An object to customize JSEncrypt behaviour
  * possible parameters are:
+ * - key                     {JSEncryptRSAKey}  default: null
  * - default_key_size        {number}  default: 1024 the key size in bit
  * - default_public_exponent {string}  default: '010001' the hexadecimal representation of the public exponent
  * - log                     {boolean} default: false whether log warn/error or not
@@ -27,7 +29,7 @@ export declare class JSEncrypt {
      * @param {Object|string} key the pem encoded string or an object (with or without header/footer)
      * @public
      */
-    setKey(key: string): void;
+    setKey(key?: string): void;
     /**
      * Proxy method for setKey, for api compatibility
      * @see setKey
