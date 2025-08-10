@@ -11,6 +11,61 @@ var expect = chai.expect;
 
 var keySizes = [128, 256, 512, 1024, 2048];
 
+// pbKeyObject for RSA public key pbkeys[2]:
+// -----BEGIN PUBLIC KEY-----
+// MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAKEpu21RDTXxEly55HdkVV9SlFL3Hgpl
+// i6+IohAsnaqFnApsKi1R7fAd3tBLmeHV2tlxYIogtxpzfpcc+QBVDx8CAwEAAQ==
+// -----END PUBLIC KEY-----
+var pbKeyObject = {
+    n: parseBigInt(
+        "8440792054978758064869897516311406885364968765682484036772649496770016298874677916537637858819623046743693275780499081114467575196675260735321172503498527",
+        16,
+    ),
+    e: parseInt("65537", 16),
+};
+
+// prKeyObject for RSA private key prkeys[2]:
+// -----BEGIN RSA PRIVATE KEY-----
+// MIIBOQIBAAJBAKEpu21RDTXxEly55HdkVV9SlFL3Hgpli6+IohAsnaqFnApsKi1R
+// 7fAd3tBLmeHV2tlxYIogtxpzfpcc+QBVDx8CAwEAAQJAFn0VS07JEiLelhPWfpaA
+// lzmVuvICvh6nXEormygupBGiIPSXfIsTFid26yxt9wu4JHeRF0lq+Ozo55XpBQED
+// 4QIhAM0E7ikuEa2bDsR2hQJhIz3SvzzyhE5dJcqFjRtKtMQvAiEAyT0C0gUyqCdN
+// YuRON1T7FUffarMdQXR+8tgRkhoCeBECID+ZKfAoVF+QXDJhub0VOQNyntRfPt+4
+// UYLTjwRKVm0NAiBuOCtuSoiHTxd0naU1aycmbboxn67bZeoOKkfdZL+LcQIgK6Xh
+// 1wb9I/sNYv9ByJEGBNJRwtUEZrk5babLEdkUq90=
+// -----END RSA PRIVATE KEY-----
+var prKeyObject = {
+    n: parseBigInt(
+        "8440792054978758064869897516311406885364968765682484036772649496770016298874677916537637858819623046743693275780499081114467575196675260735321172503498527",
+        16,
+    ),
+    e: parseInt("65537", 16),
+    d: parseBigInt(
+        "1177823875715713909749228875088390008188697062150637296737505220683915941425564934349491530018433333961844817179868275593577546013764062491594491380696033",
+        16,
+    ),
+    p: parseBigInt(
+        "92732845073668710445924195001235079654522118761730560062285200509259817993263",
+        16,
+    ),
+    q: parseBigInt(
+        "91022679701816919667509879755596357812609561447601541582317961096419889805329",
+        16,
+    ),
+    dmp1: parseBigInt(
+        "28766326507891494626938048497415340485167686565237686895437052754219022839053",
+        16,
+    ),
+    dmq1: parseBigInt(
+        "49853656528323211795859852202986576493944187377537228361037325687107922922353",
+        16,
+    ),
+    coeff: parseBigInt(
+        "19742540944821459160648146809005642401823159477711103628233753789734220770269",
+        16,
+    ),
+};
+
 var pbkeys = [
     "-----BEGIN PUBLIC KEY-----\n" +
         "MCwwDQYJKoZIhvcNAQEBBQADGwAwGAIRAMfE82X6tlpNK7Bxbhg6nEECAwEAAQ==\n" +
@@ -419,5 +474,152 @@ describe("KJUR", function () {
 
     it("KJUR.asn1.DERSet should be instance of KJUR.asn1.DERAbstractStructured", function () {
         expect(new KJUR.asn1.DERSet()).to.be.instanceOf(KJUR.asn1.DERAbstractStructured);
+    });
+});
+
+describe("JSEncrypt setKey Method", function () {
+    let jse;
+    let originalConsoleWarn;
+    let originalConsoleError;
+
+    beforeEach(() => {
+        jse = new JSEncrypt();
+        jse.log = true;
+
+        originalConsoleWarn = console.warn;
+        originalConsoleError = console.error;
+    });
+
+    afterEach(() => {
+        console.warn = originalConsoleWarn;
+        console.error = originalConsoleError;
+    });
+
+    describe("#setKey()", function () {
+        it("should set the key correctly when a valid key is provided", function () {
+            jse.setKey(pbkeys[0]);
+            expect(jse.key).to.be.ok;
+        });
+
+        it("should log a warning if overriding an existing key", function () {
+            let warningMessage;
+            console.warn = (message) => {
+                warningMessage = message;
+            };
+
+            jse.setKey(pbkeys[0]);
+            jse.setKey(pbkeys[1]);
+
+            expect(warningMessage).to.equal(
+                "A key was already set, overriding existing.",
+            );
+        });
+
+        it("should not log a warning if no key is provided", function () {
+            let warningCalled = false;
+            console.warn = () => {
+                warningCalled = true;
+            };
+
+            jse.setKey();
+
+            expect(warningCalled).to.be.false;
+        });
+
+        it("should override existing key and log a warning", function () {
+            const key1 = pbkeys[0];
+            const key2 = pbkeys[1];
+
+            jse.setKey(key1);
+
+            let warningMessage;
+            console.warn = (message) => {
+                warningMessage = message;
+            };
+
+            jse.setKey(key2);
+
+            expect(jse.getKey()).to.be.ok;
+            expect(warningMessage).to.equal(
+                "A key was already set, overriding existing.",
+            );
+        });
+
+        it("should log an error if no key is set and log is true", function () {
+            let errorMessage;
+            console.error = (message) => {
+                errorMessage = message;
+            };
+
+            jse.setKey(null);
+
+            expect(jse.getKey()).to.be.undefined;
+            expect(errorMessage).to.equal("A key was not set.");
+        });
+
+        it("should not log an error if log is false", function () {
+            jse.log = false;
+
+            let errorMessage;
+            console.error = (message) => {
+                errorMessage = message;
+            };
+
+            jse.setKey(undefined);
+
+            expect(jse.getKey()).to.be.undefined;
+            expect(errorMessage).to.be.undefined;
+        });
+
+        it("should not log an error if key is already set", function () {
+            jse.setKey(pbkeys[0]);
+
+            let errorMessage;
+            console.error = (message) => {
+                errorMessage = message;
+            };
+
+            jse.setKey(undefined);
+
+            expect(jse.getKey()).to.equal(jse.key);
+            expect(errorMessage).to.be.undefined;
+        });
+
+        it("should create a key object with correct n and e values when a valid public key parameters are provided", function () {
+            jse.setKey(pbKeyObject);
+            const key = jse.getKey();
+
+            expect(key.n).to.deep.equal(pbKeyObject.n);
+            expect(key.e).to.equal(pbKeyObject.e);
+        });
+
+        it("should create a key object with correct n, e, and d values when a valid private key parameters are provided", function () {
+            jse.setKey(prKeyObject);
+            const key = jse.getKey();
+
+            expect(key.n).to.deep.equal(prKeyObject.n);
+            expect(key.e).to.equal(prKeyObject.e);
+            expect(key.d).to.equal(prKeyObject.d);
+        });
+    });
+});
+
+describe("JSEncrypt", function () {
+    describe("#constructor()", function () {
+        it("should set the key correctly when provided in options", function () {
+            const key = new JSEncryptRSAKey(prKeyObject);
+            const jse = new JSEncrypt({ key: key });
+            expect(jse.getKey()).to.equal(key);
+        });
+
+        it("should default the key to null when not provided", function () {
+            const jse = new JSEncrypt();
+            expect(jse.getKey()).to.be.null;
+        });
+
+        it("should set the key to null when explicitly passed as null", function () {
+            const jse = new JSEncrypt({ key: null });
+            expect(jse.getKey()).to.be.null;
+        });
     });
 });
