@@ -20,13 +20,13 @@ YAHOO.lang = {
      *                              matching items obtained from the superclass
      *                              if present.
      */
-    extend: function(subc, superc, overrides) {
-        if (! superc || ! subc) {
+    extend: function (subc, superc, overrides) {
+        if (!superc || !subc) {
             throw new Error("YAHOO.lang.extend failed, please check that " +
                 "all dependencies are included.");
         }
 
-        var F = function() {};
+        var F = function () { };
         F.prototype = superc.prototype;
         subc.prototype = new F();
         subc.prototype.constructor = subc;
@@ -52,11 +52,11 @@ YAHOO.lang = {
              * @static
              * @private
              */
-            var _IEEnumFix = function() {},
+            var _IEEnumFix = function () { },
                 ADD = ["toString", "valueOf"];
             try {
                 if (/MSIE/.test(navigator.userAgent)) {
-                    _IEEnumFix = function(r, s) {
+                    _IEEnumFix = function (r, s) {
                         for (i = 0; i < ADD.length; i = i + 1) {
                             var fname = ADD[i], f = s[fname];
                             if (typeof f === 'function' && f != Object.prototype[fname]) {
@@ -65,7 +65,7 @@ YAHOO.lang = {
                         }
                     };
                 }
-            } catch (ex) {};
+            } catch (ex) { };
             _IEEnumFix(subc.prototype, overrides);
         }
     }

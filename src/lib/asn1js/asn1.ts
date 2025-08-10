@@ -16,13 +16,13 @@
 /*jshint browser: true, strict: true, immed: true, latedef: true, undef: true, regexdash: false */
 /*global oids */
 
-import {Int10} from "./int10";
+import { Int10 } from "./int10";
 
 const ellipsis = "\u2026";
-const reTimeS =     /^(\d\d)(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])([01]\d|2[0-3])(?:([0-5]\d)(?:([0-5]\d)(?:[.,](\d{1,3}))?)?)?(Z|[-+](?:[0]\d|1[0-2])([0-5]\d)?)?$/;
+const reTimeS = /^(\d\d)(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])([01]\d|2[0-3])(?:([0-5]\d)(?:([0-5]\d)(?:[.,](\d{1,3}))?)?)?(Z|[-+](?:[0]\d|1[0-2])([0-5]\d)?)?$/;
 const reTimeL = /^(\d\d\d\d)(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])([01]\d|2[0-3])(?:([0-5]\d)(?:([0-5]\d)(?:[.,](\d{1,3}))?)?)?(Z|[-+](?:[0]\d|1[0-2])([0-5]\d)?)?$/;
 
-function stringCut(str:string, len:number) {
+function stringCut(str: string, len: number) {
     if (str.length > len) {
         str = str.substring(0, len) + ellipsis;
     }
@@ -30,7 +30,7 @@ function stringCut(str:string, len:number) {
 }
 
 export class Stream {
-    constructor(enc:Stream|number[], pos?:number) {
+    constructor(enc: Stream | number[], pos?: number) {
         if (enc instanceof Stream) {
             this.enc = enc.enc;
             this.pos = enc.pos;
@@ -41,10 +41,10 @@ export class Stream {
         }
     }
 
-    private enc:string|number[];
-    public pos:number;
+    private enc: string | number[];
+    public pos: number;
 
-    public get(pos?:number) {
+    public get(pos?: number) {
         if (pos === undefined) {
             pos = this.pos++;
         }
@@ -56,11 +56,11 @@ export class Stream {
 
     public hexDigits = "0123456789ABCDEF";
 
-    public hexByte(b:number) {
+    public hexByte(b: number) {
         return this.hexDigits.charAt((b >> 4) & 0xF) + this.hexDigits.charAt(b & 0xF);
     }
 
-    public hexDump(start:number, end:number, raw:boolean) {
+    public hexDump(start: number, end: number, raw: boolean) {
         let s = "";
         for (let i = start; i < end; ++i) {
             s += this.hexByte(this.get(i));
@@ -80,7 +80,7 @@ export class Stream {
         return s;
     }
 
-    public isASCII(start:number, end:number) {
+    public isASCII(start: number, end: number) {
         for (let i = start; i < end; ++i) {
             const c = this.get(i);
             if (c < 32 || c > 176) {
@@ -90,7 +90,7 @@ export class Stream {
         return true;
     }
 
-    public parseStringISO(start:number, end:number) {
+    public parseStringISO(start: number, end: number) {
         let s = "";
         for (let i = start; i < end; ++i) {
             s += String.fromCharCode(this.get(i));
@@ -98,7 +98,7 @@ export class Stream {
         return s;
     }
 
-    public parseStringUTF(start:number, end:number) {
+    public parseStringUTF(start: number, end: number) {
         let s = "";
         for (let i = start; i < end;) {
             const c = this.get(i++);
@@ -113,7 +113,7 @@ export class Stream {
         return s;
     }
 
-    public parseStringBMP(start:number, end:number) {
+    public parseStringBMP(start: number, end: number) {
         let str = "";
         let hi;
         let lo;
@@ -125,9 +125,9 @@ export class Stream {
         return str;
     }
 
-    public parseTime(start:number, end:number, shortYear:boolean) {
+    public parseTime(start: number, end: number, shortYear: boolean) {
         let s = this.parseStringISO(start, end);
-        const m:Array<number|string> = (shortYear ? reTimeS : reTimeL).exec(s);
+        const m: Array<number | string> = (shortYear ? reTimeS : reTimeL).exec(s);
         if (!m) {
             return "Unrecognized time: " + s;
         }
@@ -159,12 +159,12 @@ export class Stream {
         return s;
     }
 
-    public parseInteger(start:number, end:number) {
+    public parseInteger(start: number, end: number) {
         let v = this.get(start);
         const neg = (v > 127);
         const pad = neg ? 255 : 0;
         let len;
-        let s:string | number = "";
+        let s: string | number = "";
         // skip unuseful bits (not allowed in DER)
         while (v == pad && ++start < end) {
             v = this.get(start);
@@ -194,7 +194,7 @@ export class Stream {
         return s + n.toString();
     }
 
-    public parseBitString(start:number, end:number, maxLength:number) {
+    public parseBitString(start: number, end: number, maxLength: number) {
         const unusedBit = this.get(start);
         const lenBit = ((end - start - 1) << 3) - unusedBit;
         const intro = "(" + lenBit + " bit)\n";
@@ -212,7 +212,7 @@ export class Stream {
         return intro + s;
     }
 
-    public parseOctetString(start:number, end:number, maxLength:number) {
+    public parseOctetString(start: number, end: number, maxLength: number) {
         if (this.isASCII(start, end)) {
             return stringCut(this.parseStringISO(start, end), maxLength);
         }
@@ -231,9 +231,9 @@ export class Stream {
         return s;
     }
 
-    public parseOID(start:number, end:number, maxLength:number) {
+    public parseOID(start: number, end: number, maxLength: number) {
         let s = "";
-        let n:number|Int10 = new Int10();
+        let n: number | Int10 = new Int10();
         let bits = 0;
         for (let i = start; i < end; ++i) {
             const v = this.get(i);
@@ -266,7 +266,7 @@ export class Stream {
     }
 }
 export class ASN1 {
-    constructor(stream:Stream, header:number, length:number, tag:ASN1Tag, sub:ASN1[]) {
+    constructor(stream: Stream, header: number, length: number, tag: ASN1Tag, sub: ASN1[]) {
         if (!(tag instanceof ASN1Tag)) {
             throw new Error("Invalid tag value.");
         }
@@ -277,11 +277,11 @@ export class ASN1 {
         this.sub = sub;
     }
 
-    private stream:Stream;
-    private header:number;
-    private length:number;
-    private tag:ASN1Tag;
-    public sub:ASN1[];
+    private stream: Stream;
+    private header: number;
+    private length: number;
+    private tag: ASN1Tag;
+    public sub: ASN1[];
 
     public typeName() {
         switch (this.tag.tagClass) {
@@ -352,7 +352,7 @@ export class ASN1 {
         }
     }
 
-    public content(maxLength:number) { // a preview of the content (intended for humans)
+    public content(maxLength: number) { // a preview of the content (intended for humans)
         if (this.tag === undefined) {
             return null;
         }
@@ -418,7 +418,7 @@ export class ASN1 {
         return this.typeName() + "@" + this.stream.pos + "[header:" + this.header + ",length:" + this.length + ",sub:" + ((this.sub === null) ? "null" : this.sub.length) + "]";
     }
 
-    public toPrettyString(indent:string) {
+    public toPrettyString(indent: string) {
         if (indent === undefined) {
             indent = "";
         }
@@ -458,7 +458,7 @@ export class ASN1 {
         return this.stream.hexDump(this.posStart(), this.posEnd(), true);
     }
 
-    public static decodeLength(stream:Stream):number {
+    public static decodeLength(stream: Stream): number {
         let buf = stream.get();
         const len = buf & 0x7F;
         if (len == buf) {
@@ -484,15 +484,15 @@ export class ASN1 {
      * @returns {string}
      * @public
      */
-    public getHexStringValue():string {
+    public getHexStringValue(): string {
         const hexString = this.toHexString();
         const offset = this.header * 2;
         const length = this.length * 2;
-        return hexString.substr(offset, length);
+        return hexString.substring(offset, offset + length);
     }
 
-    public static decode(str:Stream|number[]) {
-        let stream:Stream;
+    public static decode(str: Stream | number[]) {
+        let stream: Stream;
 
         if (!(str instanceof Stream)) {
             stream = new Stream(str, 0);
@@ -506,7 +506,7 @@ export class ASN1 {
         const start = stream.pos;
         const header = start - streamStart.pos;
         let sub = null;
-        const getSub:() => ASN1[] = function () {
+        const getSub: () => ASN1[] = function () {
             const ret = [];
             if (len !== null) {
                 // definite length
@@ -569,7 +569,7 @@ export class ASN1 {
 
 
 export class ASN1Tag {
-    constructor(stream:Stream) {
+    constructor(stream: Stream) {
         let buf = stream.get();
         this.tagClass = buf >> 6;
         this.tagConstructed = ((buf & 0x20) !== 0);
@@ -584,9 +584,9 @@ export class ASN1Tag {
         }
     }
 
-    public tagClass:number;
-    public tagConstructed:boolean;
-    public tagNumber:number | Int10;
+    public tagClass: number;
+    public tagConstructed: boolean;
+    public tagNumber: number | Int10;
 
     public isUniversal() {
         return this.tagClass === 0x00;

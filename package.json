@@ -31,6 +31,7 @@
         "bin",
         "lib"
     ],
+    "sideEffects": false,
     "scripts": {
         "build:dev": "tsc && tsc --project tsconfig-def.json && webpack",
         "build:test": "tsc && tsc --project tsconfig-def.json && webpack --config webpack.test.js",
