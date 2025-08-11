@@ -135,7 +135,7 @@ For direct browser usage without a build system:
 <html>
 <head>
     <title>JSEncrypt Example</title>
-    <script src="https://cdn.jsdelivr.net/npm/jsencrypt@3.4.0/bin/jsencrypt.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsencrypt/bin/jsencrypt.min.js"></script>
 </head>
 <body>
     <script>
