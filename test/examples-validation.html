@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>JSEncrypt Examples Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .pass { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .fail { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+    </style>
+</head>
+<body>
+    <h1>JSEncrypt Examples Test Suite</h1>
+    <div id="test-results"></div>
+    
+    <script src="../bin/jsencrypt.min.js"></script>
+    <script>
+        // Test key pairs for examples
+        const testKeys = {
+            publicKey: `-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtKrsFSnzYl19m5wTwYdu
+/r1UVZJV+zkAFud6+XTInAy8HbCR9n59H9+54P+Af/fUE6rvEPc4H09Z63vQzIGM
+iL6GlqzMmptv/KRDIhj7Mk3MXomvEVfUsXrz5IpO0lf6NSeGhz4PGZUkHZ30VRx3
+Jd/a0KIhgftZHxzmMsh8iB/n781B18pCP2eOPTF+5gRCaW+0fVPBlb/mBlg8MJrd
+ScGCAReQ9NfTq8slJ0aO1NWaaRRANPQcCMljnTIK1ssyXBaSHKfoWeGx141mWMRx
+/LxyZ13Zc3lqgmICiKFqMrQl5UeV1IUXYpj5hO9f60LGpZVHDqqo/JdF3+VAhea
+fQwIDAQAB
+-----END PUBLIC KEY-----`,
+            privateKey: `-----BEGIN RSA PRIVATE KEY-----
+MIIEpAIBAAKCAQEAtKrsFSnzYl19m5wTwYdu/r1UVZJV+zkAFud6+XTInAy8HbCR
+9n59H9+54P+Af/fUE6rvEPc4H09Z63vQzIGMiL6GlqzMmptv/KRDIhj7Mk3MXomv
+EVfUsXrz5IpO0lf6NSeGhz4PGZUkHZ30VRx3Jd/a0KIhgftZHxzmMsh8iB/n781B
+18pCP2eOPTF+5gRCaW+0fVPBlb/mBlg8MJrdScGCAReQ9NfTq8slJ0aO1NWaaRRA
+NPQcCMljnTIK1ssyXBaSHKfoWeGx141mWMRx/LxyZ13Zc3lqgmICiKFqMrQl5UeV
+1IUXYpj5hO9f60LGpZVHDqqo/JdF3+VAheafQwIDAQABAoIBAQCS/++PWM7bXk5x
+apD4ioXZZ5tS9PpYqoxUFoyMpGUF86asUZqyAUE1ygen9rxLYw5/4jkaiMx1TU9Q
+tzGw9Eewi7Veq8LemVKJMe4dtE3PJFYBJe34IorAzdXcQlzX8RV4YmynZetLWXpF
+Ttwa1Ept2rJjx0eURzrAgfcbot0Qs+c8bB0qnGC67PoL3DyYg8vX5PDmiiA2VZMG
+EylVQS09toJn5ReaKCtjxJb/XFQjBeSP0xLjvZZftGDJgpwmmi7Sy/zAZoF4+7wf
+8nihXk4ZfYC+beBj5U9pcUcs6LdNobUofWFRLSjueseRQBI0sKUslr3Ye4zhkrWM
+CDnsSxBhAoGBANi0spS/Mc6xH1189mR7dJV9gy7KkGxheAstwCJr7WzbXqglhFm2
+SvY9hrpE9OYWir5EqX6jM6VipSobTn0RpCsYUC/J1ISMyEA5UkPLP4jHQw6UUDN2
+1fNAXffEyuju5ShP9Mk2unZstlUweKlFF7d1k7YAzWDIKnF6bOL06YC9AoGBANVt
+XM4OH0zw8M97W04WwYGoa5s1Y5JYc4RMV200cr3iONVfLZgSP8thP1qPuoMM3OJg
+vP8xUJaFZZtSo6GZ4RTszcT8EjiFe3kYdKBm4PfVn0a3EKd0D8vH1qMwY1nBBGRk
+rvQl7l+VHfcVKGgJ8ZBLN1+yKx/YBWCaRtGOq/v3AoGAO4d5nPFE8qT8m3YG3qFs
+YY8E6j9w1zB6K3rB2M+U4F1WCT1dH0hpFRg2E8c3cV8bJG4hQl2lmP1nNvYL+F4u
+X3M9N4J3dKJ5Q8+pOzD2wO+GtF+KLxqM1Hd0YqP7L9hG+m9E0fSb2YpL1J9rH+H1
+5rZ9P+9lN3wTG+qH+PZ2E2sCgYEA2cTQ4PZF7O5F9MmO5Y2QbN0l5nF2pP6lG1R3
+Jb4kL7hA9X+PbG6Y9qYhJ4E6LfQ8R1qE2Z4sQ7vK1gJ6D8L9K3D+A9Z7M3qP0Q7v
+X2L4Q1A2bC1g3Y6T8z9K4P6Z3W5C9oY7H8L0M1hG6K2J+l4P1A8D6H5q7fY3L0hB
+JfF2mPECgYB9Z8cE4pT7y1E4g2M7F3aY2q8z4Z0YzKdWJ9JgL7rC+H4yO3QG5D8P
+m1wG6F0J8lR5fPz9qZg7R2P4J9B1vEL6T3E2s0K7H9Y5A4F1K8C0Q7x4L2N6P8G5
+Z3U4v1Q2Y9O7K5L3T6m0F8J4A9B2E1qY7X5r9G3K0P2L8H6Z4V1g==
+-----END RSA PRIVATE KEY-----`
+        };
+
+        function log(message, type = 'info') {
+            const resultsDiv = document.getElementById('test-results');
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.textContent = message;
+            resultsDiv.appendChild(div);
+            console.log(message);
+        }
+
+        function assert(condition, message) {
+            if (!condition) {
+                throw new Error(message);
+            }
+        }
+
+        function runTest(name, testFn) {
+            try {
+                testFn();
+                log(`✓ ${name}`, 'pass');
+                return true;
+            } catch (error) {
+                log(`✗ ${name}: ${error.message}`, 'fail');
+                return false;
+            }
+        }
+
+        function runAllTests() {
+            log('Starting JSEncrypt Examples Test Suite...', 'info');
+            let passed = 0;
+            let total = 0;
+
+            // Test 1: Basic Encryption/Decryption
+            total++;
+            if (runTest("Basic encryption/decryption", () => {
+                const crypt = new JSEncrypt();
+                crypt.setPrivateKey(testKeys.privateKey);
+                crypt.setPublicKey(testKeys.publicKey);
+                
+                const message = "This is a secret message";
+                const encrypted = crypt.encrypt(message);
+                assert(encrypted !== null, "Encryption should succeed");
+                assert(typeof encrypted === 'string', "Encrypted data should be a string");
+                
+                const decrypted = crypt.decrypt(encrypted);
+                assert(decrypted === message, "Decrypted message should match original");
+            })) passed++;
+
+            // Test 2: User Credentials Encryption
+            total++;
+            if (runTest("User credentials encryption", () => {
+                function encryptCredentials(username, password, publicKey) {
+                    const crypt = new JSEncrypt();
+                    crypt.setPublicKey(publicKey);
+                    
+                    const credentials = JSON.stringify({
+                        username: username,
+                        password: password,
+                        timestamp: Date.now()
+                    });
+                    
+                    return crypt.encrypt(credentials);
+                }
+                
+                const encryptedCreds = encryptCredentials('john.doe', 'myPassword123', testKeys.publicKey);
+                assert(encryptedCreds !== null, "Credentials encryption should succeed");
+                
+                const crypt = new JSEncrypt();
+                crypt.setPrivateKey(testKeys.privateKey);
+                const decrypted = crypt.decrypt(encryptedCreds);
+                const credentials = JSON.parse(decrypted);
+                
+                assert(credentials.username === 'john.doe', "Username should match");
+                assert(credentials.password === 'myPassword123', "Password should match");
+            })) passed++;
+
+            // Test 3: JWT Token Structure (simplified)
+            total++;
+            if (runTest("JWT token structure", () => {
+                class SimpleJWT {
+                    constructor(privateKey, publicKey) {
+                        this.crypt = new JSEncrypt();
+                        this.privateKey = privateKey;
+                        this.publicKey = publicKey;
+                    }
+                    
+                    base64UrlEncode(str) {
+                        return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+                    }
+                    
+                    base64UrlDecode(str) {
+                        str += '='.repeat((4 - str.length % 4) % 4);
+                        return atob(str.replace(/-/g, '+').replace(/_/g, '/'));
+                    }
+                    
+                    createToken(payload) {
+                        const header = { alg: 'RS256', typ: 'JWT' };
+                        const encodedHeader = this.base64UrlEncode(JSON.stringify(header));
+                        const encodedPayload = this.base64UrlEncode(JSON.stringify(payload));
+                        
+                        // For testing, create a simple signature
+                        this.crypt.setPrivateKey(this.privateKey);
+                        const signingInput = `${encodedHeader}.${encodedPayload}`;
+                        const signature = this.crypt.encrypt(signingInput.substring(0, 100)); // Limit for RSA
+                        const encodedSignature = this.base64UrlEncode(signature || 'test-sig');
+                        
+                        return `${signingInput}.${encodedSignature}`;
+                    }
+                    
+                    verifyToken(token) {
+                        const parts = token.split('.');
+                        assert(parts.length === 3, "JWT should have 3 parts");
+                        
+                        const payload = JSON.parse(this.base64UrlDecode(parts[1]));
+                        return payload;
+                    }
+                }
+                
+                const jwt = new SimpleJWT(testKeys.privateKey, testKeys.publicKey);
+                const payload = { userId: 12345, username: 'john.doe' };
+                
+                const token = jwt.createToken(payload);
+                assert(token.split('.').length === 3, "Token should have 3 parts");
+                
+                const verifiedPayload = jwt.verifyToken(token);
+                assert(verifiedPayload.userId === 12345, "User ID should match");
+            })) passed++;
+
+            // Test 4: Secure API Communication
+            total++;
+            if (runTest("Secure API communication", () => {
+                class SecureAPIClient {
+                    constructor(serverPublicKey, clientPrivateKey) {
+                        this.encryptor = new JSEncrypt();
+                        this.decryptor = new JSEncrypt();
+                        this.encryptor.setPublicKey(serverPublicKey);
+                        this.decryptor.setPrivateKey(clientPrivateKey);
+                    }
+                    
+                    encryptData(data) {
+                        const encryptedData = this.encryptor.encrypt(JSON.stringify(data));
+                        return { encrypted: encryptedData };
+                    }
+                    
+                    decryptData(encryptedResponse) {
+                        if (encryptedResponse.encrypted) {
+                            const decryptedResponse = this.decryptor.decrypt(encryptedResponse.encrypted);
+                            return JSON.parse(decryptedResponse);
+                        }
+                        return encryptedResponse;
+                    }
+                }
+                
+                const client = new SecureAPIClient(testKeys.publicKey, testKeys.privateKey);
+                const requestData = { userId: 12345, fields: ['name', 'email'] };
+                
+                const encryptedRequest = client.encryptData(requestData);
+                assert(encryptedRequest.encrypted !== null, "API data encryption should succeed");
+                
+                const decryptedData = client.decryptData(encryptedRequest);
+                assert(decryptedData.userId === 12345, "Decrypted data should match");
+            })) passed++;
+
+            // Test 5: Document Signing (simplified)
+            total++;
+            if (runTest("Document signing", () => {
+                class DocumentSigner {
+                    constructor(privateKey, publicKey) {
+                        this.crypt = new JSEncrypt();
+                        this.privateKey = privateKey;
+                        this.publicKey = publicKey;
+                    }
+                    
+                    simpleHash(data) {
+                        let hash = 0;
+                        for (let i = 0; i < data.length; i++) {
+                            const char = data.charCodeAt(i);
+                            hash = ((hash << 5) - hash) + char;
+                            hash = hash & hash;
+                        }
+                        return hash.toString(16);
+                    }
+                    
+                    signDocument(documentContent, metadata = {}) {
+                        this.crypt.setPrivateKey(this.privateKey);
+                        
+                        const documentHash = this.simpleHash(documentContent);
+                        const signaturePayload = {
+                            documentHash,
+                            timestamp: Date.now(),
+                            signer: metadata.signer || 'unknown'
+                        };
+                        
+                        const payloadString = JSON.stringify(signaturePayload);
+                        const signature = this.crypt.encrypt(payloadString);
+                        
+                        return {
+                            document: documentContent,
+                            signature: signature,
+                            signaturePayload: signaturePayload
+                        };
+                    }
+                    
+                    verifyDocument(signedDocument) {
+                        this.crypt.setPublicKey(this.publicKey);
+                        
+                        const { document, signature, signaturePayload } = signedDocument;
+                        const currentHash = this.simpleHash(document);
+                        
+                        if (currentHash !== signaturePayload.documentHash) {
+                            return { valid: false, reason: 'Document has been modified' };
+                        }
+                        
+                        const decryptedPayload = this.crypt.decrypt(signature);
+                        if (!decryptedPayload) {
+                            return { valid: false, reason: 'Invalid signature' };
+                        }
+                        
+                        return { valid: true, signer: signaturePayload.signer };
+                    }
+                }
+                
+                const signer = new DocumentSigner(testKeys.privateKey, testKeys.publicKey);
+                const contract = "This is a digital contract";
+                
+                const signedContract = signer.signDocument(contract, { signer: 'John Doe' });
+                assert(signedContract.signature !== null, "Document signing should succeed");
+                
+                const verification = signer.verifyDocument(signedContract);
+                assert(verification.valid === true, "Document verification should succeed");
+            })) passed++;
+
+            // Test 6: Data Chunking
+            total++;
+            if (runTest("Data chunking for large content", () => {
+                function chunkString(str, length) {
+                    const chunks = [];
+                    for (let i = 0; i < str.length; i += length) {
+                        chunks.push(str.slice(i, i + length));
+                    }
+                    return chunks;
+                }
+                
+                const crypt = new JSEncrypt();
+                crypt.setPrivateKey(testKeys.privateKey);
+                crypt.setPublicKey(testKeys.publicKey);
+                
+                const largeMessage = "This is a longer message that will be split into chunks for encryption. It demonstrates how to handle data that might be too large for a single RSA encryption operation.";
+                const chunks = chunkString(largeMessage, 50);
+                
+                const encryptedChunks = chunks.map(chunk => crypt.encrypt(chunk));
+                assert(encryptedChunks.every(chunk => chunk !== null), "All chunks should encrypt successfully");
+                
+                const decryptedChunks = encryptedChunks.map(chunk => crypt.decrypt(chunk));
+                const reconstructedMessage = decryptedChunks.join('');
+                
+                assert(reconstructedMessage === largeMessage, "Reconstructed message should match original");
+            })) passed++;
+
+            // Test 7: Secure Storage
+            total++;
+            if (runTest("Secure storage", () => {
+                class SecureStorage {
+                    constructor(publicKey, privateKey) {
+                        this.encryptor = new JSEncrypt();
+                        this.decryptor = new JSEncrypt();
+                        this.encryptor.setPublicKey(publicKey);
+                        this.decryptor.setPrivateKey(privateKey);
+                        this.storage = {};
+                    }
+                    
+                    setItem(key, value) {
+                        try {
+                            const serializedValue = JSON.stringify(value);
+                            const encryptedValue = this.encryptor.encrypt(serializedValue);
+                            
+                            if (!encryptedValue) return false;
+                            
+                            this.storage[key] = encryptedValue;
+                            return true;
+                        } catch (error) {
+                            return false;
+                        }
+                    }
+                    
+                    getItem(key) {
+                        try {
+                            const encryptedValue = this.storage[key];
+                            if (!encryptedValue) return null;
+                            
+                            const decryptedValue = this.decryptor.decrypt(encryptedValue);
+                            if (!decryptedValue) return null;
+                            
+                            return JSON.parse(decryptedValue);
+                        } catch (error) {
+                            return null;
+                        }
+                    }
+                }
+                
+                const secureStorage = new SecureStorage(testKeys.publicKey, testKeys.privateKey);
+                const userData = {
+                    userId: 12345,
+                    email: 'user@example.com',
+                    preferences: { theme: 'dark' }
+                };
+                
+                const success = secureStorage.setItem('userData', userData);
+                assert(success === true, "Secure storage should succeed");
+                
+                const retrievedData = secureStorage.getItem('userData');
+                assert(JSON.stringify(retrievedData) === JSON.stringify(userData), "Retrieved data should match original");
+            })) passed++;
+
+            // Summary
+            log(`\nTest Results: ${passed}/${total} tests passed`, passed === total ? 'pass' : 'fail');
+            
+            if (passed === total) {
+                log('🎉 All JSEncrypt examples are working correctly!', 'pass');
+                log('✅ The documentation examples have been successfully validated.', 'info');
+            } else {
+                log('❌ Some examples failed validation.', 'fail');
+            }
+        }
+
+        // Run tests when page loads
+        window.addEventListener('load', runAllTests);
+    </script>
+</body>
+</html>

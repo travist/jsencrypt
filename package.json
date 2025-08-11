@@ -37,8 +37,10 @@
         "build:test": "tsc && tsc --project tsconfig-def.json && webpack --config webpack.test.js",
         "build:prod": "tsc && tsc --project tsconfig-def.json && webpack --config webpack.prod.js",
         "build": "npm run build:dev && npm run build:test && npm run build:prod",
-        "serve": "bundle exec jekyll server --config _config.build.yml",
-        "test": "ts-mocha test/test.rsa.js"
+        "serve": "bundle exec jekyll clean && bundle exec jekyll server --config _config.build.yml",
+        "test": "node test/run-all-tests.js",
+        "test:mocha": "ts-mocha test/index.js",
+        "test:examples": "node test/run-examples-tests.js"
     },
     "browserslist": [
         "last 1 version",

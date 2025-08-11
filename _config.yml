@@ -1,2 +1,64 @@
+# Site settings
+title: JSEncrypt
+description: A Javascript library to perform OpenSSL RSA Encryption, Decryption, and Key Generation.
 url: /jsencrypt
 baseurl: /jsencrypt
+
+# Theme settings
+theme: just-the-docs
+logo: "assets/jsencrypt-logo.png"
+color_scheme: light
+search_enabled: true
+search:
+  heading_level: 2
+  previews: 2
+  preview_words_before: 3
+  preview_words_after: 3
+  tokenizer_separator: /[\s/]+/
+  rel_url: true
+  button: false
+
+# Navigation settings
+nav_sort: case_insensitive
+nav_external_links:
+  - title: JSEncrypt on GitHub
+    url: https://github.com/travist/jsencrypt
+    hide_icon: false
+  - title: Download Latest
+    url: https://github.com/travist/jsencrypt/archive/master.zip
+
+# Footer settings
+footer_content: "Copyright &copy; 2013-2025 Travis Tidwell. Distributed by an <a href=\"https://github.com/travist/jsencrypt/blob/master/LICENSE.txt\">MIT license.</a>"
+
+# Back to top link
+back_to_top: true
+back_to_top_text: "Back to top"
+
+# Aux links for the upper right navigation
+aux_links:
+  "JSEncrypt on GitHub":
+    - "https://github.com/travist/jsencrypt"
+
+# Makes Aux links open in a new tab. Default is false
+aux_links_new_tab: true
+
+# Heading anchor links appear on hover over h1-h6 tags in page content
+# allowing users to deep link to a particular heading on a page.
+heading_anchors: true
+
+# Activate the plugin
+plugins:
+  - jekyll-seo-tag
+
+# Google Analytics Tracking (optional)
+# ga_tracking: G-XXXXXXXXXX
+# ga_tracking_anonymize_ip: true # Use GDPR compliant Google Analytics settings (true/false)
+
+# Compress HTML
+compress_html:
+  clippings: all
+  comments: all
+  endings: all
+  startings: []
+  blanklines: false
+  profile: false

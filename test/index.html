@@ -1,17 +1,148 @@
 ---
-title: Testing JSEncrypt
+title: Run Tests
 layout: default
+nav_order: 4
 ---
 
-<link href="test/libs/mocha.css" rel="stylesheet" type="text/css" />
-<div id="mocha"></div>
-<script type="text/javascript" src="test/libs/index.js"></script>
-<script type="text/javascript" src="test/libs/mocha.js"></script>
+<div id="test-container"></div>
+
+{% raw %}
 <script>
-    mocha.setup("bdd");
+(function() {
+    const container = document.getElementById('test-container');
+    const shadowRoot = container.attachShadow({ mode: 'open' });
+    
+    shadowRoot.innerHTML = `
+        <style>
+            .loader-container {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 40px 20px;
+                text-align: center;
+            }
+            
+            .loader {
+                border: 4px solid #f3f3f3;
+                border-top: 4px solid #2196F3;
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                animation: spin 1s linear infinite;
+                margin-bottom: 15px;
+            }
+            
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+            
+            .loader-text {
+                font-family: Arial, sans-serif;
+                font-size: 16px;
+                color: #666;
+                margin: 5px 0;
+            }
+            
+            .loader-subtext {
+                font-family: Arial, sans-serif;
+                font-size: 14px;
+                color: #999;
+            }
+            
+            .hidden {
+                display: none !important;
+            }
+        </style>
+        
+        <link href="libs/mocha.css" rel="stylesheet" type="text/css" />
+        
+        <div id="loader" class="loader-container">
+            <div class="loader"></div>
+            <div class="loader-text">Loading Tests...</div>
+            <div class="loader-subtext">Initializing RSA encryption tests</div>
+        </div>
+        
+        <div id="mocha" class="hidden"></div>
+    `;
+    
+    const mochaDiv = shadowRoot.getElementById('mocha');
+    const loaderDiv = shadowRoot.getElementById('loader');
+    
+    function showLoader(text, subtext) {
+        loaderDiv.querySelector('.loader-text').textContent = text;
+        if (subtext) {
+            loaderDiv.querySelector('.loader-subtext').textContent = subtext;
+        }
+        loaderDiv.classList.remove('hidden');
+        mochaDiv.classList.add('hidden');
+    }
+    
+    function hideLoader() {
+        loaderDiv.classList.add('hidden');
+        mochaDiv.classList.remove('hidden');
+    }
+    
+    function loadScript(src) {
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = src;
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+    }
+    
+    async function runTests() {
+        try {
+            showLoader('Loading Tests...', 'Initializing RSA encryption tests');
+            
+            showLoader('Loading Libraries...', 'Loading Chai and Mocha frameworks');
+            await loadScript('libs/index.js');
+            await loadScript('libs/mocha.js');
+            
+            if (window.mocha) {
+                const originalGetElementById = document.getElementById.bind(document);
+                document.getElementById = function(id) {
+                    if (id === 'mocha') {
+                        return mochaDiv;
+                    }
+                    return originalGetElementById(id);
+                };
+                
+                showLoader('Setting Up Tests...', 'Configuring Mocha test runner');
+                window.mocha.setup("bdd");
+                console.log("Mocha setup complete");
+                
+                showLoader('Loading Test Cases...', 'Loading RSA encryption test suite');
+                await loadScript('test.rsa.bundle.js');
+                
+                showLoader('Running Tests...', 'Executing RSA encryption tests');
+                
+                setTimeout(() => {
+                    hideLoader();
+                    console.log("Tests loaded, running...");
+                    window.mocha.checkLeaks();
+                    
+                    const runner = window.mocha.run();
+                    
+                    runner.on('end', () => {
+                        console.log('All tests completed');
+                    });
+                    
+                    document.getElementById = originalGetElementById;
+                }, 500);
+            }
+        } catch (error) {
+            console.error('Error loading test scripts:', error);
+            hideLoader();
+            mochaDiv.innerHTML = '<div style="color: red; padding: 20px; text-align: center;">Error loading tests: ' + error.message + '</div>';
+            mochaDiv.classList.remove('hidden');
+        }
+    }
+    
+    runTests();
+})();
 </script>
-<script type="text/javascript" src="test/test.rsa.bundle.js"></script>
-<script>
-    mocha.checkLeaks();
-    mocha.run();
-</script>
+{% endraw %}

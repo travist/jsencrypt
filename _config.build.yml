@@ -1,2 +1,28 @@
-url:
-baseurl:
+# Build configuration for local development
+url: http://localhost:4000
+baseurl: ""
+
+# Theme settings
+theme: just-the-docs
+color_scheme: light
+search_enabled: true
+
+# Navigation settings
+nav_sort: case_insensitive
+
+# Footer settings
+footer_content: "Copyright &copy; 2013-2025 Travis Tidwell. Distributed by an <a href=\"https://github.com/travist/jsencrypt/blob/master/LICENSE.txt\">MIT license.</a>"
+
+# Back to top link
+back_to_top: true
+
+# Aux links for the upper right navigation
+aux_links:
+  "JSEncrypt on GitHub":
+    - "https://github.com/travist/jsencrypt"
+
+aux_links_new_tab: true
+heading_anchors: true
+
+plugins:
+  - jekyll-seo-tag

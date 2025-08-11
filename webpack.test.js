@@ -3,7 +3,7 @@ const path = require("path");
 const { ProvidePlugin, DefinePlugin } = require("webpack");
 
 module.exports = {
-    entry: "./test/test.rsa.js",
+    entry: "./test/index.browser.js",
     output: {
         library: "JSEncrypt",
         libraryTarget: "umd",
