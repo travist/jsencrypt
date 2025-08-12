@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSEncrypt CDN Validation Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            border: 1px solid #ddd;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .pass { color: green; font-weight: bold; }
+        .fail { color: red; font-weight: bold; }
+        .pending { color: orange; font-weight: bold; }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 3px;
+        }
+        .test-result.pass {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+        .test-result.fail {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <h1>JSEncrypt CDN Validation Test</h1>
+    <p>This page tests JSEncrypt from various CDN sources to ensure it works correctly in browser environments.</p>
+    
+    <div id="test-results"></div>
+    
+    <div class="test-section">
+        <h3>Manual Test Area</h3>
+        <p>Use this area to manually test encryption/decryption:</p>
+        <textarea id="manual-input" placeholder="Enter text to encrypt" style="width: 100%; height: 60px;"></textarea>
+        <br><br>
+        <button onclick="manualTest()">Test Encrypt/Decrypt</button>
+        <br><br>
+        <textarea id="manual-output" placeholder="Results will appear here" style="width: 100%; height: 100px;" readonly></textarea>
+    </div>
+
+    <script>
+        // Global test results container
+        const testResults = document.getElementById('test-results');
+        let testCount = 0;
+        let passCount = 0;
+        let failCount = 0;
+
+        function log(message, type = 'info') {
+            console.log(`[${type.toUpperCase()}] ${message}`);
+            return message;
+        }
+
+        function addTestResult(name, success, message, error = null) {
+            testCount++;
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${success ? 'pass' : 'fail'}`;
+            
+            const status = success ? '✅ PASS' : '❌ FAIL';
+            const statusClass = success ? 'pass' : 'fail';
+            
+            if (success) passCount++;
+            else failCount++;
+            
+            resultDiv.innerHTML = `
+                <h4><span class="${statusClass}">${status}</span> ${name}</h4>
+                <p>${message}</p>
+                ${error ? `<pre style="color: red;">${error}</pre>` : ''}
+            `;
+            
+            testResults.appendChild(resultDiv);
+            return success;
+        }
+
+        function testJSEncryptBasics(JSEncrypt, sourceName) {
+            try {
+                // Test 1: Constructor exists and is a function
+                if (typeof JSEncrypt !== 'function') {
+                    return addTestResult(
+                        `${sourceName} - Constructor Type`,
+                        false,
+                        `Expected function, got ${typeof JSEncrypt}`
+                    );
+                }
+
+                // Test 2: Can create instance
+                let crypt;
+                try {
+                    crypt = new JSEncrypt();
+                } catch (e) {
+                    return addTestResult(
+                        `${sourceName} - Instance Creation`,
+                        false,
+                        'Failed to create JSEncrypt instance',
+                        e.toString()
+                    );
+                }
+
+                addTestResult(
+                    `${sourceName} - Instance Creation`,
+                    true,
+                    'Successfully created JSEncrypt instance'
+                );
+
+                // Test 3: Key generation
+                try {
+                    crypt.getKey();
+                    const privKey = crypt.getPrivateKey();
+                    const pubKey = crypt.getPublicKey();
+                    
+                    if (!privKey || !pubKey) {
+                        return addTestResult(
+                            `${sourceName} - Key Generation`,
+                            false,
+                            'Key generation returned empty keys'
+                        );
+                    }
+
+                    addTestResult(
+                        `${sourceName} - Key Generation`,
+                        true,
+                        `Generated keys (private: ${privKey.length} chars, public: ${pubKey.length} chars)`
+                    );
+                } catch (e) {
+                    return addTestResult(
+                        `${sourceName} - Key Generation`,
+                        false,
+                        'Key generation failed',
+                        e.toString()
+                    );
+                }
+
+                // Test 4: Encryption/Decryption
+                try {
+                    const testText = "Hello JSEncrypt CDN Test!";
+                    const encrypted = crypt.encrypt(testText);
+                    
+                    if (!encrypted) {
+                        return addTestResult(
+                            `${sourceName} - Encryption`,
+                            false,
+                            'Encryption returned null/empty'
+                        );
+                    }
+
+                    const decrypted = crypt.decrypt(encrypted);
+                    
+                    if (decrypted !== testText) {
+                        return addTestResult(
+                            `${sourceName} - Decrypt Verification`,
+                            false,
+                            `Decryption mismatch. Expected: "${testText}", Got: "${decrypted}"`
+                        );
+                    }
+
+                    addTestResult(
+                        `${sourceName} - Encryption/Decryption`,
+                        true,
+                        'Successfully encrypted and decrypted text'
+                    );
+
+                    return true;
+                } catch (e) {
+                    return addTestResult(
+                        `${sourceName} - Encryption/Decryption`,
+                        false,
+                        'Encryption/decryption failed',
+                        e.toString()
+                    );
+                }
+
+            } catch (e) {
+                return addTestResult(
+                    `${sourceName} - General Error`,
+                    false,
+                    'Unexpected error during testing',
+                    e.toString()
+                );
+            }
+        }
+
+        function manualTest() {
+            const input = document.getElementById('manual-input').value;
+            const output = document.getElementById('manual-output');
+            
+            if (!input.trim()) {
+                output.value = 'Please enter some text to encrypt';
+                return;
+            }
+
+            try {
+                // Use the globally available JSEncrypt (should be from CDN)
+                if (typeof JSEncrypt !== 'function') {
+                    output.value = 'ERROR: JSEncrypt is not available as a constructor';
+                    return;
+                }
+
+                const crypt = new JSEncrypt();
+                crypt.getKey();
+                
+                const encrypted = crypt.encrypt(input);
+                const decrypted = crypt.decrypt(encrypted);
+                
+                output.value = `Original: ${input}\n\nEncrypted: ${encrypted}\n\nDecrypted: ${decrypted}\n\nMatch: ${input === decrypted ? 'YES' : 'NO'}`;
+                
+            } catch (e) {
+                output.value = `ERROR: ${e.message}\n\nStack: ${e.stack}`;
+            }
+        }
+
+        // Test runner
+        async function runTests() {
+            log('Starting JSEncrypt CDN validation tests...');
+            
+            // Test 1: Local build (if available)
+            if (typeof JSEncrypt !== 'undefined') {
+                testJSEncryptBasics(JSEncrypt, 'Local/Current');
+            }
+
+            // Test 2: Test with different CDN versions
+            const cdnSources = [
+                {
+                    name: 'JSDelivr Latest (3.5.1)',
+                    url: 'https://cdn.jsdelivr.net/npm/jsencrypt@3.5.1/bin/jsencrypt.min.js'
+                },
+                {
+                    name: 'JSDelivr Previous (3.3.0)',
+                    url: 'https://cdn.jsdelivr.net/npm/jsencrypt@3.3.0/bin/jsencrypt.min.js'
+                },
+                {
+                    name: 'UNPKG Latest',
+                    url: 'https://unpkg.com/jsencrypt@latest/bin/jsencrypt.min.js'
+                }
+            ];
+
+            for (const source of cdnSources) {
+                await testCDNSource(source);
+            }
+
+            // Summary
+            const summaryDiv = document.createElement('div');
+            summaryDiv.className = 'test-section';
+            summaryDiv.innerHTML = `
+                <h3>Test Summary</h3>
+                <p><strong>Total Tests:</strong> ${testCount}</p>
+                <p><strong>Passed:</strong> <span class="pass">${passCount}</span></p>
+                <p><strong>Failed:</strong> <span class="fail">${failCount}</span></p>
+                <p><strong>Success Rate:</strong> ${((passCount / testCount) * 100).toFixed(1)}%</p>
+            `;
+            testResults.appendChild(summaryDiv);
+
+            log(`Tests completed. ${passCount}/${testCount} passed.`);
+        }
+
+        async function testCDNSource(source) {
+            return new Promise((resolve) => {
+                const script = document.createElement('script');
+                script.src = source.url;
+                
+                const cleanup = () => {
+                    if (script.parentNode) {
+                        script.parentNode.removeChild(script);
+                    }
+                };
+
+                script.onload = () => {
+                    try {
+                        // The script should have set window.JSEncrypt
+                        const JSEncryptFromCDN = window.JSEncrypt;
+                        testJSEncryptBasics(JSEncryptFromCDN, source.name);
+                        cleanup();
+                        resolve();
+                    } catch (e) {
+                        addTestResult(
+                            `${source.name} - Load Test`,
+                            false,
+                            'Script loaded but JSEncrypt not available',
+                            e.toString()
+                        );
+                        cleanup();
+                        resolve();
+                    }
+                };
+
+                script.onerror = () => {
+                    addTestResult(
+                        `${source.name} - Load Test`,
+                        false,
+                        'Failed to load script from CDN'
+                    );
+                    cleanup();
+                    resolve();
+                };
+
+                document.head.appendChild(script);
+            });
+        }
+
+        // Start tests when page loads
+        document.addEventListener('DOMContentLoaded', runTests);
+    </script>
+
+    <!-- Load current local version first for comparison -->
+    <script src="bin/jsencrypt.min.js"></script>
+</body>
+</html>

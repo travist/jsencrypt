@@ -37,10 +37,14 @@
         "build:test": "tsc && tsc --project tsconfig-def.json && webpack --config webpack.test.js",
         "build:prod": "tsc && tsc --project tsconfig-def.json && webpack --config webpack.prod.js",
         "build": "npm run build:dev && npm run build:test && npm run build:prod",
+        "build:validate": "npm run build && npm run validate:build",
         "serve": "bundle exec jekyll clean && bundle exec jekyll server --config _config.build.yml",
         "test": "node test/run-all-tests.js",
         "test:mocha": "ts-mocha test/index.js",
-        "test:examples": "node test/run-examples-tests.js"
+        "test:examples": "node test/run-examples-tests.js",
+        "validate:build": "node test/validate-build.js",
+        "validate:cdn": "echo 'Open http://localhost:4001/test/cdn-validation.html to test CDN compatibility'",
+        "prepublishOnly": "npm run build:validate"
     },
     "browserslist": [
         "last 1 version",
