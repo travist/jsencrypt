@@ -3,6 +3,9 @@ layout: default
 title: Getting Started
 parent: Docs
 nav_order: 1
+permalink: /docs/getting-started/
+aliases:
+  - /docs/getting-started.html
 ---
 
 # Getting Started with JSEncrypt

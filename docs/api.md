@@ -3,6 +3,9 @@ layout: default
 title: API Reference
 parent: Docs
 nav_order: 2
+permalink: /docs/api/
+aliases:
+  - /docs/api.html
 ---
 
 # API Reference

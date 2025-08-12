@@ -3,6 +3,9 @@ layout: default
 title: Examples
 parent: Docs
 nav_order: 3
+permalink: /docs/examples/
+aliases:
+  - /docs/examples.html
 ---
 
 # Examples
