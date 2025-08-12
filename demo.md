@@ -63,9 +63,8 @@ Interactive RSA encryption demo running entirely in your browser.
     <textarea id="crypted" name="crypted" rows="4" style="width: 100%; padding: 8px; border: 1px solid #d0d7de; border-radius: 6px; font-family: ui-monospace, SFMono-Regular, 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace; font-size: 12px; background-color: #f6f8fa;"></textarea>
   </div>
 </div>
-
+<script type="text/javascript" src="{{ site.baseurl }}/bin/jsencrypt.min.js"></script>
 {% raw %}
-<script type="text/javascript" src="/bin/jsencrypt.min.js"></script>
 <script type="text/javascript">
   document.addEventListener('DOMContentLoaded', function() {
     function $(id) {
