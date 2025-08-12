@@ -285,7 +285,7 @@ const userData = await client.secureRequest('/api/user/profile', {
 ```javascript
 // Server-side (Node.js with Express)
 const express = require('express');
-const { JSEncrypt } = require('jsencrypt');
+const JSEncrypt = require('jsencrypt');
 
 const app = express();
 app.use(express.json());

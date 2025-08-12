@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test JSEncrypt Global</title>
+</head>
+<body>
+    <h1>JSEncrypt Global Test</h1>
+    <div id="output"></div>
+
+    <script src="bin/jsencrypt.js"></script>
+    <script>
+        function log(message) {
+            document.getElementById('output').innerHTML += '<p>' + message + '</p>';
+            console.log(message);
+        }
+
+        log('Testing JSEncrypt global availability...');
+        log('typeof JSEncrypt: ' + typeof JSEncrypt);
+        log('typeof window.JSEncrypt: ' + typeof window.JSEncrypt);
+        
+        // Test what's available on window
+        log('window keys with "JS": ' + Object.keys(window).filter(k => k.includes('JS')));
+        
+        // Try to create an instance
+        try {
+            if (typeof JSEncrypt !== 'undefined') {
+                var crypt = new JSEncrypt();
+                log('✅ new JSEncrypt() successful');
+                log('Methods available: ' + Object.getOwnPropertyNames(crypt).slice(0, 5).join(', '));
+            } else {
+                log('❌ JSEncrypt is undefined');
+            }
+        } catch (e) {
+            log('❌ Error creating JSEncrypt: ' + e.message);
+        }
+    </script>
+</body>
+</html>
