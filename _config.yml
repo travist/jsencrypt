@@ -5,8 +5,7 @@ url: /jsencrypt
 baseurl: /jsencrypt
 
 # Theme settings
-theme: just-the-docs
-remote_theme: pmarsceill/just-the-docs
+remote_theme: just-the-docs/just-the-docs
 logo: "assets/jsencrypt-logo.png"
 color_scheme: light
 search_enabled: true
@@ -50,7 +49,7 @@ heading_anchors: true
 # Activate the plugin
 plugins:
   - jekyll-seo-tag
-  - jekyll-remote-theme
+  # - jekyll-remote-theme  # Only for GitHub Pages
 
 # Google Analytics Tracking (optional)
 # ga_tracking: G-XXXXXXXXXX
