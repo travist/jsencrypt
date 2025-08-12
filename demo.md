@@ -2,7 +2,7 @@
 layout: default
 title: Demo
 nav_order: 3
-permalink: /demo
+permalink: /demo/
 aliases:
   - /demo.html
 ---
