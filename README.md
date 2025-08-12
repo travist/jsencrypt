@@ -159,7 +159,7 @@ For direct browser usage without a build system:
 For use within Node.js, you can use the following.
 
 ```js
-const JSEncrypt = require('jsencrypt');
+const { JSEncrypt } = require('jsencrypt');
 const crypt = new JSEncrypt();
 crypt.setPrivateKey(crypt.getPrivateKey());
 

@@ -5,7 +5,12 @@
  * This script runs the examples tests in a Node.js environment
  */
 
-const JSEncrypt = require("../bin/jsencrypt.js");
+// Modern import pattern (recommended)
+const { JSEncrypt } = require("../bin/jsencrypt.js");
+
+// Alternative: Legacy import pattern (also works)
+// const JSEncryptModule = require("../bin/jsencrypt.js");
+// const JSEncrypt = JSEncryptModule.default;
 
 function assert(condition, message) {
     if (!condition) {

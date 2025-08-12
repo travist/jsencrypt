@@ -30,7 +30,7 @@ npm install jsencrypt
 
 #### Browser (Script Tag)
 ```html
-<script src="https://cdn.jsdelivr.net/npm/jsencrypt@3.4.0/bin/jsencrypt.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsencrypt/bin/jsencrypt.min.js"></script>
 <script>
   // Create the encryption object
   const crypt = new JSEncrypt();
@@ -73,7 +73,7 @@ const decrypted = crypt.decrypt(encrypted);
 
 #### Node.js (CommonJS)
 ```javascript
-const JSEncrypt = require('jsencrypt');
+const { JSEncrypt } = require('jsencrypt');
 
 // Create the encryption object
 const crypt = new JSEncrypt();
