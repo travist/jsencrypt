@@ -28,9 +28,59 @@ npm install jsencrypt
 
 ### Basic Usage
 
+#### Browser (Script Tag)
+```html
+<script src="https://cdn.jsdelivr.net/npm/jsencrypt@3.4.0/bin/jsencrypt.min.js"></script>
+<script>
+  // Create the encryption object
+  const crypt = new JSEncrypt();
+
+  // Here you can either use a private key from OpenSSL, 
+  // or generate one using the following code.
+  const privateKey = crypt.getPrivateKey();
+  
+  // Set your RSA private key
+  crypt.setPrivateKey(privateKey);
+  
+  // Encrypt data with the public key
+  const encrypted = crypt.encrypt('Hello World!');
+  
+  // Decrypt data with the private key  
+  const decrypted = crypt.decrypt(encrypted);
+</script>
+```
+
+#### ES6 Module Import
 ```javascript
+import { JSEncrypt } from 'jsencrypt';
+
 // Create the encryption object
 const crypt = new JSEncrypt();
+
+// Here you can either use a private key from OpenSSL, 
+// or generate one using the following code.
+const privateKey = crypt.getPrivateKey();
+
+// Set your RSA private key
+crypt.setPrivateKey(privateKey);
+
+// Encrypt data with the public key
+const encrypted = crypt.encrypt('Hello World!');
+
+// Decrypt data with the private key  
+const decrypted = crypt.decrypt(encrypted);
+```
+
+#### Node.js (CommonJS)
+```javascript
+const JSEncrypt = require('jsencrypt');
+
+// Create the encryption object
+const crypt = new JSEncrypt();
+
+// Here you can either use a private key from OpenSSL, 
+// or generate one using the following code.
+const privateKey = crypt.getPrivateKey();
 
 // Set your RSA private key
 crypt.setPrivateKey(privateKey);

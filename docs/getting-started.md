@@ -54,7 +54,7 @@ import { JSEncrypt } from 'jsencrypt';
 
 #### CommonJS
 ```javascript
-const { JSEncrypt } = require('jsencrypt');
+const JSEncrypt = require('jsencrypt');
 ```
 
 #### Browser Global

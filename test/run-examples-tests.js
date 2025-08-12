@@ -5,11 +5,6 @@
  * This script runs the examples tests in a Node.js environment
  */
 
-// Add browser compatibility for Node.js
-global.window = global;
-global.self = global;
-global.navigator = { userAgent: 'node' };
-
 const JSEncrypt = require("../bin/jsencrypt.js");
 
 function assert(condition, message) {

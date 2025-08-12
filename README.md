@@ -139,11 +139,8 @@ For direct browser usage without a build system:
 </head>
 <body>
     <script>
-        // Initialize JSEncrypt
         const crypt = new JSEncrypt();
-        
-        // Set your keys
-        crypt.setPrivateKey(yourPrivateKey);
+        crypt.setPrivateKey(crypt.getPrivateKey());
         
         // Use the library
         const encrypted = crypt.encrypt('Hello World!');
@@ -155,6 +152,24 @@ For direct browser usage without a build system:
     </script>
 </body>
 </html>
+```
+
+## Node.js Usage
+
+For use within Node.js, you can use the following.
+
+```js
+const JSEncrypt = require('jsencrypt');
+const crypt = new JSEncrypt();
+crypt.setPrivateKey(crypt.getPrivateKey());
+
+// Use the library
+const encrypted = crypt.encrypt('Hello World!');
+const decrypted = crypt.decrypt(encrypted);
+
+console.log('Original:', 'Hello World!');
+console.log('Encrypted:', encrypted);
+console.log('Decrypted:', decrypted);
 ```
 
 ## Development & Testing
