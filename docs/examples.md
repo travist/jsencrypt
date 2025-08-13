@@ -372,136 +372,59 @@ try {
 
 ---
 
-## JWT Token Signing with RSA
+## JWT Token Validation with Public Key
 
-### Creating JWT Tokens with RSA Signatures
+### Validating JWT Tokens with RSA Signatures / Public Key
 
 ```javascript
 import { JSEncrypt } from 'jsencrypt';
-import crypto from 'crypto';
-
-class RSAJWTManager {
-    constructor(privateKey, publicKey) {
-        this.privateKey = privateKey;
-        this.publicKey = publicKey;
+class JWTValidator {
+    private crypt: JSEncrypt;
+    constructor(publicKey) {
         this.crypt = new JSEncrypt();
+        this.crypt.setPublicKey(publicKey);
     }
-    
-    // Create a JWT token with RSA signature
-    createJWT(payload, expiresIn = '1h') {
-        const header = {
-            alg: 'RS256',
-            typ: 'JWT'
-        };
-        
-        const now = Math.floor(Date.now() / 1000);
-        const expiration = now + this.parseExpiration(expiresIn);
-        
-        const claims = {
-            ...payload,
-            iat: now,
-            exp: expiration
-        };
-        
-        // Encode header and payload
-        const encodedHeader = this.base64UrlEncode(JSON.stringify(header));
-        const encodedPayload = this.base64UrlEncode(JSON.stringify(claims));
-        
-        // Create signature
-        const signingInput = `${encodedHeader}.${encodedPayload}`;
-        const signature = this.signWithRSA(signingInput);
-        
-        return `${signingInput}.${signature}`;
-    }
-    
-    // Verify JWT token
+
     verifyJWT(token) {
         const [header, payload, signature] = token.split('.');
-        
         if (!header || !payload || !signature) {
             throw new Error('Invalid JWT format');
         }
         
-        // Verify signature
         const signingInput = `${header}.${payload}`;
         const isValid = this.verifyRSASignature(signingInput, signature);
-        
         if (!isValid) {
             throw new Error('Invalid signature');
         }
-        
-        // Decode and check expiration
         const decodedPayload = JSON.parse(this.base64UrlDecode(payload));
         const now = Math.floor(Date.now() / 1000);
-        
         if (decodedPayload.exp && decodedPayload.exp < now) {
             throw new Error('Token expired');
         }
-        
         return decodedPayload;
     }
     
-    signWithRSA(data) {
-        this.crypt.setPrivateKey(this.privateKey);
-        const signature = this.crypt.signSha256(data);
-        return this.base64UrlEncode(signature);
-    }
-    
     verifyRSASignature(data, signature) {
-        this.crypt.setPublicKey(this.publicKey);
         const decodedSignature = this.base64UrlDecode(signature);
         return this.crypt.verifySha256(data, decodedSignature);
-    }
-    
-    base64UrlEncode(str) {
-        return Buffer.from(str)
-            .toString('base64')
-            .replace(/\+/g, '-')
-            .replace(/\//g, '_')
-            .replace(/=/g, '');
     }
     
     base64UrlDecode(str) {
         str += '='.repeat((4 - str.length % 4) % 4);
         return Buffer.from(str.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString();
     }
-    
-    parseExpiration(exp) {
-        if (typeof exp === 'number') return exp;
-        const match = exp.match(/^(\d+)([smhd])$/);
-        if (!match) return 3600; // Default 1 hour
-        
-        const value = parseInt(match[1]);
-        const unit = match[2];
-        
-        switch (unit) {
-            case 's': return value;
-            case 'm': return value * 60;
-            case 'h': return value * 3600;
-            case 'd': return value * 86400;
-            default: return 3600;
-        }
-    }
 }
 
 // Usage Example
-const privateKey = `-----BEGIN RSA PRIVATE KEY-----...-----END RSA PRIVATE KEY-----`;
 const publicKey = `-----BEGIN PUBLIC KEY-----...-----END PUBLIC KEY-----`;
 
-const jwtManager = new RSAJWTManager(privateKey, publicKey);
-
-// Create a token
-const token = jwtManager.createJWT({
-    userId: 12345,
-    username: 'john.doe',
-    role: 'admin'
-}, '2h');
-
+const jwtValidator = new JWTValidator(publicKey);
+const token = localStorage.getItem('x-jwt-token');
 console.log('JWT Token:', token);
 
 // Verify the token
 try {
-    const payload = jwtManager.verifyJWT(token);
+    const payload = jwtValidator.verifyJWT(token);
     console.log('Token is valid:', payload);
 } catch (error) {
     console.error('Token verification failed:', error.message);
