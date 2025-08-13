@@ -13,7 +13,55 @@
  */
 
 import { BigInteger } from "../jsbn/jsbn";
-import { YAHOO } from "./yahoo";
+export function extendClass(subc, superc, overrides) {
+    if (!superc || !subc) {
+        throw new Error("extend failed, please check that " +
+            "all dependencies are included.");
+    }
+
+    var F = function () { };
+    F.prototype = superc.prototype;
+    subc.prototype = new F();
+    subc.prototype.constructor = subc;
+    subc.superclass = superc.prototype;
+
+    if (superc.prototype.constructor == Object.prototype.constructor) {
+        superc.prototype.constructor = superc;
+    }
+
+    if (overrides) {
+        var i;
+        for (i in overrides) {
+            subc.prototype[i] = overrides[i];
+        }
+
+        /*
+         * IE will not enumerate native functions in a derived object even if the
+         * function was overridden.  This is a workaround for specific functions
+         * we care about on the Object prototype.
+         * @property _IEEnumFix
+         * @param {Function} r  the object to receive the augmentation
+         * @param {Function} s  the object that supplies the properties to augment
+         * @static
+         * @private
+         */
+        var _IEEnumFix = function () { },
+            ADD = ["toString", "valueOf"];
+        try {
+            if (/MSIE/.test(navigator.userAgent)) {
+                _IEEnumFix = function (r, s) {
+                    for (i = 0; i < ADD.length; i = i + 1) {
+                        var fname = ADD[i], f = s[fname];
+                        if (typeof f === 'function' && f != Object.prototype[fname]) {
+                            r[fname] = f;
+                        }
+                    }
+                };
+            }
+        } catch (ex) { };
+        _IEEnumFix(subc.prototype, overrides);
+    }
+}
 
 /**
  * @fileOverview
@@ -570,7 +618,7 @@ KJUR.asn1.DERAbstractString = function (params) {
         }
     }
 };
-YAHOO.lang.extend(KJUR.asn1.DERAbstractString, KJUR.asn1.ASN1Object);
+extendClass(KJUR.asn1.DERAbstractString, KJUR.asn1.ASN1Object);
 // == END   DERAbstractString ================================================
 
 // == BEGIN DERAbstractTime ==================================================
@@ -679,7 +727,7 @@ KJUR.asn1.DERAbstractTime = function (params) {
         return this.hV;
     };
 };
-YAHOO.lang.extend(KJUR.asn1.DERAbstractTime, KJUR.asn1.ASN1Object);
+extendClass(KJUR.asn1.DERAbstractTime, KJUR.asn1.ASN1Object);
 // == END   DERAbstractTime ==================================================
 
 // == BEGIN DERAbstractStructured ============================================
@@ -729,7 +777,7 @@ KJUR.asn1.DERAbstractStructured = function (params) {
         }
     }
 };
-YAHOO.lang.extend(KJUR.asn1.DERAbstractStructured, KJUR.asn1.ASN1Object);
+extendClass(KJUR.asn1.DERAbstractStructured, KJUR.asn1.ASN1Object);
 
 
 // ********************************************************************
@@ -750,7 +798,7 @@ KJUR.asn1.DERBoolean = function () {
     this.hT = "01";
     this.hTLV = "0101ff";
 };
-YAHOO.lang.extend(KJUR.asn1.DERBoolean, KJUR.asn1.ASN1Object);
+extendClass(KJUR.asn1.DERBoolean, KJUR.asn1.ASN1Object);
 
 // ********************************************************************
 /**
@@ -833,7 +881,7 @@ KJUR.asn1.DERInteger = function (params) {
         }
     }
 };
-YAHOO.lang.extend(KJUR.asn1.DERInteger, KJUR.asn1.ASN1Object);
+extendClass(KJUR.asn1.DERInteger, KJUR.asn1.ASN1Object);
 
 // ********************************************************************
 /**
@@ -1007,7 +1055,7 @@ KJUR.asn1.DERBitString = function (params) {
         }
     }
 };
-YAHOO.lang.extend(KJUR.asn1.DERBitString, KJUR.asn1.ASN1Object);
+extendClass(KJUR.asn1.DERBitString, KJUR.asn1.ASN1Object);
 
 // ********************************************************************
 /**
@@ -1054,7 +1102,7 @@ KJUR.asn1.DEROctetString = function (params) {
     KJUR.asn1.DEROctetString.superclass.constructor.call(this, params);
     this.hT = "04";
 };
-YAHOO.lang.extend(KJUR.asn1.DEROctetString, KJUR.asn1.DERAbstractString);
+extendClass(KJUR.asn1.DEROctetString, KJUR.asn1.DERAbstractString);
 
 // ********************************************************************
 /**
@@ -1070,7 +1118,7 @@ KJUR.asn1.DERNull = function () {
     this.hT = "05";
     this.hTLV = "0500";
 };
-YAHOO.lang.extend(KJUR.asn1.DERNull, KJUR.asn1.ASN1Object);
+extendClass(KJUR.asn1.DERNull, KJUR.asn1.ASN1Object);
 
 // ********************************************************************
 /**
@@ -1200,7 +1248,7 @@ KJUR.asn1.DERObjectIdentifier = function (params) {
         }
     }
 };
-YAHOO.lang.extend(KJUR.asn1.DERObjectIdentifier, KJUR.asn1.ASN1Object);
+extendClass(KJUR.asn1.DERObjectIdentifier, KJUR.asn1.ASN1Object);
 
 // ********************************************************************
 /**
@@ -1280,7 +1328,7 @@ KJUR.asn1.DEREnumerated = function (params) {
         }
     }
 };
-YAHOO.lang.extend(KJUR.asn1.DEREnumerated, KJUR.asn1.ASN1Object);
+extendClass(KJUR.asn1.DEREnumerated, KJUR.asn1.ASN1Object);
 
 // ********************************************************************
 /**
@@ -1296,7 +1344,7 @@ KJUR.asn1.DERUTF8String = function (params) {
     KJUR.asn1.DERUTF8String.superclass.constructor.call(this, params);
     this.hT = "0c";
 };
-YAHOO.lang.extend(KJUR.asn1.DERUTF8String, KJUR.asn1.DERAbstractString);
+extendClass(KJUR.asn1.DERUTF8String, KJUR.asn1.DERAbstractString);
 
 // ********************************************************************
 /**
@@ -1312,7 +1360,7 @@ KJUR.asn1.DERNumericString = function (params) {
     KJUR.asn1.DERNumericString.superclass.constructor.call(this, params);
     this.hT = "12";
 };
-YAHOO.lang.extend(KJUR.asn1.DERNumericString, KJUR.asn1.DERAbstractString);
+extendClass(KJUR.asn1.DERNumericString, KJUR.asn1.DERAbstractString);
 
 // ********************************************************************
 /**
@@ -1328,7 +1376,7 @@ KJUR.asn1.DERPrintableString = function (params) {
     KJUR.asn1.DERPrintableString.superclass.constructor.call(this, params);
     this.hT = "13";
 };
-YAHOO.lang.extend(KJUR.asn1.DERPrintableString, KJUR.asn1.DERAbstractString);
+extendClass(KJUR.asn1.DERPrintableString, KJUR.asn1.DERAbstractString);
 
 // ********************************************************************
 /**
@@ -1344,7 +1392,7 @@ KJUR.asn1.DERTeletexString = function (params) {
     KJUR.asn1.DERTeletexString.superclass.constructor.call(this, params);
     this.hT = "14";
 };
-YAHOO.lang.extend(KJUR.asn1.DERTeletexString, KJUR.asn1.DERAbstractString);
+extendClass(KJUR.asn1.DERTeletexString, KJUR.asn1.DERAbstractString);
 
 // ********************************************************************
 /**
@@ -1360,7 +1408,7 @@ KJUR.asn1.DERIA5String = function (params) {
     KJUR.asn1.DERIA5String.superclass.constructor.call(this, params);
     this.hT = "16";
 };
-YAHOO.lang.extend(KJUR.asn1.DERIA5String, KJUR.asn1.DERAbstractString);
+extendClass(KJUR.asn1.DERIA5String, KJUR.asn1.DERAbstractString);
 
 // ********************************************************************
 /**
@@ -1431,7 +1479,7 @@ KJUR.asn1.DERUTCTime = function (params) {
         }
     }
 };
-YAHOO.lang.extend(KJUR.asn1.DERUTCTime, KJUR.asn1.DERAbstractTime);
+extendClass(KJUR.asn1.DERUTCTime, KJUR.asn1.DERAbstractTime);
 
 // ********************************************************************
 /**
@@ -1504,7 +1552,7 @@ KJUR.asn1.DERGeneralizedTime = function (params) {
         }
     }
 };
-YAHOO.lang.extend(KJUR.asn1.DERGeneralizedTime, KJUR.asn1.DERAbstractTime);
+extendClass(KJUR.asn1.DERGeneralizedTime, KJUR.asn1.DERAbstractTime);
 
 // ********************************************************************
 /**
@@ -1534,7 +1582,7 @@ KJUR.asn1.DERSequence = function (params) {
         return this.hV;
     };
 };
-YAHOO.lang.extend(KJUR.asn1.DERSequence, KJUR.asn1.DERAbstractStructured);
+extendClass(KJUR.asn1.DERSequence, KJUR.asn1.DERAbstractStructured);
 
 // ********************************************************************
 /**
@@ -1574,7 +1622,7 @@ KJUR.asn1.DERSet = function (params) {
             this.sortFlag = false;
     }
 };
-YAHOO.lang.extend(KJUR.asn1.DERSet, KJUR.asn1.DERAbstractStructured);
+extendClass(KJUR.asn1.DERSet, KJUR.asn1.DERAbstractStructured);
 
 // ********************************************************************
 /**
@@ -1650,4 +1698,4 @@ KJUR.asn1.DERTaggedObject = function (params) {
         }
     }
 };
-YAHOO.lang.extend(KJUR.asn1.DERTaggedObject, KJUR.asn1.ASN1Object);
+extendClass(KJUR.asn1.DERTaggedObject, KJUR.asn1.ASN1Object);

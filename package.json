@@ -1,6 +1,6 @@
 {
     "name": "jsencrypt",
-    "version": "3.5.3",
+    "version": "3.5.4",
     "description": "A Javascript library to perform OpenSSL RSA Encryption, Decryption, and Key Generation.",
     "main": "bin/jsencrypt.min.js",
     "module": "lib/index.js",

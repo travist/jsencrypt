@@ -2,8 +2,7 @@ import { JSEncrypt } from "../lib/JSEncrypt";
 import chai from "chai";
 import dirtyChai from "dirty-chai";
 import { JSEncryptRSAKey } from "../lib/JSEncryptRSAKey";
-import { KJUR } from "../lib/lib/jsrsasign/asn1-1.0";
-import { extendClass } from "../lib/lib/jsrsasign/base64x-1.1";
+import { KJUR, extendClass } from "../lib/lib/jsrsasign/asn1-1.0";
 import { parseBigInt } from "../lib/lib/jsbn/jsbn";
 
 chai.use(dirtyChai);
