@@ -8,7 +8,7 @@ nav_order: 1
 # JSEncrypt
 {: .fs-9 }
 
-A zero dependency JavaScript library to perform both synchronous and asynchronous OpenSSL RSA Encryption, Decryption, and Key Generation in both the Browser and Node.js.
+A tiny (18.5kB gzip), zero dependency, JavaScript library to perform both synchronous and asynchronous OpenSSL RSA Encryption, Decryption, and Key Generation in both the Browser and Node.js.
 {: .fs-6 .fw-300 }
 
 [Get started now](docs/getting-started){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 }
@@ -18,7 +18,7 @@ A zero dependency JavaScript library to perform both synchronous and asynchronou
 
 ## Quick Start
 
-JSEncrypt uses the wonderful work of [Tom Wu](http://www-cs-students.stanford.edu/~tjw/jsbn/) and provides a simple wrapper to perform RSA encryption with JavaScript. It's designed to work seamlessly with OpenSSL-generated RSA key pairs.
+JSEncrypt is a tiny (18kb gzip), zero dependency, JavaScript library to perform both synchronous and asynchronous OpenSSL RSA Encryption, Decryption, and Key Generation in both the Browser and Node.js. It's designed to work seamlessly with OpenSSL-generated RSA key pairs, but is also capable of generating new keys (less secure)
 
 ### Installation
 
@@ -96,6 +96,9 @@ const decrypted = crypt.decrypt(encrypted);
 
 ## Features
 
+### ⚡ Tiny & Fast
+Just 18.5 kB gzipped - minimal impact on your bundle size.
+
 ### 🔐 OpenSSL Compatible
 Works seamlessly with OpenSSL-generated RSA key pairs in PEM format.
 
@@ -158,6 +161,8 @@ When choosing an RSA encryption library for JavaScript, you need a solution that
 **JSEncrypt stands out** by providing enterprise-grade RSA encryption capabilities without the complexity and security concerns that come with heavy dependencies.
 
 ### Key Benefits
+
+- **⚡ Tiny & Fast** - Just 18.5 kB gzipped with minimal impact on bundle size and fast execution performance
 
 - **🌐 Universal Compatibility** - Works seamlessly in both Node.js server environments and browser applications without any modifications or polyfills
 

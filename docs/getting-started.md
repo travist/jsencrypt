@@ -129,6 +129,104 @@ crypt.setPrivateKey(privateKeyString);
 const decrypted = crypt.decrypt(encrypted);
 ```
 
+## Key Generation
+
+JSEncrypt supports two approaches for obtaining RSA keys: **OpenSSL generation (recommended)** and **JavaScript generation (convenient but less secure)**.
+
+### Option 1: OpenSSL Key Generation (Recommended)
+
+For production applications and maximum security, generate keys using OpenSSL:
+
+```bash
+# Generate a 2048-bit private key (recommended minimum)
+openssl genrsa -out private.pem 2048
+
+# Generate a 4096-bit private key (higher security)
+openssl genrsa -out private.pem 4096
+
+# Extract the public key
+openssl rsa -pubout -in private.pem -out public.pem
+
+# View the private key
+cat private.pem
+
+# View the public key  
+cat public.pem
+```
+
+**Why OpenSSL is more secure:**
+- Uses cryptographically secure random number generators
+- Better entropy sources from the operating system
+- Optimized and audited implementations
+- Industry standard for key generation
+
+### Option 2: JavaScript Key Generation (Convenience)
+
+JSEncrypt can generate keys directly in JavaScript, which is convenient for testing, demos, or non-critical applications:
+
+```javascript
+// Create JSEncrypt instance
+const crypt = new JSEncrypt();
+
+// Generate a new key pair (default: 1024-bit)
+const privateKey = crypt.getPrivateKey();
+const publicKey = crypt.getPublicKey();
+
+console.log('Private Key:', privateKey);
+console.log('Public Key:', publicKey);
+
+// You can also specify key size (512, 1024, 2048, 4096)
+const crypt2048 = new JSEncrypt({ default_key_size: 2048 });
+const strongerPrivateKey = crypt2048.getPrivateKey();
+const strongerPublicKey = crypt2048.getPublicKey();
+```
+
+#### Asynchronous Key Generation
+
+For better performance (especially with larger keys), use async generation:
+
+```javascript
+// Asynchronous key generation (recommended for larger keys)
+const crypt = new JSEncrypt({ default_key_size: 2048 });
+
+crypt.getKey(() => {
+    const privateKey = crypt.getPrivateKey();
+    const publicKey = crypt.getPublicKey();
+    
+    console.log('Generated private key:', privateKey);
+    console.log('Generated public key:', publicKey);
+    
+    // Now you can use the keys
+    const encrypted = crypt.encrypt('Hello, World!');
+    const decrypted = crypt.decrypt(encrypted);
+});
+```
+
+#### Different Key Sizes
+
+```javascript
+// 512-bit (fast but less secure - only for testing)
+const crypt512 = new JSEncrypt({ default_key_size: 512 });
+
+// 1024-bit (default - basic security)
+const crypt1024 = new JSEncrypt({ default_key_size: 1024 });
+
+// 2048-bit (recommended minimum for production)
+const crypt2048 = new JSEncrypt({ default_key_size: 2048 });
+
+// 4096-bit (high security but slower)
+const crypt4096 = new JSEncrypt({ default_key_size: 4096 });
+```
+
+**⚠️ Security Note:** JavaScript key generation uses browser/Node.js random number generators which may have less entropy than dedicated cryptographic tools. For production applications handling sensitive data, prefer OpenSSL-generated keys.
+
+**💡 Use Cases for JavaScript Generation:**
+- Rapid prototyping and testing
+- Client-side demos and examples  
+- Educational purposes
+- Non-critical applications
+- When OpenSSL is not available
+
 ### Key Size Limitations
 
 RSA encryption has limitations based on key size:
