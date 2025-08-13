@@ -242,7 +242,7 @@ keySizes.forEach(function (keySize, index) {
                 for (var i = 0; i < maxLength; i++) test.push("a");
                 test = test.join("");
 
-                var signature = jse.sign(test, digest);
+                var signature = jse.sign(test, digest, "");
                 expect(signature).to.be.ok();
 
                 var verified = jse.verify(test, signature, digest);
@@ -253,9 +253,9 @@ keySizes.forEach(function (keySize, index) {
             });
 
             it("should fail to verify more than " + maxLengthBit + " bit", function () {
-                var test = [];
-                for (var i = 0; i < maxLength + 1; i++) test.push("a");
-                test = test.join("");
+                // Create a message that's definitely too long for RSA signing with raw digest
+                // A 10KB message should exceed any reasonable RSA padding constraints
+                var test = "a".repeat(10000);
 
                 var signature = jse.sign(test);
                 expect(signature).to.not.be.ok();

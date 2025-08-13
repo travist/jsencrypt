@@ -76,21 +76,15 @@ export function rstr_sha256(s: string) {
 // /*
 //  * Convert a raw string to a hex string
 //  */
-// function rstr2hex(input: string) {
-//     try {
-//         hexcase;
-//     } catch (e) {
-//         hexcase = 0;
-//     }
-//     var hex_tab = hexcase ? "0123456789ABCDEF" : "0123456789abcdef";
-//     var output = "";
-//     var x;
-//     for (var i = 0; i < input.length; i++) {
-//         x = input.charCodeAt(i);
-//         output += hex_tab.charAt((x >>> 4) & 0x0f) + hex_tab.charAt(x & 0x0f);
-//     }
-//     return output;
-// }
+export function rstr2hex(input: string): string {
+    const hex_tab = "0123456789abcdef";
+    let output = "";
+    for (let i = 0; i < input.length; i++) {
+        const x = input.charCodeAt(i);
+        output += hex_tab.charAt((x >>> 4) & 0x0f) + hex_tab.charAt(x & 0x0f);
+    }
+    return output;
+}
 
 // /*
 //  * Convert a raw string to a base-64 string

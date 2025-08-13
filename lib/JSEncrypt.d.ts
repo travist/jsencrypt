@@ -78,7 +78,13 @@ export declare class JSEncrypt {
      * @return {string} the signature encoded in base64
      * @public
      */
-    sign(str: string, digestMethod: (str: string) => string, digestName: string): string | false;
+    sign(str: string, digestMethod?: (str: string) => string, digestName?: string): string | false;
+    /**
+     * Signs a string using the SHA-256 hash algorithm.
+     * @param str the string to sign
+     * @returns the base64 encoded signature or false on failure
+     */
+    signSha256(str: string): string | false;
     /**
      * Proxy method for RSAKey object's verify.
      * @param {string} str the string to verify
@@ -87,7 +93,14 @@ export declare class JSEncrypt {
      * @return {boolean} whether the data and signature match
      * @public
      */
-    verify(str: string, signature: string, digestMethod: (str: string) => string): boolean;
+    verify(str: string, signature: string, digestMethod?: (str: string) => string): boolean;
+    /**
+     * Verifies a string using the SHA-256 hash algorithm.
+     * @param str the string to verify
+     * @param signature the base64 encoded signature to compare against
+     * @returns whether the signature is valid
+     */
+    verifySha256(str: string, signature: string): boolean;
     /**
      * Getter for the current JSEncryptRSAKey object. If it doesn't exists a new object
      * will be created and returned

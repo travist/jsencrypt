@@ -1,6 +1,7 @@
 import { b64tohex, hex2b64 } from "./lib/jsbn/base64";
 import { JSEncryptRSAKey } from "./JSEncryptRSAKey";
 import { oaep_pad } from './lib/jsbn/rsa';
+import { rstr_sha256, rstr2hex } from './lib/jsbn/sha256';
 const version =
     typeof process !== "undefined" ? process.env?.npm_package_version : undefined;
 
@@ -138,8 +139,8 @@ export class JSEncrypt {
      */
     public sign(
         str: string,
-        digestMethod: (str: string) => string,
-        digestName: string,
+        digestMethod: (str: string) => string = (raw) => raw,
+        digestName: string = "",
     ): string | false {
         // return the RSA signature of 'str' in 'hex' format.
         try {
@@ -147,6 +148,17 @@ export class JSEncrypt {
         } catch (ex) {
             return false;
         }
+    }
+
+    /**
+     * Signs a string using the SHA-256 hash algorithm.
+     * @param str the string to sign
+     * @returns the base64 encoded signature or false on failure
+     */
+    public signSha256(str: string): string | false {
+        return this.sign(str, (text: string): string => {
+            return rstr2hex(rstr_sha256(text));
+        }, "sha256");
     }
 
     /**
@@ -160,7 +172,7 @@ export class JSEncrypt {
     public verify(
         str: string,
         signature: string,
-        digestMethod: (str: string) => string,
+        digestMethod: (str: string) => string = (raw) => raw,
     ): boolean {
         // Return the decrypted 'digest' of the signature.
         try {
@@ -169,6 +181,18 @@ export class JSEncrypt {
             return false;
         }
     }
+
+    /**
+     * Verifies a string using the SHA-256 hash algorithm.
+     * @param str the string to verify
+     * @param signature the base64 encoded signature to compare against
+     * @returns whether the signature is valid
+     */
+    public verifySha256(str: string, signature: string): boolean {
+        return this.verify(str, signature, (text: string): string => {
+            return rstr2hex(rstr_sha256(text));
+        });
+    } 
 
     /**
      * Getter for the current JSEncryptRSAKey object. If it doesn't exists a new object

@@ -19,7 +19,6 @@ Real-world examples showing how to use JSEncrypt for common encryption scenarios
 
 1. TOC
 {:toc}
-
 ---
 
 ## Basic Encryption/Decryption
@@ -85,6 +84,290 @@ fetch('/api/login', {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ encryptedCredentials: encryptedCreds })
 });
+```
+
+---
+
+## SHA-256 Digital Signatures
+
+### Using the Convenience Methods
+
+JSEncrypt provides convenient `signSha256()` and `verifySha256()` methods that automatically handle SHA-256 hashing for you.
+
+```javascript
+import { JSEncrypt } from 'jsencrypt';
+
+// Initialize with your key pair
+const crypt = new JSEncrypt();
+crypt.setPrivateKey(privateKey);
+crypt.setPublicKey(publicKey);
+
+// Simple message signing with SHA-256
+const message = "Important data to sign";
+const signature = crypt.signSha256(message);
+console.log('Signature:', signature);
+const isValid = crypt.verifySha256(message, signature);
+console.log('Signature valid:', isValid); // true
+```
+
+### API Token Validation
+
+```javascript
+class APITokenManager {
+    constructor(privateKey, publicKey) {
+        this.crypt = new JSEncrypt();
+        this.privateKey = privateKey;
+        this.publicKey = publicKey;
+    }
+    
+    // Generate a signed API token
+    generateToken(userId, permissions, expiresIn = 3600) {
+        const tokenData = {
+            userId: userId,
+            permissions: permissions,
+            issuedAt: Math.floor(Date.now() / 1000),
+            expiresAt: Math.floor(Date.now() / 1000) + expiresIn
+        };
+        
+        const payload = JSON.stringify(tokenData);
+        this.crypt.setPrivateKey(this.privateKey);
+        const signature = this.crypt.signSha256(payload);
+        
+        // Return token as base64 encoded payload + signature
+        const token = Buffer.from(JSON.stringify({
+            payload: payload,
+            signature: signature
+        })).toString('base64');
+        
+        return token;
+    }
+    
+    // Validate an API token
+    validateToken(token) {
+        try {
+            // Decode the token
+            const decoded = JSON.parse(Buffer.from(token, 'base64').toString());
+            const { payload, signature } = decoded;
+            
+            // Verify signature using convenience method
+            this.crypt.setPublicKey(this.publicKey);
+            const isValidSignature = this.crypt.verifySha256(payload, signature);
+            
+            if (!isValidSignature) {
+                return { valid: false, reason: 'Invalid signature' };
+            }
+            
+            // Check expiration
+            const tokenData = JSON.parse(payload);
+            const now = Math.floor(Date.now() / 1000);
+            
+            if (tokenData.expiresAt < now) {
+                return { valid: false, reason: 'Token expired' };
+            }
+            
+            return {
+                valid: true,
+                data: tokenData
+            };
+        } catch (error) {
+            return { valid: false, reason: 'Invalid token format' };
+        }
+    }
+}
+
+// Usage
+const tokenManager = new APITokenManager(privateKey, publicKey);
+
+// Generate a token for user
+const token = tokenManager.generateToken(12345, ['read', 'write'], 7200); // 2 hours
+console.log('Generated token:', token);
+
+// Later, validate the token
+const validation = tokenManager.validateToken(token);
+if (validation.valid) {
+    console.log('Token valid for user:', validation.data.userId);
+    console.log('Permissions:', validation.data.permissions);
+} else {
+    console.log('Token invalid:', validation.reason);
+}
+```
+
+### Message Integrity Verification
+
+```javascript
+class MessageIntegrityChecker {
+    constructor(privateKey, publicKey) {
+        this.signer = new JSEncrypt();
+        this.verifier = new JSEncrypt();
+        this.signer.setPrivateKey(privateKey);
+        this.verifier.setPublicKey(publicKey);
+    }
+    
+    // Create a signed message with metadata
+    createSignedMessage(content, metadata = {}) {
+        const messageData = {
+            content: content,
+            timestamp: Date.now(),
+            metadata: metadata
+        };
+        
+        const messageString = JSON.stringify(messageData);
+        const signature = this.signer.signSha256(messageString);
+        
+        return {
+            message: messageData,
+            signature: signature
+        };
+    }
+    
+    // Verify a signed message
+    verifyMessage(signedMessage) {
+        const { message, signature } = signedMessage;
+        const messageString = JSON.stringify(message);
+        
+        // Verify using SHA-256 convenience method
+        const isValid = this.verifier.verifySha256(messageString, signature);
+        
+        if (!isValid) {
+            return { valid: false, reason: 'Signature verification failed' };
+        }
+        
+        return {
+            valid: true,
+            content: message.content,
+            timestamp: new Date(message.timestamp),
+            metadata: message.metadata
+        };
+    }
+}
+
+// Usage Example
+const checker = new MessageIntegrityChecker(privateKey, publicKey);
+
+// Create a signed message
+const signedMessage = checker.createSignedMessage(
+    "This is a secure message",
+    { sender: "Alice", priority: "high" }
+);
+
+console.log('Signed message:', signedMessage);
+
+// Verify the message
+const verification = checker.verifyMessage(signedMessage);
+if (verification.valid) {
+    console.log('Message verified:', verification.content);
+    console.log('Sent by:', verification.metadata.sender);
+} else {
+    console.log('Verification failed:', verification.reason);
+}
+```
+
+### Simple JWT Implementation
+
+Here's a straightforward JWT implementation using the `signSha256` and `verifySha256` methods:
+
+```javascript
+class SimpleJWT {
+    constructor(privateKey, publicKey) {
+        this.signer = new JSEncrypt();
+        this.verifier = new JSEncrypt();
+        this.signer.setPrivateKey(privateKey);
+        this.verifier.setPublicKey(publicKey);
+    }
+    
+    // Create a simple JWT
+    createToken(payload, expiresInSeconds = 3600) {
+        const header = {
+            alg: 'RS256',
+            typ: 'JWT'
+        };
+        
+        const claims = {
+            ...payload,
+            iat: Math.floor(Date.now() / 1000),
+            exp: Math.floor(Date.now() / 1000) + expiresInSeconds
+        };
+        
+        // Encode header and payload
+        const encodedHeader = this.base64UrlEncode(JSON.stringify(header));
+        const encodedPayload = this.base64UrlEncode(JSON.stringify(claims));
+        
+        // Create signing input
+        const signingInput = `${encodedHeader}.${encodedPayload}`;
+        const signature = this.signer.signSha256(signingInput);
+        const encodedSignature = this.base64UrlEncode(signature);
+        
+        return `${signingInput}.${encodedSignature}`;
+    }
+    
+    // Verify and decode a JWT
+    verifyToken(token) {
+        const parts = token.split('.');
+        if (parts.length !== 3) {
+            throw new Error('Invalid JWT format');
+        }
+        
+        const [encodedHeader, encodedPayload, encodedSignature] = parts;
+        const signingInput = `${encodedHeader}.${encodedPayload}`;
+        
+        // Decode signature and verify using convenience method
+        const signature = this.base64UrlDecode(encodedSignature);
+        const isValid = this.verifier.verifySha256(signingInput, signature);
+        
+        if (!isValid) {
+            throw new Error('Invalid signature');
+        }
+        
+        // Decode and check expiration
+        const payload = JSON.parse(this.base64UrlDecode(encodedPayload));
+        const now = Math.floor(Date.now() / 1000);
+        
+        if (payload.exp && payload.exp < now) {
+            throw new Error('Token expired');
+        }
+        
+        return payload;
+    }
+    
+    // Base64 URL encoding/decoding utilities
+    base64UrlEncode(str) {
+        return Buffer.from(str, 'utf8')
+            .toString('base64')
+            .replace(/\+/g, '-')
+            .replace(/\//g, '_')
+            .replace(/=/g, '');
+    }
+    
+    base64UrlDecode(str) {
+        // Add padding
+        str += '='.repeat((4 - str.length % 4) % 4);
+        // Convert back from URL-safe base64
+        const standardBase64 = str.replace(/-/g, '+').replace(/_/g, '/');
+        return Buffer.from(standardBase64, 'base64').toString('utf8');
+    }
+}
+
+// Usage Example
+const jwt = new SimpleJWT(privateKey, publicKey);
+
+// Create a token
+const token = jwt.createToken({
+    userId: 12345,
+    username: 'john.doe',
+    role: 'admin'
+}, 7200); // 2 hours
+
+console.log('JWT Token:', token);
+
+// Verify the token
+try {
+    const decoded = jwt.verifyToken(token);
+    console.log('Token valid! User:', decoded.username);
+    console.log('Role:', decoded.role);
+    console.log('Expires:', new Date(decoded.exp * 1000));
+} catch (error) {
+    console.error('Token verification failed:', error.message);
+}
 ```
 
 ---
@@ -160,16 +443,14 @@ class RSAJWTManager {
     
     signWithRSA(data) {
         this.crypt.setPrivateKey(this.privateKey);
-        const hash = crypto.createHash('sha256').update(data).digest();
-        const signature = this.crypt.sign(hash.toString('base64'), 'sha256', 'base64');
+        const signature = this.crypt.signSha256(data);
         return this.base64UrlEncode(signature);
     }
     
     verifyRSASignature(data, signature) {
         this.crypt.setPublicKey(this.publicKey);
-        const hash = crypto.createHash('sha256').update(data).digest();
         const decodedSignature = this.base64UrlDecode(signature);
-        return this.crypt.verify(hash.toString('base64'), decodedSignature, 'sha256');
+        return this.crypt.verifySha256(data, decodedSignature);
     }
     
     base64UrlEncode(str) {
@@ -355,7 +636,7 @@ class DocumentSigner {
         
         // Sign the payload
         const payloadString = JSON.stringify(signaturePayload);
-        const signature = this.crypt.sign(payloadString, 'sha256', 'base64');
+        const signature = this.crypt.signSha256(payloadString);
         
         return {
             document: documentContent,
@@ -382,7 +663,8 @@ class DocumentSigner {
         
         // Verify signature
         const payloadString = JSON.stringify(signaturePayload);
-        const isValidSignature = this.crypt.verify(payloadString, signature, 'sha256');
+        // Use the new verifySha256 convenience method
+        const isValidSignature = this.crypt.verifySha256(payloadString, signature);
         
         if (!isValidSignature) {
             return { valid: false, reason: 'Invalid signature' };
