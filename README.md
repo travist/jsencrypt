@@ -254,6 +254,11 @@ const verified = verify.verifySha256(data, signature);
 const encrypt = new JSEncrypt();
 encrypt.setPublicKey(publicKey);
 const encrypted = encrypt.encryptOAEP(data);
+
+// Decrypt with OAEP padding and SHA-256 hash
+const decrypt = new JSEncrypt();
+decrypt.setPrivateKey(privateKey);
+const decrypted = decrypt.encryptOAEP(encrypted);
 ```
 
 ### Supported Hash Functions

@@ -51,6 +51,15 @@ export declare class JSEncrypt {
      * @public
      */
     decrypt(str: string): string | false;
+	/**
+	 * Proxy method for RSAKey object's decrypt, decrypt the string using the private
+	 * components of the rsa key object. Note that if the object was not set will be created
+	 * on the fly (by the getKey method) using the parameters passed in the JSEncrypt constructor
+	 * @param {string} str base64 encoded crypted string to decrypt
+	 * @return {string} the decrypted string
+	 * @public
+	 */
+	decryptOAEP(str: string): string | false;
     /**
      * Proxy method for RSAKey object's encrypt, encrypt the string using the public
      * components of the rsa key object. Note that if the object was not set will be created
