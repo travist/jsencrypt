@@ -1,5 +1,6 @@
 import { BigInteger } from "./jsbn";
 export declare function oaep_pad(s: string, n: number): BigInteger;
+export declare function oaep_unpad(d: BigInteger, n: number): string;
 export declare class RSAKey {
     constructor();
     doPublic(x: BigInteger): BigInteger;
