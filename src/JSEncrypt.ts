@@ -1,10 +1,12 @@
 import { b64tohex, hex2b64 } from "./lib/jsbn/base64";
 import { JSEncryptRSAKey } from "./JSEncryptRSAKey";
-const version = typeof process !== 'undefined'
-    ? process.env?.npm_package_version
-    : undefined;
+import { oaep_pad } from './lib/jsbn/rsa';
+import { rstr_sha256, rstr2hex } from './lib/jsbn/sha256';
+const version =
+    typeof process !== "undefined" ? process.env?.npm_package_version : undefined;
 
 export interface IJSEncryptOptions {
+    key?: JSEncryptRSAKey;
     default_key_size?: string;
     default_public_exponent?: string;
     log?: boolean;
@@ -14,6 +16,7 @@ export interface IJSEncryptOptions {
  *
  * @param {Object} [options = {}] - An object to customize JSEncrypt behaviour
  * possible parameters are:
+ * - key                     {JSEncryptRSAKey}  default: null
  * - default_key_size        {number}  default: 1024 the key size in bit
  * - default_public_exponent {string}  default: '010001' the hexadecimal representation of the public exponent
  * - log                     {boolean} default: false whether log warn/error or not
@@ -21,14 +24,13 @@ export interface IJSEncryptOptions {
  */
 export class JSEncrypt {
     constructor(options: IJSEncryptOptions = {}) {
-        options = options || {};
         this.default_key_size = options.default_key_size
             ? parseInt(options.default_key_size, 10)
             : 1024;
         this.default_public_exponent = options.default_public_exponent || "010001"; // 65537 default openssl public exponent for rsa key type
         this.log = options.log || false;
         // The private and public key.
-        this.key = null;
+        this.key = options.key || null;
     }
 
     private default_key_size: number;
@@ -44,11 +46,15 @@ export class JSEncrypt {
      * @param {Object|string} key the pem encoded string or an object (with or without header/footer)
      * @public
      */
-    public setKey(key: string) {
-        if (this.log && this.key) {
-            console.warn("A key was already set, overriding existing.");
+    public setKey(key?: string) {
+        if (key) {
+            if (this.log && this.key) {
+                console.warn("A key was already set, overriding existing.");
+            }
+            this.key = new JSEncryptRSAKey(key);
+        } else if (!this.key && this.log) {
+            console.error("A key was not set.");
         }
-        this.key = new JSEncryptRSAKey(key);
     }
 
     /**
@@ -106,6 +112,24 @@ export class JSEncrypt {
     }
 
     /**
+     * Proxy method for RSAKey object's encrypt with padding: RSA_PKCS1_OAEP_PADDING and oaepHash: sha256,
+     * encrypt the string using the public
+     * components of the rsa key object. Note that if the object was not set will be created
+     * on the fly (by the getKey method) using the parameters passed in the JSEncrypt constructor
+     * @param {string} str the string to encrypt
+     * @return {string} the encrypted string encoded in base64
+     * @public
+     */
+    public encryptOAEP(str: string) {
+        // Return the encrypted string.
+        try {
+            return hex2b64(this.getKey().encrypt(str, oaep_pad));
+        } catch (ex) {
+            return false;
+        }
+    }
+
+    /**
      * Proxy method for RSAKey object's sign.
      * @param {string} str the string to sign
      * @param {function} digestMethod hash method
@@ -115,8 +139,8 @@ export class JSEncrypt {
      */
     public sign(
         str: string,
-        digestMethod: (str: string) => string,
-        digestName: string,
+        digestMethod: (str: string) => string = (raw) => raw,
+        digestName: string = "",
     ): string | false {
         // return the RSA signature of 'str' in 'hex' format.
         try {
@@ -124,6 +148,17 @@ export class JSEncrypt {
         } catch (ex) {
             return false;
         }
+    }
+
+    /**
+     * Signs a string using the SHA-256 hash algorithm.
+     * @param str the string to sign
+     * @returns the base64 encoded signature or false on failure
+     */
+    public signSha256(str: string): string | false {
+        return this.sign(str, (text: string): string => {
+            return rstr2hex(rstr_sha256(text));
+        }, "sha256");
     }
 
     /**
@@ -137,7 +172,7 @@ export class JSEncrypt {
     public verify(
         str: string,
         signature: string,
-        digestMethod: (str: string) => string,
+        digestMethod: (str: string) => string = (raw) => raw,
     ): boolean {
         // Return the decrypted 'digest' of the signature.
         try {
@@ -146,6 +181,18 @@ export class JSEncrypt {
             return false;
         }
     }
+
+    /**
+     * Verifies a string using the SHA-256 hash algorithm.
+     * @param str the string to verify
+     * @param signature the base64 encoded signature to compare against
+     * @returns whether the signature is valid
+     */
+    public verifySha256(str: string, signature: string): boolean {
+        return this.verify(str, signature, (text: string): string => {
+            return rstr2hex(rstr_sha256(text));
+        });
+    } 
 
     /**
      * Getter for the current JSEncryptRSAKey object. If it doesn't exists a new object

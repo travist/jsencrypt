@@ -1,5 +1,6 @@
 import { JSEncryptRSAKey } from "./JSEncryptRSAKey";
 export interface IJSEncryptOptions {
+    key?: JSEncryptRSAKey;
     default_key_size?: string;
     default_public_exponent?: string;
     log?: boolean;
@@ -8,6 +9,7 @@ export interface IJSEncryptOptions {
  *
  * @param {Object} [options = {}] - An object to customize JSEncrypt behaviour
  * possible parameters are:
+ * - key                     {JSEncryptRSAKey}  default: null
  * - default_key_size        {number}  default: 1024 the key size in bit
  * - default_public_exponent {string}  default: '010001' the hexadecimal representation of the public exponent
  * - log                     {boolean} default: false whether log warn/error or not
@@ -27,7 +29,7 @@ export declare class JSEncrypt {
      * @param {Object|string} key the pem encoded string or an object (with or without header/footer)
      * @public
      */
-    setKey(key: string): void;
+    setKey(key?: string): void;
     /**
      * Proxy method for setKey, for api compatibility
      * @see setKey
@@ -59,6 +61,16 @@ export declare class JSEncrypt {
      */
     encrypt(str: string): string | false;
     /**
+     * Proxy method for RSAKey object's encrypt with padding: RSA_PKCS1_OAEP_PADDING and oaepHash: sha256,
+     * encrypt the string using the public
+     * components of the rsa key object. Note that if the object was not set will be created
+     * on the fly (by the getKey method) using the parameters passed in the JSEncrypt constructor
+     * @param {string} str the string to encrypt
+     * @return {string} the encrypted string encoded in base64
+     * @public
+     */
+    encryptOAEP(str: string): string | false;
+    /**
      * Proxy method for RSAKey object's sign.
      * @param {string} str the string to sign
      * @param {function} digestMethod hash method
@@ -66,7 +78,13 @@ export declare class JSEncrypt {
      * @return {string} the signature encoded in base64
      * @public
      */
-    sign(str: string, digestMethod: (str: string) => string, digestName: string): string | false;
+    sign(str: string, digestMethod?: (str: string) => string, digestName?: string): string | false;
+    /**
+     * Signs a string using the SHA-256 hash algorithm.
+     * @param str the string to sign
+     * @returns the base64 encoded signature or false on failure
+     */
+    signSha256(str: string): string | false;
     /**
      * Proxy method for RSAKey object's verify.
      * @param {string} str the string to verify
@@ -75,7 +93,14 @@ export declare class JSEncrypt {
      * @return {boolean} whether the data and signature match
      * @public
      */
-    verify(str: string, signature: string, digestMethod: (str: string) => string): boolean;
+    verify(str: string, signature: string, digestMethod?: (str: string) => string): boolean;
+    /**
+     * Verifies a string using the SHA-256 hash algorithm.
+     * @param str the string to verify
+     * @param signature the base64 encoded signature to compare against
+     * @returns whether the signature is valid
+     */
+    verifySha256(str: string, signature: string): boolean;
     /**
      * Getter for the current JSEncryptRSAKey object. If it doesn't exists a new object
      * will be created and returned

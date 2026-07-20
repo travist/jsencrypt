@@ -15,9 +15,9 @@
 
 /*jshint browser: true, strict: true, immed: true, latedef: true, undef: true, regexdash: false */
 
-let decoder:{ [index:string]:number };
+let decoder: { [index: string]: number };
 export const Hex = {
-    decode(a:string):number[] {
+    decode(a: string): number[] {
         let i;
         if (decoder === undefined) {
             let hex = "0123456789ABCDEF";
@@ -38,7 +38,7 @@ export const Hex = {
         let bits = 0;
         let char_count = 0;
         for (i = 0; i < a.length; ++i) {
-            let c:number|string = a.charAt(i);
+            let c: number | string = a.charAt(i);
             if (c == "=") {
                 break;
             }

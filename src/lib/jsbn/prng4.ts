@@ -9,7 +9,7 @@ export class Arcfour {
 
     // Arcfour.prototype.init = ARC4init;
     // Initialize arcfour context from key, an array of ints, each from [0..255]
-    public init(key:number[]) {
+    public init(key: number[]) {
         let i;
         let j;
         let t;
@@ -38,9 +38,9 @@ export class Arcfour {
         return this.S[(t + this.S[this.i]) & 255];
     }
 
-    private i:number;
-    private j:number;
-    private S:number[];
+    private i: number;
+    private j: number;
+    private S: number[];
 }
 
 

@@ -6,7 +6,7 @@
 
 import {BigInteger, nbi, parseBigInt} from "./jsbn";
 import {SecureRandom} from "./rng";
-
+import { rstr_sha256 } from './sha256';
 
 // function linebrk(s,n) {
 //   var ret = "";
@@ -25,7 +25,7 @@ import {SecureRandom} from "./rng";
 //     return b.toString(16);
 // }
 
-function pkcs1pad1(s:string, n:number) {
+function pkcs1pad1(s: string, n: number) {
     if (n < s.length + 22) {
         console.error("Message too long for RSA");
         return null;
@@ -40,7 +40,7 @@ function pkcs1pad1(s:string, n:number) {
 }
 
 // PKCS#1 (type 2, random) pad input string s to n bytes, and return a bigint
-function pkcs1pad2(s:string, n:number) {
+function pkcs1pad2(s: string, n: number) {
     if (n < s.length + 11) { // TODO: fix for utf-8
 
         console.error("Message too long for RSA");
@@ -76,9 +76,71 @@ function pkcs1pad2(s:string, n:number) {
     return new BigInteger(ba);
 }
 
+// PKCS#1 (OAEP) mask generation function, using SHA-256
+function oaep_mgf1_arr(seed: number[], len: number, hashFunc: (input: string) => string) {
+    var mask = "",
+        i = 0;
+
+    while (mask.length < len) {
+        mask += hashFunc(
+            String.fromCharCode.apply(
+                String,
+                seed.concat([
+                    (i & 0xff000000) >> 24,
+                    (i & 0x00ff0000) >> 16,
+                    (i & 0x0000ff00) >> 8,
+                    i & 0x000000ff,
+                ]),
+            ),
+        );
+        i += 1;
+    }
+
+    return mask;
+}
+
+const SHA256_SIZE = 32;
+
+// PKCS#1 (OAEP) pad input string s to n bytes, and return a BigInteger
+export function oaep_pad(s: string, n: number) {
+    const hashLen = SHA256_SIZE;
+    const hashFunc = rstr_sha256;
+
+    if (s.length + 2 * hashLen + 2 > n) {
+        throw "Message too long for RSA";
+    }
+
+    var PS = "",
+        i;
+
+    for (i = 0; i < n - s.length - 2 * hashLen - 2; i += 1) {
+        PS += "\x00";
+    }
+
+    var DB = hashFunc("") + PS + "\x01" + s,
+        seed = new Array(hashLen);
+    new SecureRandom().nextBytes(seed);
+
+    var dbMask = oaep_mgf1_arr(seed, DB.length, hashFunc),
+        maskedDB = [];
+
+    for (i = 0; i < DB.length; i += 1) {
+        maskedDB[i] = DB.charCodeAt(i) ^ dbMask.charCodeAt(i);
+    }
+
+    var seedMask = oaep_mgf1_arr(maskedDB, seed.length, hashFunc),
+        maskedSeed = [0];
+
+    for (i = 0; i < seed.length; i += 1) {
+        maskedSeed[i + 1] = seed[i] ^ seedMask.charCodeAt(i);
+    }
+
+    return new BigInteger(maskedSeed.concat(maskedDB));
+}
+
 // "empty" RSA key constructor
 export class RSAKey {
-  constructor() {
+    constructor() {
         this.n = null;
         this.e = 0;
         this.d = null;
@@ -93,14 +155,14 @@ export class RSAKey {
     // protected
     // RSAKey.prototype.doPublic = RSADoPublic;
     // Perform raw public operation on "x": return x^e (mod n)
-    public doPublic(x:BigInteger) {
+    public doPublic(x: BigInteger) {
         return x.modPowInt(this.e, this.n);
     }
 
 
     // RSAKey.prototype.doPrivate = RSADoPrivate;
     // Perform raw private operation on "x": return x^d (mod n)
-    public doPrivate(x:BigInteger) {
+    public doPrivate(x: BigInteger) {
         if (this.p == null || this.q == null) {
             return x.modPow(this.d, this.n);
         }
@@ -121,7 +183,7 @@ export class RSAKey {
 
     // RSAKey.prototype.setPublic = RSASetPublic;
     // Set the public key fields N and e from hex strings
-    public setPublic(N:string, E:string) {
+    public setPublic(N: string, E: string) {
         if (N != null && E != null && N.length > 0 && E.length > 0) {
             this.n = parseBigInt(N, 16);
             this.e = parseInt(E, 16);
@@ -133,9 +195,12 @@ export class RSAKey {
 
     // RSAKey.prototype.encrypt = RSAEncrypt;
     // Return the PKCS#1 RSA encryption of "text" as an even-length hex string
-    public encrypt(text:string) {
+    public encrypt(text:string, paddingFunction?: (s: string, n: number) => BigInteger) {
+        if (typeof paddingFunction === 'undefined') {
+            paddingFunction = pkcs1pad2;
+        }
         const maxLength = (this.n.bitLength() + 7) >> 3;
-        const m = pkcs1pad2(text, maxLength);
+        const m = paddingFunction(text, maxLength);
 
         if (m == null) {
             return null;
@@ -150,7 +215,7 @@ export class RSAKey {
 
         // fix zero before result
         for (let i = 0; i < maxLength * 2 - length; i++) {
-            h = "0" + h;    
+            h = "0" + h;
         }
 
         return h
@@ -159,7 +224,7 @@ export class RSAKey {
 
     // RSAKey.prototype.setPrivate = RSASetPrivate;
     // Set the private key fields N, e, and d from hex strings
-    public setPrivate(N:string, E:string, D:string) {
+    public setPrivate(N: string, E: string, D: string) {
         if (N != null && E != null && N.length > 0 && E.length > 0) {
             this.n = parseBigInt(N, 16);
             this.e = parseInt(E, 16);
@@ -172,7 +237,7 @@ export class RSAKey {
 
     // RSAKey.prototype.setPrivateEx = RSASetPrivateEx;
     // Set the private key fields N, e, d and CRT params from hex strings
-    public setPrivateEx(N:string, E:string, D:string, P:string, Q:string, DP:string, DQ:string, C:string) {
+    public setPrivateEx(N: string, E: string, D: string, P: string, Q: string, DP: string, DQ: string, C: string) {
         if (N != null && E != null && N.length > 0 && E.length > 0) {
             this.n = parseBigInt(N, 16);
             this.e = parseInt(E, 16);
@@ -190,17 +255,17 @@ export class RSAKey {
 
     // RSAKey.prototype.generate = RSAGenerate;
     // Generate a new random private key B bits long, using public expt E
-    public generate(B:number, E:string) {
+    public generate(B: number, E: string) {
         const rng = new SecureRandom();
         const qs = B >> 1;
         this.e = parseInt(E, 16);
         const ee = new BigInteger(E, 16);
-        for (;;) {
-            for (;;) {
+        for (; ;) {
+            for (; ;) {
                 this.p = new BigInteger(B - qs, 1, rng);
                 if (this.p.subtract(BigInteger.ONE).gcd(ee).compareTo(BigInteger.ONE) == 0 && this.p.isProbablePrime(10)) { break; }
             }
-            for (;;) {
+            for (; ;) {
                 this.q = new BigInteger(qs, 1, rng);
                 if (this.q.subtract(BigInteger.ONE).gcd(ee).compareTo(BigInteger.ONE) == 0 && this.q.isProbablePrime(10)) { break; }
             }
@@ -226,7 +291,7 @@ export class RSAKey {
     // RSAKey.prototype.decrypt = RSADecrypt;
     // Return the PKCS#1 RSA decryption of "ctext".
     // "ctext" is an even-length hex string and the output is a plain string.
-    public decrypt(ctext:string) {
+    public decrypt(ctext: string) {
         const c = parseBigInt(ctext, 16);
         const m = this.doPrivate(c);
         if (m == null) { return null; }
@@ -234,7 +299,7 @@ export class RSAKey {
     }
 
     // Generate a new random private key B bits long, using public expt E
-    public generateAsync(B:number, E:string, callback:() => void) {
+    public generateAsync(B: number, E: string, callback: () => void) {
         const rng = new SecureRandom();
         const qs = B >> 1;
         this.e = parseInt(E, 16);
@@ -258,7 +323,7 @@ export class RSAKey {
                     rsa.dmp1 = rsa.d.mod(p1);
                     rsa.dmq1 = rsa.d.mod(q1);
                     rsa.coeff = rsa.q.modInverse(rsa.p);
-                    setTimeout(function () {callback(); }, 0); // escape
+                    setTimeout(function () { callback(); }, 0); // escape
                 } else {
                     setTimeout(loop1, 0);
                 }
@@ -292,10 +357,11 @@ export class RSAKey {
         setTimeout(loop1, 0);
     }
 
-    public sign(text:string, digestMethod:(str:string) => string, digestName:string):string {
+    public sign(text: string, digestMethod: (str: string) => string, digestName: string): string {
         const header = getDigestHeader(digestName);
         const digest = header + digestMethod(text).toString();
-        const m = pkcs1pad1(digest, this.n.bitLength() / 4);
+        let maxLength = this.n.bitLength() / 4;
+        const m = pkcs1pad1(digest, maxLength);
         if (m == null) {
             return null;
         }
@@ -303,15 +369,19 @@ export class RSAKey {
         if (c == null) {
             return null;
         }
-        const h = c.toString(16);
-        if ((h.length & 1) == 0) {
-            return h;
-        } else {
-            return "0" + h;
+
+        let h = c.toString(16);
+        let length = h.length
+
+        // fix zero before result
+        for (let i = 0; i < maxLength - length; i++) {
+            h = "0" + h;
         }
+
+        return h
     }
 
-    public verify(text:string, signature:string, digestMethod:(str:string) => string):boolean {
+    public verify(text: string, signature: string, digestMethod: (str: string) => string): boolean {
         const c = parseBigInt(signature, 16);
         const m = this.doPublic(c);
         if (m == null) {
@@ -324,20 +394,20 @@ export class RSAKey {
 
     //#endregion PUBLIC
 
-    protected n:BigInteger;
-    protected e:number;
-    protected d:BigInteger;
-    protected p:BigInteger;
-    protected q:BigInteger;
-    protected dmp1:BigInteger;
-    protected dmq1:BigInteger;
-    protected coeff:BigInteger;
+    protected n: BigInteger;
+    protected e: number;
+    protected d: BigInteger;
+    protected p: BigInteger;
+    protected q: BigInteger;
+    protected dmp1: BigInteger;
+    protected dmq1: BigInteger;
+    protected coeff: BigInteger;
 
 }
 
 
 // Undo PKCS#1 (type 2, random) padding and, if valid, return the plaintext
-function pkcs1unpad2(d:BigInteger, n:number):string {
+function pkcs1unpad2(d: BigInteger, n: number): string {
     const b = d.toByteArray();
     let i = 0;
     while (i < b.length && b[i] == 0) { ++i; }
@@ -365,7 +435,7 @@ function pkcs1unpad2(d:BigInteger, n:number):string {
 }
 
 // https://tools.ietf.org/html/rfc3447#page-43
-const DIGEST_HEADERS:{ [name:string]:string } = {
+const DIGEST_HEADERS: { [name: string]: string } = {
     md2: "3020300c06082a864886f70d020205000410",
     md5: "3020300c06082a864886f70d020505000410",
     sha1: "3021300906052b0e03021a05000414",
@@ -376,17 +446,17 @@ const DIGEST_HEADERS:{ [name:string]:string } = {
     ripemd160: "3021300906052b2403020105000414"
 };
 
-function getDigestHeader(name:string):string {
+function getDigestHeader(name: string): string {
     return DIGEST_HEADERS[name] || "";
 }
 
-function removeDigestHeader(str:string):string {
+function removeDigestHeader(str: string): string {
     for (const name in DIGEST_HEADERS) {
         if (DIGEST_HEADERS.hasOwnProperty(name)) {
             const header = DIGEST_HEADERS[name];
             const len = header.length;
-            if (str.substr(0, len) == header) {
-                return str.substr(len);
+            if (str.substring(0, len) == header) {
+                return str.substring(len);
             }
         }
     }

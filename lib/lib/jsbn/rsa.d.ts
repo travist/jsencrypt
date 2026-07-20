@@ -1,10 +1,11 @@
 import { BigInteger } from "./jsbn";
+export declare function oaep_pad(s: string, n: number): BigInteger;
 export declare class RSAKey {
     constructor();
     doPublic(x: BigInteger): BigInteger;
     doPrivate(x: BigInteger): BigInteger;
     setPublic(N: string, E: string): void;
-    encrypt(text: string): string;
+    encrypt(text: string, paddingFunction?: (s: string, n: number) => BigInteger): string;
     setPrivate(N: string, E: string, D: string): void;
     setPrivateEx(N: string, E: string, D: string, P: string, Q: string, DP: string, DQ: string, C: string): void;
     generate(B: number, E: string): void;
