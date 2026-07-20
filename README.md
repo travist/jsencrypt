@@ -1,167 +1,418 @@
-Website
-======================
-http://travistidwell.com/jsencrypt
+# JSEncrypt
 
-Introduction
-======================
-When browsing the internet looking for a good solution to RSA Javascript
-encryption, there is a whole slew of libraries that basically take the fantastic
-work done by Tom Wu @ http://www-cs-students.stanford.edu/~tjw/jsbn/ and then
-modify that code to do what they want.
+A tiny (18.5kB gzip), zero dependency, JavaScript library to perform both synchronous and asynchronous OpenSSL RSA Encryption, Decryption, and Key Generation in both the Browser and Node.js.
 
-What I couldn't find, however, was a simple wrapper around this library that
-basically uses the library <a href="https://github.com/travist/jsencrypt/pull/6">practically</a> untouched, but adds a wrapper to provide parsing of
-actual Private and Public key-pairs generated with OpenSSL.
+[![npm version](https://badge.fury.io/js/jsencrypt.svg)](https://www.npmjs.com/package/jsencrypt)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-This library is the result of these efforts.
+**🌐 Documentation:** [https://travistidwell.com/jsencrypt](https://travistidwell.com/jsencrypt)  
+**📦 NPM Package:** [https://www.npmjs.com/package/jsencrypt](https://www.npmjs.com/package/jsencrypt)  
+**🚀 Interactive Demo:** [https://travistidwell.com/jsencrypt/demo](https://travistidwell.com/jsencrypt/demo)
 
-How to use this library.
-=======================
-This library should work hand-in-hand with openssl.  With that said, here is how to use this library.
+## Why JSEncrypt?
 
- - Within your terminal (Unix based OS) type the following.
+When choosing an RSA encryption library for JavaScript, you need a solution that's reliable, secure, and fits seamlessly into your development workflow. JSEncrypt delivers on all fronts.
 
-```
-openssl genrsa -out rsa_1024_priv.pem 1024
-```
+**JSEncrypt stands out** by providing enterprise-grade RSA encryption capabilities without the complexity and security concerns that come with heavy dependencies.
 
- - This generates a private key, which you can see by doing the following...
+### Key Benefits
 
-```
-cat rsa_1024_priv.pem
-```
+- **⚡ Tiny & Fast** - Just 18.5 kB gzipped - minimal impact on your bundle size.
+- **🌐 Universal Compatibility** - Works seamlessly in both Node.js server environments and browser applications
+- **📦 Zero Dependencies** - No external dependencies means better security posture and reduced bundle size
+- **⚡ Flexible Execution** - Supports both synchronous and asynchronous JavaScript patterns
+- **🔒 OpenSSL Compatible** - Direct support for PEM-formatted keys generated with OpenSSL
+- **🛡️ Proven Security** - Built on Tom Wu's battle-tested jsbn library without modifying core algorithms
+- **🚀 Production Ready** - Lightweight, well-tested, and used by thousands of developers worldwide
 
- - You can then copy and paste this in the Private Key section of within index.html.
- - Next, you can then get the public key by executing the following command.
+## Installation
 
-```
-openssl rsa -pubout -in rsa_1024_priv.pem -out rsa_1024_pub.pem
+### Using npm
+
+```bash
+npm install jsencrypt
 ```
 
- - You can see the public key by typing...
+### Using yarn
 
+```bash
+yarn add jsencrypt
 ```
-cat rsa_1024_pub.pem
-```
 
- - Now copy and paste this in the Public key within the index.html.
- - Now you can then convert to and from encrypted text by doing the following in code.
+### Using CDN
 
+Include JSEncrypt directly in your HTML:
 
 ```html
-<!doctype html>
+<script src="https://cdn.jsdelivr.net/npm/jsencrypt@latest/bin/jsencrypt.min.js"></script>
+```
+
+## Basic Usage
+
+### 1. Import the Library
+
+#### ES6 Modules
+```javascript
+import { JSEncrypt } from 'jsencrypt';
+```
+
+#### CommonJS
+```javascript
+const JSEncrypt = require('jsencrypt');
+```
+
+#### Browser Global
+```javascript
+// JSEncrypt is available globally when using CDN
+const crypt = new JSEncrypt();
+```
+
+### 2. Create RSA Keys
+
+For the highest security, you'll need RSA key pairs to use JSEncrypt. Generate them using OpenSSL:
+
+```bash
+# Generate a 2048-bit private key
+openssl genrsa -out private.pem 2048
+
+# Extract the public key
+openssl rsa -pubout -in private.pem -out public.pem
+```
+
+### 3. Basic Encryption/Decryption
+
+```javascript
+// Create JSEncrypt instance
+const crypt = new JSEncrypt();
+
+// Set your private key (for decryption)
+crypt.setPrivateKey(`-----BEGIN RSA PRIVATE KEY-----
+MIIEowIBAAKCAQEA4f5wg5l2hKsTeNem/V41fGnJm6gOdrj8ym3rFkEjWT9u
+U38KPhX7l3YXkLMfJj8sE3PUi0EaL6rN6rOUY8dq1fQhPhT1wfI6V8KQtQnq
+1FKnNgQCVmQpCxK7qFR7Z+9MRWoJrPb8lZMmT1ELkKL6FBfkp3H3WcTl+BF0
+XoZnLK0CfXfKzPJPm9jfKKE7dqnCsRiXYJbBwkNpQ5xo2lRKnNaH8GjPzJ4X
+TZ5J7G6hDpXN1F3YzWZNVQRzfDfLB+w9FDaZ5kFhRc2PgB1Y8dNOhgK7RFJF
+JDZhqBhSRnQ1YkLkQOnHq4Bz8l7YgRJkJHdIfTOO8l3YXkLMfJj8sE3PUi0E
+qL6r9OOCzGJnVgQCVmQpCxK7qFR7Z+9MRWoJrPb8lZMmT1ELkKL6FBfkp3H3
+...
+-----END RSA PRIVATE KEY-----`);
+
+// The public key is automatically derived from the private key
+// Or you can set it explicitly:
+// crypt.setPublicKey('-----BEGIN PUBLIC KEY-----...');
+
+// Encrypt data
+const originalText = 'Hello, World!';
+const encrypted = crypt.encrypt(originalText);
+
+// Decrypt data
+const decrypted = crypt.decrypt(encrypted);
+
+console.log('Original:', originalText);
+console.log('Encrypted:', encrypted);
+console.log('Decrypted:', decrypted);
+console.log('Match:', originalText === decrypted); // true
+```
+
+## Key Concepts
+
+### Public vs Private Keys
+
+- **Public Key**: Used for **encryption**. Safe to share publicly.
+- **Private Key**: Used for **decryption**. Keep this secret!
+
+```javascript
+const crypt = new JSEncrypt();
+
+// For encryption only (using public key)
+crypt.setPublicKey(publicKeyString);
+const encrypted = crypt.encrypt('secret message');
+
+// For decryption (requires private key)
+crypt.setPrivateKey(privateKeyString);  
+const decrypted = crypt.decrypt(encrypted);
+```
+
+## Key Generation
+
+JSEncrypt supports two approaches for obtaining RSA keys: **OpenSSL generation (recommended)** and **JavaScript generation (convenient but less secure)**.
+
+### Option 1: OpenSSL Key Generation (Recommended)
+
+For production applications and maximum security, generate keys using OpenSSL:
+
+```bash
+# Generate a 2048-bit private key (recommended minimum)
+openssl genrsa -out private.pem 2048
+
+# Generate a 4096-bit private key (higher security)
+openssl genrsa -out private.pem 4096
+
+# Extract the public key
+openssl rsa -pubout -in private.pem -out public.pem
+
+# View the private key
+cat private.pem
+
+# View the public key  
+cat public.pem
+```
+
+**Why OpenSSL is more secure:**
+- Uses cryptographically secure random number generators
+- Better entropy sources from the operating system
+- Optimized and audited implementations
+- Industry standard for key generation
+
+### Option 2: JavaScript Key Generation (Convenience)
+
+JSEncrypt can generate keys directly in JavaScript, which is convenient for testing, demos, or non-critical applications:
+
+```javascript
+// Create JSEncrypt instance
+const crypt = new JSEncrypt();
+
+// Generate a new key pair (default: 1024-bit)
+const privateKey = crypt.getPrivateKey();
+const publicKey = crypt.getPublicKey();
+
+console.log('Private Key:', privateKey);
+console.log('Public Key:', publicKey);
+
+// You can also specify key size (512, 1024, 2048, 4096)
+const crypt2048 = new JSEncrypt({ default_key_size: 2048 });
+const strongerPrivateKey = crypt2048.getPrivateKey();
+const strongerPublicKey = crypt2048.getPublicKey();
+```
+
+#### Asynchronous Key Generation
+
+For better performance (especially with larger keys), use async generation:
+
+```javascript
+// Asynchronous key generation (recommended for larger keys)
+const crypt = new JSEncrypt({ default_key_size: 2048 });
+
+crypt.getKey(() => {
+    const privateKey = crypt.getPrivateKey();
+    const publicKey = crypt.getPublicKey();
+    
+    console.log('Generated private key:', privateKey);
+    console.log('Generated public key:', publicKey);
+    
+    // Now you can use the keys
+    const encrypted = crypt.encrypt('Hello, World!');
+    const decrypted = crypt.decrypt(encrypted);
+});
+```
+
+#### Different Key Sizes
+
+```javascript
+// 512-bit (fast but less secure - only for testing)
+const crypt512 = new JSEncrypt({ default_key_size: 512 });
+
+// 1024-bit (default - basic security)
+const crypt1024 = new JSEncrypt({ default_key_size: 1024 });
+
+// 2048-bit (recommended minimum for production)
+const crypt2048 = new JSEncrypt({ default_key_size: 2048 });
+
+// 4096-bit (high security but slower)
+const crypt4096 = new JSEncrypt({ default_key_size: 4096 });
+```
+
+**⚠️ Security Note:** JavaScript key generation uses browser/Node.js random number generators which may have less entropy than dedicated cryptographic tools. For production applications handling sensitive data, prefer OpenSSL-generated keys.
+
+**💡 Use Cases for JavaScript Generation:**
+- Rapid prototyping and testing
+- Client-side demos and examples  
+- Educational purposes
+- Non-critical applications
+- When OpenSSL is not available
+
+## Advanced Features
+
+### Digital Signatures
+
+```javascript
+// Sign with the private key
+const sign = new JSEncrypt();
+sign.setPrivateKey(privateKey);
+const signature = sign.signSha256(data);
+
+// Verify with the public key
+const verify = new JSEncrypt();
+verify.setPublicKey(publicKey);
+const verified = verify.verifySha256(data, signature);
+```
+
+### OAEP Padding
+
+```javascript
+// Encrypt with OAEP padding and SHA-256 hash
+const encrypt = new JSEncrypt();
+encrypt.setPublicKey(publicKey);
+const encrypted = encrypt.encryptOAEP(data);
+```
+
+### Supported Hash Functions
+
+When using signatures, you can specify the hash type:
+- `md2`, `md5`, `sha1`, `sha224`, `sha256`, `sha384`, `sha512`, `ripemd160`
+
+## Browser Usage
+
+For direct browser usage without a build system:
+
+```html
+<!DOCTYPE html>
 <html>
-  <head>
-    <title>JavaScript RSA Encryption</title>
-    <script src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
-    <script src="bin/jsencrypt.min.js"></script>
-    <script type="text/javascript">
-
-      // Call this code when the page is done loading.
-      $(function() {
-
-        // Run a quick encryption/decryption when they click.
-        $('#testme').click(function() {
-
-          // Encrypt with the public key...
-          var encrypt = new JSEncrypt();
-          encrypt.setPublicKey($('#pubkey').val());
-          var encrypted = encrypt.encrypt($('#input').val());
-
-          // Decrypt with the private key...
-          var decrypt = new JSEncrypt();
-          decrypt.setPrivateKey($('#privkey').val());
-          var uncrypted = decrypt.decrypt(encrypted);
-
-          // Now a simple check to see if the round-trip worked.
-          if (uncrypted == $('#input').val()) {
-            alert('It works!!!');
-          }
-          else {
-            alert('Something went wrong....');
-          }
-        });
-      });
+<head>
+    <title>JSEncrypt Example</title>
+    <script src="https://cdn.jsdelivr.net/npm/jsencrypt/bin/jsencrypt.min.js"></script>
+</head>
+<body>
+    <script>
+        const crypt = new JSEncrypt();
+        crypt.setPrivateKey(crypt.getPrivateKey());
+        
+        // Use the library
+        const encrypted = crypt.encrypt('Hello World!');
+        const decrypted = crypt.decrypt(encrypted);
+        
+        console.log('Original:', 'Hello World!');
+        console.log('Encrypted:', encrypted);
+        console.log('Decrypted:', decrypted);
     </script>
-  </head>
-  <body>
-    <label for="privkey">Private Key</label><br/>
-    <textarea id="privkey" rows="15" cols="65">-----BEGIN RSA PRIVATE KEY-----
-MIICXQIBAAKBgQDlOJu6TyygqxfWT7eLtGDwajtNFOb9I5XRb6khyfD1Yt3YiCgQ
-WMNW649887VGJiGr/L5i2osbl8C9+WJTeucF+S76xFxdU6jE0NQ+Z+zEdhUTooNR
-aY5nZiu5PgDB0ED/ZKBUSLKL7eibMxZtMlUDHjm4gwQco1KRMDSmXSMkDwIDAQAB
-AoGAfY9LpnuWK5Bs50UVep5c93SJdUi82u7yMx4iHFMc/Z2hfenfYEzu+57fI4fv
-xTQ//5DbzRR/XKb8ulNv6+CHyPF31xk7YOBfkGI8qjLoq06V+FyBfDSwL8KbLyeH
-m7KUZnLNQbk8yGLzB3iYKkRHlmUanQGaNMIJziWOkN+N9dECQQD0ONYRNZeuM8zd
-8XJTSdcIX4a3gy3GGCJxOzv16XHxD03GW6UNLmfPwenKu+cdrQeaqEixrCejXdAF
-z/7+BSMpAkEA8EaSOeP5Xr3ZrbiKzi6TGMwHMvC7HdJxaBJbVRfApFrE0/mPwmP5
-rN7QwjrMY+0+AbXcm8mRQyQ1+IGEembsdwJBAN6az8Rv7QnD/YBvi52POIlRSSIM
-V7SwWvSK4WSMnGb1ZBbhgdg57DXaspcwHsFV7hByQ5BvMtIduHcT14ECfcECQATe
-aTgjFnqE/lQ22Rk0eGaYO80cc643BXVGafNfd9fcvwBMnk0iGX0XRsOozVt5Azil
-psLBYuApa66NcVHJpCECQQDTjI2AQhFc1yRnCU/YgDnSpJVm1nASoRUnU8Jfm3Oz
-uku7JUXcVpt08DFSceCEX9unCuMcT72rAQlLpdZir876
------END RSA PRIVATE KEY-----</textarea><br/>
-    <label for="pubkey">Public Key</label><br/>
-    <textarea id="pubkey" rows="15" cols="65">-----BEGIN PUBLIC KEY-----
-MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDlOJu6TyygqxfWT7eLtGDwajtN
-FOb9I5XRb6khyfD1Yt3YiCgQWMNW649887VGJiGr/L5i2osbl8C9+WJTeucF+S76
-xFxdU6jE0NQ+Z+zEdhUTooNRaY5nZiu5PgDB0ED/ZKBUSLKL7eibMxZtMlUDHjm4
-gwQco1KRMDSmXSMkDwIDAQAB
------END PUBLIC KEY-----</textarea><br/>
-    <label for="input">Text to encrypt:</label><br/>
-    <textarea id="input" name="input" type="text" rows=4 cols=70>This is a test!</textarea><br/>
-    <input id="testme" type="button" value="Test Me!!!" /><br/>
-  </body>
+</body>
 </html>
 ```
 
- - Look at how http://www.travistidwell.com/jsencrypt/example.html works to get a better idea.
+## Node.js Usage
 
-Other Information
-========================
+For use within Node.js, you can use the following.
 
-This library heavily utilizes the wonderful work of Tom Wu found at http://www-cs-students.stanford.edu/~tjw/jsbn/.
+```js
+const JSEncrypt = require('jsencrypt');
+const crypt = new JSEncrypt();
+crypt.setPrivateKey(crypt.getPrivateKey());
 
-This jsbn library was written using the raw variables to perform encryption.  This is great for encryption, but most private keys use a Private Key in the PEM format seen below.
+// Use the library
+const encrypted = crypt.encrypt('Hello World!');
+const decrypted = crypt.decrypt(encrypted);
 
-1024 bit RSA Private Key in Base64 Format
------------------------------------------
+console.log('Original:', 'Hello World!');
+console.log('Encrypted:', encrypted);
+console.log('Decrypted:', decrypted);
+```
+
+## Development & Testing
+
+### Running Tests
+
+```bash
+# Run all tests (Node.js + Browser)
+npm test
+
+# Run only Node.js tests  
+npm run test:mocha
+
+# Run only example validation tests
+npm run test:examples
+
+# Build the library
+npm run build
+
+# Build test bundle for browser testing
+npm run build:test
+```
+
+### Browser Tests
+
+Visit the test page to run browser-based tests:
+- **Local development:** `http://localhost:4000/test/` (when running Jekyll)
+- **Online:** [https://travistidwell.com/jsencrypt/test/](https://travistidwell.com/jsencrypt/test/)
+
+## Documentation
+
+For comprehensive documentation, examples, and API reference:
+
+**📖 [Visit the Documentation Site](https://travistidwell.com/jsencrypt)**
+
+- [Getting Started Guide](https://travistidwell.com/jsencrypt/docs/getting-started)
+- [API Reference](https://travistidwell.com/jsencrypt/docs/api)
+- [Examples & Use Cases](https://travistidwell.com/jsencrypt/docs/examples)
+- [Interactive Demo](https://travistidwell.com/jsencrypt/demo)
+
+## Technical Background
+
+This library provides a simple JavaScript wrapper around Tom Wu's excellent [jsbn library](http://www-cs-students.stanford.edu/~tjw/jsbn/). The core cryptographic functions remain untouched, ensuring security and reliability.
+
+### Key Format Support
+
+JSEncrypt works with standard PEM-formatted RSA keys:
+
+**Private Key (PKCS#1):**
 ```
 -----BEGIN RSA PRIVATE KEY-----
-MIICXgIBAAKBgQDHikastc8+I81zCg/qWW8dMr8mqvXQ3qbPAmu0RjxoZVI47tvs
-kYlFAXOf0sPrhO2nUuooJngnHV0639iTTEYG1vckNaW2R6U5QTdQ5Rq5u+uV3pMk
-7w7Vs4n3urQ6jnqt2rTXbC1DNa/PFeAZatbf7ffBBy0IGO0zc128IshYcwIDAQAB
-AoGBALTNl2JxTvq4SDW/3VH0fZkQXWH1MM10oeMbB2qO5beWb11FGaOO77nGKfWc
-bYgfp5Ogrql4yhBvLAXnxH8bcqqwORtFhlyV68U1y4R+8WxDNh0aevxH8hRS/1X5
-031DJm1JlU0E+vStiktN0tC3ebH5hE+1OxbIHSZ+WOWLYX7JAkEA5uigRgKp8ScG
-auUijvdOLZIhHWq7y5Wz+nOHUuDw8P7wOTKU34QJAoWEe771p9Pf/GTA/kr0BQnP
-QvWUDxGzJwJBAN05C6krwPeryFKrKtjOGJIniIoY72wRnoNcdEEs3HDRhf48YWFo
-riRbZylzzzNFy/gmzT6XJQTfktGqq+FZD9UCQGIJaGrxHJgfmpDuAhMzGsUsYtTr
-iRox0D1Iqa7dhE693t5aBG010OF6MLqdZA1CXrn5SRtuVVaCSLZEL/2J5UcCQQDA
-d3MXucNnN4NPuS/L9HMYJWD7lPoosaORcgyK77bSSNgk+u9WSjbH1uYIAIPSffUZ
-bti+jc1dUg5wb+aeZlgJAkEAurrpmpqj5vg087ZngKfFGR5rozDiTsK5DceTV97K
-a3Y+Nzl+XWTxDBWk4YPh2ZlKv402hZEfWBYxUDn5ZkH/bw==
+MIICXgIBAAKBgQDHikastc8+I81zCg/qWW8dMr8mqvXQ3qbPAmu0RjxoZVI47tvs...
 -----END RSA PRIVATE KEY-----
 ```
 
-This library simply takes keys in the following format, and translates it to those variables needed to perform the encryptions used in Tom Wu's library.
-
-Here are some good resources to investigate further.
- - http://etherhack.co.uk/asymmetric/docs/rsa_key_breakdown.html
- - http://www.di-mgt.com.au/rsa_alg.html
- - https://polarssl.org/kb/cryptography/asn1-key-structures-in-der-and-pem
-
-With this information, we can translate a private key format to the variables
-required with the jsbn library from Tom Wu by using the following mappings.
-
+**Public Key (PKCS#8):**
 ```
-modulus => n
-public exponent => e
-private exponent => d
-prime1 => p
-prime2 => q
-exponent1 => dmp1
-exponent2 => dmq1
-coefficient => coeff
+-----BEGIN PUBLIC KEY-----
+MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDlOJu6TyygqxfWT7eLtGDwajtN...
+-----END PUBLIC KEY-----
 ```
+
+### RSA Variable Mappings
+
+The library translates PEM key components to jsbn library variables:
+
+| PEM Component | jsbn Variable |
+|---------------|---------------|
+| modulus | n |
+| public exponent | e |
+| private exponent | d |
+| prime1 | p |
+| prime2 | q |
+| exponent1 | dmp1 |
+| exponent2 | dmq1 |
+| coefficient | coeff |
+
+## Contributing
+
+Contributions are welcome! Please read our contributing guidelines and ensure all tests pass before submitting a pull request.
+
+```bash
+# Clone the repository
+git clone https://github.com/travist/jsencrypt.git
+cd jsencrypt
+
+# Install dependencies
+npm install
+
+# Run tests
+npm test
+
+# Build the project
+npm run build
+```
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE.txt](LICENSE.txt) file for details.
+
+## Resources
+
+- **Tom Wu's jsbn library:** http://www-cs-students.stanford.edu/~tjw/jsbn/
+- **RSA Key Breakdown:** http://etherhack.co.uk/asymmetric/docs/rsa_key_breakdown.html
+- **RSA Algorithm Details:** http://www.di-mgt.com.au/rsa_alg.html
+- **ASN.1 Key Structures:** https://polarssl.org/kb/cryptography/asn1-key-structures-in-der-and-pem
+
+---
+
+**Made with ❤️ by [Travis Tidwell](https://github.com/travist)**
 

@@ -1,44 +1,96 @@
 {
-  "name": "jsencrypt",
-  "version": "2.3.1",
-  "description": "A Javascript library to perform OpenSSL RSA Encryption, Decryption, and Key Generation.",
-  "main": "bin/jsencrypt.js",
-  "scripts": {
-    "prepublish": "node_modules/gulp/bin/gulp.js"
-  },
-  "contributors": [
-    {
-      "name": "Travis Tidwell",
-      "email": "travis@form.io",
-      "url": "http://github.com/travist"
+    "name": "jsencrypt",
+    "version": "3.5.4",
+    "description": "A Javascript library to perform OpenSSL RSA Encryption, Decryption, and Key Generation.",
+    "main": "bin/jsencrypt.min.js",
+    "module": "lib/index.js",
+    "browser": "lib/index.js",
+    "types": "lib/index.d.ts",
+    "exports": {
+        ".": {
+            "import": "./lib/index.js",
+            "require": "./bin/jsencrypt.min.js",
+            "browser": "./lib/index.js",
+            "types": "./lib/index.d.ts"
+        },
+        "./package.json": "./package.json"
     },
-    {
-      "name": "Antonio",
-      "url": "https://github.com/zoloft"
+    "dependencies": {},
+    "devDependencies": {
+        "@babel/core": "^7.28.0",
+        "@babel/preset-env": "^7.28.0",
+        "@babel/preset-typescript": "^7.27.1",
+        "@babel/register": "^7.27.1",
+        "@types/expect": "^24.3.2",
+        "@types/mocha": "^10.0.10",
+        "@types/node": "^24.2.1",
+        "chai": "4.3.6",
+        "dirty-chai": "^2.0.1",
+        "fs-jetpack": "^5.1.0",
+        "mocha": "^11.7.1",
+        "process": "^0.11.10",
+        "ts-mocha": "^11.1.0",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.9.2",
+        "url": "^0.11.4",
+        "webpack": "^5.101.0",
+        "webpack-cli": "^6.0.1"
     },
-    {
-      "name": "Julio",
-      "url": "https://github.com/jmgaya"
-    }
-  ],
-  "homepage": "http://www.travistidwell.com/jsencrypt",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/travist/jsencrypt.git"
-  },
-  "bugs": {
-    "url": "http://github.com/travist/jsencrypt/issues"
-  },
-  "devDependencies": {
-    "gulp": "^3.9.1",
-    "gulp-concat": "^2.6.0",
-    "gulp-eslint": "^2.0.0",
-    "gulp-insert": "^0.5.0",
-    "gulp-watch": "^4.3.5",
-    "gulp-wrap": "^0.11.0"
-  },
-  "dependencies": {
-    "gulp-rename": "^1.2.2",
-    "gulp-uglify": "^1.5.3"
-  }
+    "files": [
+        "bin",
+        "lib"
+    ],
+    "sideEffects": false,
+    "scripts": {
+        "build:dev": "tsc && tsc --project tsconfig-def.json && webpack",
+        "build:test": "tsc && tsc --project tsconfig-def.json && webpack --config webpack.test.js",
+        "build:prod": "tsc && tsc --project tsconfig-def.json && webpack --config webpack.prod.js",
+        "build": "npm run build:dev && npm run build:test && npm run build:prod",
+        "build:validate": "npm run build && npm run validate:build",
+        "serve": "bundle exec jekyll clean && bundle exec jekyll server --config _config.build.yml",
+        "test": "node test/run-all-tests.js",
+        "test:mocha": "ts-mocha test/index.js",
+        "test:examples": "node test/run-examples-tests.js",
+        "validate:build": "node test/validate-build.js",
+        "validate:cdn": "echo 'Open http://localhost:4001/test/cdn-validation.html to test CDN compatibility'",
+        "prepublishOnly": "npm run build:validate"
+    },
+    "browserslist": [
+        "last 1 version",
+        "> 1%",
+        "ie 11",
+        "chrome >= 30",
+        "edge >= 79",
+        "firefox >= 63",
+        "safari >= 11"
+    ],
+    "author": "Travis Tidwell <travis@form.io>",
+    "contributors": [
+        {
+            "name": "Travis Tidwell",
+            "email": "travis@form.io",
+            "url": "http://github.com/travist"
+        },
+        {
+            "name": "Antonio",
+            "url": "https://github.com/zoloft"
+        },
+        {
+            "name": "Julio",
+            "url": "https://github.com/jmgaya"
+        },
+        {
+            "name": "Taehyun Hwang",
+            "url": "https://github.com/HwangTaehyun"
+        }
+    ],
+    "homepage": "http://www.travistidwell.com/jsencrypt",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/travist/jsencrypt.git"
+    },
+    "bugs": {
+        "url": "http://github.com/travist/jsencrypt/issues"
+    },
+    "license": "MIT"
 }
